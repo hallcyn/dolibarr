@@ -12,6 +12,7 @@ if [[ -n "${RAILWAY_ENVIRONMENT_ID:-}" ]]; then
 fi
 
 mkdir -p /data/{documents,custom,sessions,secrets,backups}
+chmod 755 /data
 chmod 700 /data/secrets /data/backups
 for item in documents html/custom; do
     target="/data/${item##*/}"

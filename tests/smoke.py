@@ -19,11 +19,17 @@ def php(code):
 
 def healthy():
     deadline = time.monotonic() + 300
+    unavailable_since = None
     while time.monotonic() < deadline:
         try:
             with urllib.request.urlopen('http://127.0.0.1:8080/railway-health.php', timeout=5) as reply:
                 if json.load(reply) == {'status': 'ok'}:
                     return
+        except urllib.error.HTTPError as error:
+            if error.code == 503:
+                unavailable_since = unavailable_since or time.monotonic()
+                if time.monotonic() - unavailable_since > 45:
+                    raise RuntimeError('Apache is running but readiness has returned 503 for 45 seconds.')
         except Exception:
             pass
         time.sleep(3)

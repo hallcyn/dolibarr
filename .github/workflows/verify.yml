@@ -32,7 +32,9 @@ jobs:
         run: python3 tests/smoke.py
       - name: Logs on failure
         if: failure()
-        run: docker compose logs --tail=100
+        run: |
+          docker compose logs --tail=200
+          docker compose exec -T dolibarr bash -c 'ls -ld /data /data/documents /data/custom /var/www/documents; ls -l /data/documents/install.lock; tail -n 40 /data/documents/initdb.log' || true
       - name: Stop test services
         if: always()
         run: docker compose down --volumes
