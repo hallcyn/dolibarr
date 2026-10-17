@@ -1,5 +1,7 @@
 # Dolibarr sur Railway
 
+[![Vérification Docker](https://github.com/hallcyn/dolibarr/actions/workflows/verify.yml/badge.svg)](https://github.com/hallcyn/dolibarr/actions/workflows/verify.yml)
+
 Déployez **Dolibarr ERP & CRM** avec une base **MariaDB privée**, une installation automatique et des fichiers conservés après redéploiement. Guide en français, textes du catalogue en anglais.
 
 **Commencer : [Créer le template Railway, pas à pas](docs/RAILWAY.md).**
