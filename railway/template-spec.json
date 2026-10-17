@@ -1,0 +1,162 @@
+{
+  "format": "hallcyn-railway-template-guide-v1",
+  "notice": "Reference for the Railway template editor. This is NOT a Railway import format. The editor creates the deployable multi-service template.",
+  "name": "Dolibarr",
+  "description": "Deploy Dolibarr ERP & CRM with private MariaDB, persistent files and modules, automatic setup, and optional scheduled jobs.",
+  "readme": "docs/TEMPLATE-README.md",
+  "repository": "https://github.com/hallcyn/dolibarr",
+  "services": {
+    "MariaDB": {
+      "source": {
+        "image": "mariadb:11.4"
+      },
+      "volume": {
+        "mountPath": "/var/lib/mysql"
+      },
+      "publicNetworking": false,
+      "settings": {
+        "startCommand": "docker-entrypoint.sh mariadbd --bind-address=0.0.0.0,:: --innodb-buffer-pool-size=128M --max-connections=30 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci",
+        "restartPolicy": "ON_FAILURE",
+        "restartMaxRetries": 10,
+        "replicas": 1,
+        "serverless": false
+      },
+      "variables": {
+        "MARIADB_DATABASE": {
+          "value": "dolibarr",
+          "description": "Database created on first start."
+        },
+        "MARIADB_USER": {
+          "value": "dolibarr",
+          "description": "Application database user; no root privileges."
+        },
+        "MARIADB_PASSWORD": {
+          "value": "${{secret(64, \"abcdef0123456789\")}}",
+          "description": "Generated database password; referenced by Dolibarr. Do not regenerate on an existing database."
+        },
+        "MARIADB_ROOT_PASSWORD": {
+          "value": "${{secret(64, \"abcdef0123456789\")}}",
+          "description": "Independent generated database root password. Keep private; not used by Dolibarr."
+        }
+      }
+    },
+    "Dolibarr": {
+      "source": {
+        "repo": "hallcyn/dolibarr",
+        "branch": "main",
+        "rootDirectory": "/"
+      },
+      "volume": {
+        "mountPath": "/data"
+      },
+      "publicNetworking": {
+        "http": true,
+        "targetPort": 80
+      },
+      "settings": {
+        "builder": "DOCKERFILE",
+        "startCommand": null,
+        "healthcheckPath": "/railway-health.php",
+        "healthcheckTimeout": 300,
+        "restartPolicy": "ON_FAILURE",
+        "restartMaxRetries": 10,
+        "replicas": 1,
+        "serverless": false
+      },
+      "variables": {
+        "PORT": {
+          "value": "80",
+          "description": "HTTP port; set the generated Railway domain target to 80 too."
+        },
+        "DOLI_DB_HOST": {
+          "value": "${{MariaDB.RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Private database DNS; keep both services in the same project environment."
+        },
+        "DOLI_DB_HOST_PORT": {
+          "value": "3306",
+          "description": "Private MariaDB TCP port, not the public proxy port."
+        },
+        "DOLI_DB_NAME": {
+          "value": "${{MariaDB.MARIADB_DATABASE}}",
+          "description": "Database name from the MariaDB service."
+        },
+        "DOLI_DB_USER": {
+          "value": "${{MariaDB.MARIADB_USER}}",
+          "description": "Restricted database account from MariaDB."
+        },
+        "DOLI_DB_PASSWORD": {
+          "value": "${{MariaDB.MARIADB_PASSWORD}}",
+          "description": "Reference the generated database password; do not generate another one here."
+        },
+        "DOLI_URL_ROOT": {
+          "value": "https://${{RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Public HTTPS URL. Set a full https:// URL when switching to a custom domain."
+        },
+        "DOLI_ADMIN_LOGIN": {
+          "value": "admin",
+          "description": "Initial administrator login. Letters, digits, _, ., @ and - only."
+        },
+        "DOLI_ADMIN_PASSWORD": {
+          "value": "${{secret(64, \"abcdef0123456789\")}}",
+          "description": "Generated first-install password. Read this variable to log in; later changes belong in Dolibarr."
+        },
+        "DOLI_INSTANCE_UNIQUE_ID": {
+          "value": "${{secret(64, \"abcdef0123456789\")}}",
+          "description": "Permanent instance encryption key. Back it up and never regenerate it for an existing installation."
+        },
+        "DOLI_COMPANY_NAME": {
+          "value": "Mon entreprise",
+          "description": "Your company name; initializes the company on first installation. Change later in Dolibarr."
+        },
+        "DOLI_COMPANY_COUNTRYCODE": {
+          "value": "FR",
+          "description": "Two-letter company country code; defaults to France."
+        },
+        "DOLI_INSTALL_AUTO": {
+          "value": "1",
+          "description": "Initialize the empty database automatically; keep 1."
+        },
+        "DOLI_INIT_DEMO": {
+          "value": "0",
+          "description": "No sample customers or invoices; keep 0 for real business use."
+        },
+        "DOLI_PROD": {
+          "value": "1",
+          "description": "Production mode; keep 1."
+        },
+        "DOLI_CRON": {
+          "value": "0",
+          "description": "Upstream cron-only mode must stay 0 so Apache runs."
+        },
+        "DOLI_RAILWAY_CRON": {
+          "value": "0",
+          "description": "Optional in-container scheduler: set 1 after enabling Scheduled Jobs in Dolibarr."
+        },
+        "DOLI_CRON_KEY": {
+          "value": "${{secret(64, \"abcdef0123456789\")}}",
+          "description": "Scheduler key. Also set it in the Dolibarr Scheduled Jobs module when enabling cron."
+        },
+        "DOLI_CRON_USER": {
+          "value": "firstadmin",
+          "description": "User running scheduled jobs; firstadmin selects an active administrator. Prefer a dedicated user later."
+        },
+        "PHP_INI_DATE_TIMEZONE": {
+          "value": "Europe/Paris",
+          "description": "PHP timezone. Choose another IANA zone when needed."
+        },
+        "PHP_INI_MEMORY_LIMIT": {
+          "value": "256M",
+          "description": "PHP memory per request, not the Railway service memory limit."
+        },
+        "PHP_INI_UPLOAD_MAX_FILESIZE": {
+          "value": "20M",
+          "description": "Maximum size per uploaded attachment."
+        },
+        "PHP_INI_POST_MAX_SIZE": {
+          "value": "24M",
+          "description": "POST limit; must exceed the per-file upload limit."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+.git
+.github
+.env
+.env.*
+docs
+tests
+railway
+backups
+*.tar.gz
+*.sql
+__pycache__
