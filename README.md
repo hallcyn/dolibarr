@@ -1,6 +1,6 @@
 # Dolibarr sur Railway
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/YXlVeG)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/dolibarr-up-to-date-2026?referralCode=0fPTYP&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 [![Vérification Docker](https://github.com/hallcyn/dolibarr/actions/workflows/verify.yml/badge.svg)](https://github.com/hallcyn/dolibarr/actions/workflows/verify.yml)
 
