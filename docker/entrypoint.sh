@@ -25,6 +25,9 @@ for item in documents html/custom; do
     fi
 done
 chown -R www-data:www-data /data/documents /data/custom /data/sessions
+# The official custom/ seed directory is read-only. Ownership alone does not
+# make it writable for module installation after copying it into the volume.
+chmod u+rwx /data/documents /data/custom
 chmod 700 /data/sessions
 
 php /opt/railway/configure.php
