@@ -1,19 +1,19 @@
 {
   "repository": "hallcyn/dolibarr-indy-theme",
-  "commit": "e9f3ee0ff7b16c3687a05d476441387dc15befaa",
-  "version": "1.1.0",
+  "commit": "fa1743f97a970cd54553e3a6d35eb910c7d2e6c6",
+  "version": "1.2.0",
   "sha256": {
-    "tests/indy/browser.py": "95d44e253a90dbc8a2f1a55de05aad6479badf460c98356c57a2e61a4ac60be1",
-    "tests/indy/seed.php": "f15a6263e0db55fc29eeaeaaff49a53a8276c7789d98781223b5ea97b0161235",
+    "tests/indy/browser.py": "47ab0b60376185192cd512c037bbea68ae013e350032ba88587007e27f9251d2",
+    "tests/indy/seed.php": "e69689a2ef1cee00d34a4eaeea9e1b0b56a05d608e933083587eb7e04b5a1e3f",
     "theme/LICENSE": "e79e9c8a0c85d735ff98185918ec94ed7d175efc377012787aebcf3b80f0d90b",
     "theme/indy/fonts/OFL.txt": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
     "theme/indy/fonts/inter-latin.woff2": "4716c7c50942309fccfe663ff567c664cc82e4f6fa374705f8f329bc2f967d64",
-    "theme/indy/indy.css": "1626c00b3566fbe03ba188cf84485ea3f0446bdef95759446418f369a7b87c9d",
+    "theme/indy/indy.css": "6c19a22edf68d130ead0ba89b23f944920e21c1c6fb1a95f5f977cfe02708258",
     "theme/indy/style.css.php": "e95ee4594164c641df48671c425af1e9259ef4621279c9f6efcc4b9deb16bb3f",
-    "theme/indy/theme_descriptor.php": "492e7b3868b8416fdc2169f33aa55bf536211e1280073bb0cfb8b47cbd9d1a04",
-    "theme/indy/theme_vars.inc.php": "470dc9c1e08ff35f471049a4824f97e398439ba752cd8f06a42af4a4439db89c",
-    "theme/indy/thumb.png": "cf297ce04325f140425c97e52ed05ca21fb564c738a87dc75fd13adc3e69d97f",
-    "theme/indy/version.json": "897a7a0682c38e7cb418d14f341124fe28412d1998605f403c88b0289a2d34c1",
+    "theme/indy/theme_descriptor.php": "4faaedbe8e095a0a228296c909c7222d309b7f4208e49cb2ecb2e6d54d9e42d4",
+    "theme/indy/theme_vars.inc.php": "a05d9a7db71186b3cb22ab4993bc4e4a935caf7b4772059a055494c374a5cfed",
+    "theme/indy/thumb.png": "af941e09033abda12f944a053468825ae82e5297d56b25bb3e05a9e1528be3a5",
+    "theme/indy/version.json": "3b34789eea2c4e4557689fde012026e70a34e47bb01d28ca2780d1be802ef7a9",
     "theme/install.sh": "f3b237b7e1de7e9c8006ba1a426a0ea5df334c55a7cb542cf7a46e21d5cdd37e"
   }
 }

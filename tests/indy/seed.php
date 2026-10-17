@@ -7,9 +7,12 @@ require '/var/www/html/main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
+require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
 
 $user->fetch(0, 'admin');
-foreach (array('modSociete', 'modFacture', 'modPropale', 'modBanque', 'modService') as $module) {
+foreach (array('modSociete', 'modFacture', 'modPropale', 'modBanque', 'modService', 'modProduct', 'modStock', 'modCommande', 'modExpedition') as $module) {
     $result = activateModule($module);
     if (!empty($result['errors'])) {
         throw new RuntimeException(json_encode($result['errors']));
@@ -51,4 +54,33 @@ foreach ($names as $index => $name) {
         throw new RuntimeException($invoice->error);
     }
 }
-echo "Seeded six fictional clients and invoices.\n";
+$warehouse = new Entrepot($db);
+$warehouse->label = 'DEMO-01';
+$warehouse->lieu = 'Entrepôt de démonstration';
+$warehouse->statut = 1;
+$warehouse->country_id = 1;
+if ($warehouse->create($user) <= 0) {
+    throw new RuntimeException($warehouse->error);
+}
+$product = new Product($db);
+$product->ref = 'INDY-DEMO-01';
+$product->label = 'Cuvée de démonstration';
+$product->description = 'Produit fictif utilisé uniquement pour vérifier les écrans du thème.';
+$product->type = 0;
+$product->status = 1;
+$product->status_buy = 1;
+$product->country_id = 1;
+$product->fk_default_warehouse = $warehouse->id;
+if ($product->create($user) <= 0) {
+    throw new RuntimeException($product->error);
+}
+if ($product->correct_stock($user, $warehouse->id, 118, 0, 'Inventaire fictif de démonstration') < 0) {
+    throw new RuntimeException($product->error);
+}
+$order = new Commande($db);
+$order->socid = 1;
+$order->date = dol_now();
+if ($order->create($user) <= 0 || $order->addline('Commande fictive', 24, 6, 20, 0, 0, $product->id) <= 0) {
+    throw new RuntimeException($order->error);
+}
+echo "Seeded six fictional clients and invoices, a product, warehouse, stock and draft order.\n";

@@ -11,12 +11,12 @@
 }
 :root {
   color-scheme: light;
-  --indy-primary: #ff5489;
-  --indy-primary-hover: #e93f77;
+  --indy-primary: #d82b68;
+  --indy-primary-hover: #b91f55;
   --indy-primary-soft: #fff0f5;
   --indy-link: #354d61;
   --indy-ink: #27333e;
-  --indy-muted: #6e7880;
+  --indy-muted: #596874;
   --indy-bg: #fff;
   --indy-surface: #fff;
   --indy-border: #d7e1e9;
@@ -29,6 +29,7 @@
   --indy-radius: 10px;
   --indy-shadow: none;
   --indy-rail-width: 108px;
+  --indy-context-width: 224px;
   --indy-font: "Indy Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   --colorbackbody: var(--indy-bg);
   --colorbackhmenu1: var(--indy-nav);
@@ -96,8 +97,8 @@ body {
 a { color: var(--indy-link); text-underline-offset: 3px; }
 a:hover { color: #172e42; }
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 3px solid #b52b60 !important;
-  outline-offset: 3px;
+  outline: 2px solid #b52b60 !important;
+  outline-offset: 2px;
 }
 /* Font Awesome keeps its icon font; inherited gray replaces colored nav icons. */
 .fa, .fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands { line-height: inherit; }
@@ -123,9 +124,10 @@ a:hover { color: #172e42; }
 .side-nav .vsmenudisabled, .side-nav .vmenudisabled { color: #90979c; }
 .side-nav input::placeholder { color: var(--indy-muted); }
 .select2-container--default .select2-selection--single .select2-selection__placeholder {
-  color: #727d86 !important;
+  color: #647380 !important;
   opacity: 1;
 }
+.select2-selection__rendered .placeholder { color: var(--indy-muted); opacity: 1; }
 #id-right { background: #fff; padding-top: 28px; }
 div.fiche { margin-inline: 32px; }
 body .fiche table.table-fiche-title div.titre,
@@ -140,9 +142,11 @@ body .fiche table.table-fiche-title div.titre a, div.titre {
 .table-fiche-title .col-picto { color: #7d868d; }
 .refid { color: var(--indy-ink); font-weight: 650; letter-spacing: -.5px; }
 .refidno, .opacitymedium, .opacitymediumbydefault { color: var(--indy-muted); }
+.opacitymedium, .opacitymediumbydefault { opacity: 1; }
+.opacitymediumbycolor, .spantitle { opacity: 1; color: var(--indy-muted); }
 
-/* Primary modules become the narrow cream rail on desktop. Contextual links
- * remain visible in a horizontal strip. No links are cloned, renamed or removed.
+/* Primary modules use the cream rail. Native contextual groups keep a dedicated,
+ * scrollable column: long setup and stock menus retain their hierarchy.
  * :has scopes the layout to the standard Eldy markup, so other menu managers
  * keep their native positioning. Mobile continues to use Dolibarr's drawer.
  */
@@ -218,7 +222,7 @@ body .fiche table.table-fiche-title div.titre a, div.titre {
     display: block;
     max-width: none;
     padding: 0 4px;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.35;
     font-weight: inherit;
     white-space: normal;
@@ -255,56 +259,84 @@ body .fiche table.table-fiche-title div.titre a, div.titre {
     overflow: auto;
   }
   body:has(#id-top .tmenudiv) #id-container {
-    display: block;
-    box-sizing: border-box;
     margin-inline-start: var(--indy-rail-width);
     width: calc(100% - var(--indy-rail-width));
   }
+}
+
+@media screen and (min-width: 601px) {
+  body:has(#id-top .tmenudiv) #id-container {
+    display: grid;
+    grid-template-columns: var(--indy-context-width) minmax(0, 1fr);
+    align-items: start;
+    box-sizing: border-box;
+  }
   body:has(#id-top .tmenudiv) #id-container > .side-nav {
-    position: relative;
+    position: sticky;
     display: block;
     float: none;
-    top: auto;
-    width: auto;
-    height: auto;
+    top: 0;
+    width: var(--indy-context-width);
+    min-width: 0;
+    height: 100dvh;
+    max-height: 100dvh;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
     border: 0;
-    border-bottom: 1px solid #edf0f3;
+    border-inline-end: 1px solid var(--indy-border);
     box-shadow: none;
-    padding: 0 32px;
+    padding: 18px 12px;
   }
-  #id-container > .side-nav #id-left { display: block; width: auto; padding: 14px 0; }
-  #id-container > .side-nav div.vmenu { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 22px; width: 100%; max-width: none; padding: 0 !important; }
-  #id-container > .side-nav .vmenu > div { margin: 0; padding: 0 !important; border: 0 !important; background: transparent; }
+  #id-container > .side-nav #id-left { position: static; display: block; width: auto; min-width: 0; padding: 0; }
+  #id-container > .side-nav div.vmenu { display: block; float: none; margin: 0; width: 100%; min-width: 0; max-width: none; padding: 0 !important; }
+  #id-container > .side-nav .vmenu > div { float: none; margin: 0 0 12px; padding: 0 !important; border: 0 !important; background: transparent; }
   #id-container > .side-nav .vmenu > .blockvmenupair,
-  #id-container > .side-nav .vmenu > .blockvmenuimpair { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
-  #id-container > .side-nav .blockvmenu { width: auto; max-width: none; }
+  #id-container > .side-nav .vmenu > .blockvmenuimpair { display: block; }
+  #id-container > .side-nav .blockvmenu { width: auto; min-width: 0; max-width: none; }
   #id-container > .side-nav .menu_top:empty, #id-container > .side-nav .menu_end:empty { display: none; }
   #id-container > .side-nav div.menu_titre, #id-container > .side-nav div.menu_contenu {
-    display: inline-flex;
-    align-items: center;
+    display: block;
     width: auto;
     padding: 0;
     margin: 0;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 1.4;
   }
-  #id-container > .side-nav .menu_titre a { font-weight: 650; }
+  /* Native level-two entries start with nbsp indentation. A block link must
+   * not leave that indentation on a separate empty text line. */
+  #id-container > .side-nav div.menu_contenu { font-size: 0; line-height: 0; overflow: visible; }
+  #id-container > .side-nav .menu_contenu span.vsmenu,
+  #id-container > .side-nav .menu_contenu .vsmenudisabled {
+    display: block; margin: 0; padding: 7px 12px; font-size: 13px; line-height: 1.5; color: var(--indy-muted);
+  }
+  #id-container > .side-nav .menu_titre a {
+    display: block; box-sizing: border-box; width: auto; min-width: 0; max-width: 100%;
+    margin: 0; padding: 10px 8px; font-family: var(--indy-font); font-size: 14px; font-weight: 650; white-space: normal;
+  }
   #id-container > .side-nav .menu_titre .fa, #id-container > .side-nav .menu_titre .fas { color: #7b7f80 !important; }
   #id-container > .side-nav .menu_contenu a {
-    padding: 6px 9px;
+    display: block;
+    padding: 8px 12px 8px 30px;
     margin: 0;
-    border-radius: 18px;
-    font-size: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
     white-space: normal;
   }
   #id-container > .side-nav .menu_contenu a:hover { background: #f4f7f9; text-decoration: none; }
   #id-container > .side-nav .menu_contenu br { display: none; }
   #id-container > .side-nav .menu_contenu .selected { background: var(--indy-nav-active); }
-  #id-container > .side-nav .blockvmenusearch { flex: 0 0 230px; }
-  #id-container > .side-nav .vmenusearchselectcombo { width: 225px; }
-  #id-container > .side-nav .blockvmenuhelp { font-size: 11px; }
-  body:has(#id-top .tmenudiv) #id-right { display: block; width: 100%; min-width: 0; padding-top: 34px; }
-  body:has(#id-top .tmenudiv) #id-right > .fiche { max-width: 1240px; margin-inline: auto; padding-inline: 36px; }
+  #id-container > .side-nav .blockvmenusearch { margin-bottom: 20px; }
+  #id-container > .side-nav .vmenusearchselectcombo,
+  #id-container > .side-nav .blockvmenusearch .select2-container { width: 100% !important; min-width: 0; max-width: 100%; }
+  #id-container > .side-nav .blockvmenuhelp { font-size: 12px; }
+  body:has(#id-top .tmenudiv) #id-right { display: block; box-sizing: border-box; width: 100%; min-width: 0; padding-top: 28px; }
+  body:has(#id-top .tmenudiv) #id-right > .fiche { box-sizing: border-box; max-width: 100%; min-width: 0; margin-inline: 0; padding-inline: 28px; }
+  body:has(#id-top .tmenudiv):has(#id-container > .side-nav[style*="display: none"]) #id-container,
+  body:has(#id-top .tmenudiv) #id-container:not(:has(> .side-nav #id-left)) { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Fine blue-gray outlines and white surfaces, as in the supplied reference. */
@@ -340,10 +372,13 @@ body table.liste .liste_titre_filter input[type="text"] {
 tr.oddeven { background: #fff; color: var(--indy-ink); }
 tr.oddeven:hover { background: #fffcf8; }
 tr.oddeven td, table.border td, table.border th { border-color: var(--indy-border); }
-table.liste { border-collapse: separate; border-spacing: 0 10px; }
+table.tableforfield { table-layout: fixed; }
+table.tableforfield td { overflow-wrap: break-word; }
+table.tableforfield td[class*="titlefield"] { width: 44%; min-width: 0; white-space: normal; }
+table.liste { border-collapse: separate; border-spacing: 0 8px; }
 table.liste > tbody > tr.oddeven > td {
   background: #fff;
-  padding-block: 20px;
+  padding-block: 12px;
   border-top: 1px solid var(--indy-border);
   border-bottom: 1px solid var(--indy-border);
   font-size: 14px;
@@ -354,7 +389,7 @@ table.liste > tbody > tr.oddeven:hover > td { background: #fffcf8; }
 table.noborder > tbody > tr.oddeven > td { padding-block: 12px; }
 tr.liste_total, tr.liste_total td { background: #fff; color: var(--indy-ink); font-weight: 650; }
 td.amount, td.amountneg, td.amountpayment, .amount, .amountneg { font-variant-numeric: tabular-nums; }
-.div-table-responsive, .div-table-responsive-no-min { border-radius: 0; }
+.div-table-responsive, .div-table-responsive-no-min { border-radius: 0; max-width: 100%; overflow-x: auto; }
 .div-table-responsive { scrollbar-color: #c1cbd3 #fafafa; }
 .info-box, .info-box.info-box-sm, .opened-dash-board-wrap .info-box,
 .boxstats, .boxstats130 {
@@ -373,20 +408,50 @@ td.amount, td.amountneg, td.amountpayment, .amount, .amountneg { font-variant-nu
 .badge { padding: 4px 8px; }
 
 /* Cream selected tabs, slate secondary actions, pink rounded primary actions. */
-div.tabs { padding: 0; margin-bottom: 20px; border: 0; }
-div.tabs .tab, div.tabs a.tab, div.tabs .tabactive, div.tabs a.tabactive {
-  display: inline-block;
+div.tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  padding: 4px 0 8px;
+  margin-bottom: 16px;
+  border: 0;
+}
+/* Dolibarr wraps a.tab in div.tab. Decorate the link only. */
+div.tabs .tabsElem { flex: 0 0 auto; float: none; padding: 0; margin: 0; }
+div.tabs div.tab, div.tabs div.tabactive {
+  display: block;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+div.tabs a.tab {
+  display: block;
+  box-sizing: border-box;
+  min-height: 42px;
   border: 1px solid transparent;
   background: #fff;
   color: var(--indy-muted);
-  border-radius: 24px;
+  border-radius: 999px;
   box-shadow: none;
   font-weight: 500;
-  margin: 3px 5px 3px 0;
-  padding: 10px 16px;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  margin: 0;
+  padding: 10px 14px;
   text-shadow: none;
 }
-div.tabs .tabactive, div.tabs a.tabactive { color: var(--indy-ink); background: var(--indy-nav-active); border-color: #e9ddcc; font-weight: 600; }
+div.tabs .tabactive > a.tab, div.tabs .tabsElemActive a.tab, div.tabs a.tabactive, div.tabs a#active {
+  color: var(--indy-ink); background: var(--indy-nav-active); border-color: #e9ddcc; font-weight: 600;
+}
+div.tabs .tabsElem a.tab::before { content: none; }
 div.tabs a.tab:hover { background: #fdf7ed; color: var(--indy-ink); }
 .butAction, a.butAction, input.button, button.button, a.button,
 .button:not(.bordertransp), input[type="submit"], input[type="button"] {
@@ -433,6 +498,13 @@ input[type="submit"]:disabled, input[type="button"]:disabled {
 }
 button.bordertransp, input.bordertransp, .liste_titre button, .liste_titre input[type="image"] { box-shadow: none; }
 div.tabsAction { padding-block: 15px; }
+body div.tabsAction .butAction {
+  --textbutaction: var(--indy-link);
+  color: var(--indy-link); background: #fff; border: 1px solid #b8c9d6;
+}
+body div.tabsAction > .butAction:first-child { --textbutaction: #fff; color: #fff; background: var(--indy-primary); border-color: transparent; }
+body div.tabsAction .butAction:hover { background: #fff0f5; color: #96274e; }
+body div.tabsAction > .butAction:first-child:hover { background: var(--indy-primary-hover); color: #fff; }
 /* List creation links retain their native labels and destination. */
 .table-fiche-title a.btnTitlePlus { color: var(--indy-primary); }
 .table-fiche-title a.btnTitlePlus:hover { color: var(--indy-primary-hover); }
@@ -472,6 +544,12 @@ body input.button:not(.button-cancel):not(.button-delete), body button.button:no
   color: #fff;
   border: 1px solid transparent;
 }
+body .button:disabled, body input[type="submit"]:disabled, body input[type="button"]:disabled,
+body .butActionRefused {
+  --textbutaction: #64717b;
+  opacity: 1; background: #edf1f4 !important; color: #64717b !important; border: 1px solid #d7e1e9;
+}
+body .butActionDelete { --textbutaction: var(--indy-danger); }
 
 /* Fields, Select2 and calendars retain their native form behavior. */
 input:not([type]), input[type="text"], input[type="password"],
@@ -489,7 +567,7 @@ input[type="url"], input[type="search"], input[type="date"], select, textarea,
   line-height: 1.4;
 }
 input:disabled, textarea:disabled, select:disabled { background: #f5f7f8; color: var(--indy-muted); }
-input::placeholder, textarea::placeholder { color: #78848e; opacity: 1; }
+input::placeholder, textarea::placeholder { color: #647380; opacity: 1; }
 input[type="checkbox"], input[type="radio"] { accent-color: #e34076; }
 textarea { line-height: 1.65; }
 .select2-container--default .select2-selection--single { min-height: 40px; padding: 4px 7px; }
@@ -501,6 +579,36 @@ textarea { line-height: 1.65; }
 .select2-container--default .select2-results__option--highlighted[aria-selected] { background: #fce6ee; color: #7d2445; }
 .ui-datepicker .ui-state-active, .ui-datepicker .ui-state-hover { background: #fff0f5; border-color: #eea0ba; color: #972f52; }
 .fieldrequired { font-weight: 600; }
+/* Eldy gives many .flat fields a fixed 28px height and makes list borders
+ * transparent with !important. Use the real filter rows, not a guessed class. */
+#id-right input:not([type]),
+#id-right input:is([type="text"], [type="password"], [type="email"], [type="number"], [type="tel"], [type="url"], [type="search"], [type="date"]):not(.select2-search__field) {
+  box-sizing: border-box;
+  min-height: 40px;
+  max-width: 100%;
+  border: 1px solid #b8c9d6 !important;
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--indy-ink);
+  background: #fff;
+}
+#id-right input[name^="search_"], #id-right table.liste input.flat {
+  min-height: 36px;
+  padding: 7px 8px;
+}
+#id-right input.maxwidthdate { width: 110px; min-width: 0; }
+#id-right textarea { box-sizing: border-box; max-width: 100%; }
+#id-right input:disabled, #id-right input:read-only { background: #f5f7f8; }
+.select2-container--default .select2-selection--single {
+  box-sizing: border-box;
+  height: 40px;
+  padding: 0;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 38px; padding-inline-start: 10px; color: var(--indy-ink); }
+.select2-container--default .select2-selection--single .select2-selection__arrow { height: 38px; top: 0; }
+.select2-container--default .select2-selection--multiple { box-sizing: border-box; min-height: 40px; }
+.select2-container--default .select2-search--inline .select2-search__field { min-height: 0; padding: 0; }
+.select2-container { max-width: 100%; }
 .warning, .info, .error, .ok, .message { border-radius: 9px; box-shadow: none; padding: 13px 16px; line-height: 1.6; }
 .ui-dialog { border: 1px solid var(--indy-border); border-radius: 14px; box-shadow: 0 16px 60px rgb(39 51 62 / 14%); }
 .ui-dialog .ui-dialog-titlebar { background: var(--indy-nav); border: 0; border-radius: 10px 10px 0 0; padding: 15px 18px; }
@@ -524,36 +632,23 @@ body.bodylogin { background: var(--indy-nav); }
 .login_vertical_align { padding: 24px 12px; }
 .login_main_home { color: var(--indy-muted); }
 
+@media screen and (min-width: 601px) and (max-width: 1099px) {
+  :root { --indy-context-width: 200px; }
+  body:has(#id-top .tmenudiv) #id-container > .side-nav { top: 50px; height: calc(100dvh - 50px); max-height: calc(100dvh - 50px); }
+  #id-right .fichehalfleft, #id-right .fichehalfright { float: none; box-sizing: border-box; width: 100%; padding-inline: 0; }
+  #id-right .table-fiche-title, #id-right .table-fiche-title > tbody,
+  #id-right .table-fiche-title > tbody > tr { display: block; width: 100%; }
+  #id-right .table-fiche-title .col-picto { display: none; }
+  #id-right .table-fiche-title .col-title, #id-right .table-fiche-title .col-right { display: block; width: auto; }
+  #id-right .table-fiche-title .col-right { padding-top: 14px; }
+}
 @media screen and (max-width: 1099px) {
   div.fiche { margin-inline: 18px; }
   #id-right { padding-top: 22px; }
   div.titre { font-size: 24px !important; }
   div.tabBar { padding: 18px; }
 }
-@media screen and (max-width: 600px) {
-  body { font-size: 14px; }
-  div.fiche { margin-inline: 10px; max-width: calc(100vw - 20px); box-sizing: border-box; }
-  div.titre { font-size: 22px !important; white-space: normal !important; }
-  .fiche table.table-fiche-title, .fiche table.table-fiche-title > tbody,
-  .fiche table.table-fiche-title > tbody > tr { display: block; width: 100%; }
-  .fiche table.table-fiche-title .col-picto { display: none; }
-  .fiche table.table-fiche-title .col-title, .fiche table.table-fiche-title .col-right { display: block; width: auto; }
-  .fiche table.table-fiche-title .col-right { padding-top: 14px; }
-  .table-fiche-title .pagination, .table-fiche-title .paginationafterarrows {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-    max-width: 100%;
-    white-space: normal;
-  }
-  .table-fiche-title .paginationafterarrows a.btnTitle { min-width: 36px; }
-  body .table-fiche-title a.btnTitlePlus:not(.refused) { padding: 11px 15px; }
-  .fiche .div-table-responsive, .fiche .div-table-responsive-no-min {
-    max-width: calc(100vw - 20px);
-    overflow-x: auto;
-  }
+@media screen and (max-width: 1099px) {
   /* Native create-third-party markup can still contain four cells when a
    * desktop window is resized. Stack those fields without changing the form. */
   form[name="formsoc"] .tabBar > table.border,
@@ -581,8 +676,46 @@ body.bodylogin { background: var(--indy-nav); }
     max-width: 100% !important;
     box-sizing: border-box;
   }
+  form[name="formprod"] .tabBar > table.border,
+  form[name="formprod"] .tabBar > table.border > tbody { display: block; width: 100%; }
+  form[name="formprod"] .tabBar > table.border > tbody > tr { display: flex; flex-wrap: wrap; height: auto !important; }
+  form[name="formprod"] .tabBar > table.border > tbody > tr > td {
+    display: block; flex: 1 1 100%; box-sizing: border-box;
+    width: 100% !important; min-width: 0 !important; max-width: 100% !important;
+    height: auto !important;
+    padding: 7px 0;
+  }
+  form[name="formprod"] .tabBar input:not([type="hidden"]),
+  form[name="formprod"] .tabBar textarea,
+  form[name="formprod"] .tabBar .select2-selection { min-width: 0 !important; max-width: 100% !important; }
+  form[name="formprod"] .tabBar .select2-container { min-width: 0 !important; max-width: calc(100% - 28px) !important; }
+}
+@media screen and (max-width: 600px) {
+  body { font-size: 14px; }
+  div.fiche { margin-inline: 10px; max-width: calc(100vw - 20px); box-sizing: border-box; }
+  div.titre { font-size: 22px !important; white-space: normal !important; }
+  .fiche table.table-fiche-title, .fiche table.table-fiche-title > tbody,
+  .fiche table.table-fiche-title > tbody > tr { display: block; width: 100%; }
+  .fiche table.table-fiche-title .col-picto { display: none; }
+  .fiche table.table-fiche-title .col-title, .fiche table.table-fiche-title .col-right { display: block; width: auto; }
+  .fiche table.table-fiche-title .col-right { padding-top: 14px; }
+  .table-fiche-title .pagination, .table-fiche-title .paginationafterarrows {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    max-width: 100%;
+    white-space: normal;
+  }
+  .table-fiche-title .paginationafterarrows a.btnTitle { min-width: 36px; }
+  body .table-fiche-title a.btnTitlePlus:not(.refused) { padding: 11px 15px; }
+  .fiche .div-table-responsive, .fiche .div-table-responsive-no-min {
+    max-width: calc(100vw - 20px);
+    overflow-x: auto;
+  }
   div.tabBar { padding: 12px; }
-  div.tabs .tab, div.tabs .tabactive { padding: 9px 12px; }
+  div.tabs a.tab { padding: 9px 12px; }
   .butAction, a.butAction, .butActionDelete, a.butActionDelete { padding: 11px 16px; margin: 5px 3px; }
   .login_table { box-sizing: border-box; width: calc(100vw - 28px); max-width: 410px; padding: 16px 8px; }
   .login_table #login_left, .login_table #login_right { box-sizing: border-box; min-width: 0; width: 100%; padding: 10px 8px; }
