@@ -14,7 +14,7 @@ Le Dockerfile installe les fichiers dans `/var/www/html/theme/indy` et copie les
 
 Thème clair de l'interface web, prévu pour Dolibarr 24.0.2. Il conserve les fonctions, la navigation et les statuts de Dolibarr. Il ne modifie pas les modèles PDF des factures/devis et n'ajoute pas les services d'Indy. Des modules tiers peuvent nécessiter des ajustements CSS. Aucun logo, visuel propriétaire ni connexion au service Indy n'est inclus ; projet indépendant sans affiliation.
 
-Inter est embarquée et servie par Dolibarr, sous licence [SIL Open Font License](indy/fonts/OFL.txt). Les [captures et résultats de validation](https://github.com/hallcyn/dolibarr-indy-theme/blob/main/VALIDATION.md) sont dans le dépôt source. Les tests locaux du thème ont réussi ; GitHub Actions est actuellement refusé avant démarrage par la facturation ou le plafond du compte. La vérification Docker complète doit être relancée après résolution de ce blocage.
+Inter est embarquée et servie par Dolibarr, sous licence [SIL Open Font License](indy/fonts/OFL.txt). La [CI du template a réussi](https://github.com/hallcyn/dolibarr/actions/runs/39075557178) : construction Docker, installation avec MariaDB 11.4, persistance et tests des vrais écrans du thème. Les captures Docker sont dans l'artefact `indy-screenshots` de cette exécution. Les [captures locales et résultats détaillés](https://github.com/hallcyn/dolibarr-indy-theme/blob/main/VALIDATION.md) sont aussi dans le dépôt source. Le workflow de ce dépôt source privé reste bloqué avant démarrage par la facturation ou le plafond GitHub Actions ; ce blocage n'affecte pas la validation publique du template.
 
 ## Mettre à jour la copie
 
