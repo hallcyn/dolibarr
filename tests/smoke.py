@@ -14,7 +14,10 @@ def compose(*args, **kwargs):
 
 
 def php(code):
-    return compose('exec', '-T', 'dolibarr', 'php', '-r', code, capture_output=True, text=True).stdout
+    try:
+        return compose('exec', '-T', 'dolibarr', 'php', '-r', code, capture_output=True, text=True).stdout
+    except subprocess.CalledProcessError as error:
+        raise RuntimeError(error.stderr or error.stdout or 'PHP check failed') from error
 
 
 def healthy():
@@ -50,7 +53,8 @@ php('require "/var/www/html/conf/conf.php"; '
     'if ($dolibarr_main_instance_unique_id !== getenv("DOLI_INSTANCE_UNIQUE_ID")) exit(2); '
     '$db = new mysqli(getenv("DOLI_DB_HOST"), getenv("DOLI_DB_USER"), getenv("DOLI_DB_PASSWORD"), getenv("DOLI_DB_NAME")); '
     '$db->query("CREATE TABLE railway_smoke (marker VARCHAR(32))"); '
-    '$db->query("INSERT INTO railway_smoke VALUES (\"persistent\")"); '
+    '$statement = $db->prepare("INSERT INTO railway_smoke VALUES (?)"); '
+    '$marker = "persistent"; $statement->bind_param("s", $marker); $statement->execute(); '
     'file_put_contents("/var/www/documents/railway-smoke.txt", "document"); '
     'file_put_contents("/var/www/html/custom/railway-smoke.txt", "module"); '
     'file_put_contents("/data/sessions/railway-smoke.txt", "session");')
