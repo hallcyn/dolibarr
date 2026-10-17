@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import reviewed, immutable theme sources from the canonical public repository."""
+"""Import reviewed, immutable theme sources from the canonical repository."""
 import argparse
 import hashlib
 import json

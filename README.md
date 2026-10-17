@@ -14,7 +14,7 @@ Déployez **Dolibarr ERP & CRM** avec une base **MariaDB privée**, une installa
 
 - Image officielle `dolibarr/dolibarr:24.0.2`, adaptée sans recopier le code de Dolibarr.
 - MariaDB `11.4` LTS, utilisateur applicatif dédié, réseau privé et réglages sobres.
-- [Thème Indy](theme/README.md) embarqué : interface claire, cartes et formulaires modernisés, activation dans les réglages d’affichage.
+- [Thème Indy](theme/README.md) embarqué : menu crème, espace blanc et boutons roses, cartes et formulaires modernisés, activation dans les réglages d’affichage.
 - Secrets différents générés pour chaque déploiement du template ; aucun mot de passe universel.
 - Documents, PDF, pièces jointes, modules externes et sessions PHP persistants.
 - Configuration reconstruite depuis les variables ; clé d’instance stable et protégée contre une modification accidentelle.

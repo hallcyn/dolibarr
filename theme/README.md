@@ -1,6 +1,6 @@
 # Thème Indy
 
-Cette image embarque le thème communautaire [Indy pour Dolibarr](https://github.com/hallcyn/dolibarr-indy-theme) : navigation prune, accents violets, fond lavande, cartes et formulaires modernisés. Le code se trouve dans [indy/](indy/), sous licence [GPL v3 ou ultérieure](LICENSE).
+Cette image embarque le thème communautaire [Indy pour Dolibarr](https://github.com/hallcyn/dolibarr-indy-theme) : menu vertical crème, fond blanc, boutons roses en pilule, cartes et formulaires aux contours fins. Le code se trouve dans [indy/](indy/), sous licence [GPL v3 ou ultérieure](LICENSE).
 
 ## Activer
 
@@ -12,9 +12,11 @@ Le Dockerfile installe les fichiers dans `/var/www/html/theme/indy` et copie les
 
 ## Portée
 
+Version **1.1.0**. Sur ordinateur à partir de 1100 px, le menu principal standard de Dolibarr est présenté dans une colonne crème et les sous-menus dans une barre contextuelle. Les écrans plus petits utilisent la navigation native.
+
 Thème clair de l'interface web, prévu pour Dolibarr 24.0.2. Il conserve les fonctions, la navigation et les statuts de Dolibarr. Il ne modifie pas les modèles PDF des factures/devis et n'ajoute pas les services d'Indy. Des modules tiers peuvent nécessiter des ajustements CSS. Aucun logo, visuel propriétaire ni connexion au service Indy n'est inclus ; projet indépendant sans affiliation.
 
-Inter est embarquée et servie par Dolibarr, sous licence [SIL Open Font License](indy/fonts/OFL.txt). La [CI du template a réussi](https://github.com/hallcyn/dolibarr/actions/runs/39075557178) : construction Docker, installation avec MariaDB 11.4, persistance et tests des vrais écrans du thème. Les captures Docker sont dans l'artefact `indy-screenshots` de cette exécution. Les [captures locales et résultats détaillés](https://github.com/hallcyn/dolibarr-indy-theme/blob/main/VALIDATION.md) sont aussi dans le dépôt source. Le workflow de ce dépôt source privé reste bloqué avant démarrage par la facturation ou le plafond GitHub Actions ; ce blocage n'affecte pas la validation publique du template.
+Inter est embarquée et servie par Dolibarr, sous licence [SIL Open Font License](indy/fonts/OFL.txt). La [CI du template](https://github.com/hallcyn/dolibarr/actions/workflows/verify.yml) construit l'image Docker, vérifie l'installation avec MariaDB 11.4, la persistance et les vrais écrans du thème : menu vertical, compte utilisateur, actions, vues compactes et tiroir mobile. Les captures sont dans l'artefact `indy-screenshots` des exécutions. Les [captures locales et résultats détaillés](https://github.com/hallcyn/dolibarr-indy-theme/blob/main/VALIDATION.md) sont aussi dans le dépôt source.
 
 ## Mettre à jour la copie
 
