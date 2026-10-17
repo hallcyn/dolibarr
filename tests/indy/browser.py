@@ -65,6 +65,7 @@ with sync_playwright() as p:
         'inventories': '/product/inventory/list.php?mainmenu=products',
         'shipments': '/expedition/list.php?mainmenu=products',
         'orders': '/commande/list.php?mainmenu=commercial',
+        'billable-orders': '/commande/list.php?mainmenu=commercial&search_status=-3&search_billed=0&contextpage=billableorders',
         'order-lines': '/commande/list_det.php?mainmenu=commercial',
         'order-card': '/commande/card.php?id=1&mainmenu=commercial',
         'new-order': '/commande/card.php?action=create&mainmenu=commercial',
