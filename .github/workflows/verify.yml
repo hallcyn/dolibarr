@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   integration:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -25,11 +25,29 @@ jobs:
         run: docker compose build --pull
       - name: PHP and Apache syntax
         run: |
-          docker compose run --rm --no-deps --entrypoint bash dolibarr -c 'find /opt/railway -name "*.php" -print0 | xargs -0 -n1 php -l; apache2ctl configtest'
+          docker compose run --rm --no-deps --entrypoint bash dolibarr -c 'find /opt/railway /var/www/html/theme/indy -name "*.php" -print0 | xargs -0 -n1 php -l; apache2ctl configtest'
       - name: Start services
         run: docker compose up -d
       - name: Check installation and durable state
         run: python3 tests/smoke.py
+      - name: Verify Indy on real Dolibarr screens
+        run: |
+          python3 -m pip install playwright==1.58.0
+          python3 -m playwright install --with-deps chromium
+          docker compose cp tests/indy/seed.php dolibarr:/tmp/indy-seed.php
+          docker compose exec -T dolibarr php /tmp/indy-seed.php
+          python3 - <<'PY'
+          import os, subprocess
+          from pathlib import Path
+          settings = dict(line.split('=', 1) for line in Path('.env').read_text().splitlines() if line and not line.startswith('#'))
+          subprocess.run(['python3', 'tests/indy/browser.py'], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: indy-screenshots
+          path: artifacts/
+          if-no-files-found: ignore
       - name: Logs on failure
         if: failure()
         run: |

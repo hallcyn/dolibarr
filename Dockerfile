@@ -9,6 +9,9 @@ LABEL org.opencontainers.image.title="Dolibarr on Railway" \
       org.opencontainers.image.description="Dolibarr with persistent files, private MariaDB, health checks and optional cron" \
       org.opencontainers.image.source="https://github.com/hallcyn/dolibarr"
 
+COPY theme/ /opt/indy-theme/
+RUN bash /opt/indy-theme/install.sh /var/www/html
+
 COPY docker/ /opt/railway/
 COPY scripts/backup.sh /usr/local/bin/dolibarr-backup
 RUN chmod +x /opt/railway/entrypoint.sh /usr/local/bin/dolibarr-backup \

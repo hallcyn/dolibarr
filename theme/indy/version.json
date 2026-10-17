@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "name": "indy",
+  "dolibarr_tested": ["24.0.2"],
+  "source": "https://github.com/hallcyn/dolibarr-indy-theme",
+  "license": "GPL-3.0-or-later"
+}

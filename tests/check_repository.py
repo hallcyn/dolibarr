@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Check references and generated documentation before any Docker execution."""
 import json
+import hashlib
 import re
 import subprocess
 from pathlib import Path
@@ -12,6 +13,14 @@ compose = yaml.safe_load((root / 'compose.yaml').read_text())
 dockerfile = (root / 'Dockerfile').read_text()
 version = re.search(r'FROM dolibarr/dolibarr:([\d.]+)', dockerfile).group(1)
 assert f'DOLI_VERSION={version}' in dockerfile
+assert 'COPY theme/ /opt/indy-theme/' in dockerfile
+assert 'bash /opt/indy-theme/install.sh /var/www/html' in dockerfile
+theme = json.loads((root / 'theme/UPSTREAM.json').read_text())
+assert re.fullmatch(r'[0-9a-f]{40}', theme['commit'])
+assert theme['repository'] == 'hallcyn/dolibarr-indy-theme'
+for path, checksum in theme['sha256'].items():
+    assert hashlib.sha256((root / path).read_bytes()).hexdigest() == checksum, f'Theme snapshot changed: {path}'
+assert json.loads((root / 'theme/indy/version.json').read_text())['version'] == theme['version']
 assert spec['services']['MariaDB']['source']['image'] == compose['services']['mariadb']['image']
 assert spec['services']['Dolibarr']['volume']['mountPath'] == '/data'
 assert spec['services']['MariaDB']['volume']['mountPath'] == '/var/lib/mysql'
@@ -28,6 +37,6 @@ for document in [root / 'README.md', *root.glob('docs/*.md')]:
             continue
         assert (document.parent / link.split('#')[0]).exists(), (document, link)
 subprocess.run(['python3', 'scripts/render-template.py', '--check'], cwd=root, check=True)
-for script in [*root.glob('docker/*.sh'), *root.glob('scripts/*.sh')]:
+for script in [*root.glob('docker/*.sh'), *root.glob('scripts/*.sh'), root / 'theme/install.sh']:
     subprocess.run(['bash', '-n', str(script)], check=True)
 print('PASS: versions, storage paths, references, generated documentation, local links and shell syntax.')
