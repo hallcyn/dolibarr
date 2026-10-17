@@ -5,16 +5,18 @@
 | Champ | Texte prêt à copier |
 | --- | --- |
 | Name | **Dolibarr** |
-| Short description | Deploy Dolibarr ERP & CRM with private MariaDB, persistent files and modules, automatic setup, and optional scheduled jobs. |
-| Suggested slug, if editable | `dolibarr` ou `dolibarr-mariadb` si le premier est indisponible |
-| Categories / tags | ERP, CRM, Business, PHP, MariaDB, Invoicing, Inventory — sélectionner parmi ceux proposés |
+| Short description | Dolibarr ERP & CRM with private MariaDB, persistent files and auto setup. |
+| Template URL | https://railway.com/deploy/YXlVeG |
+| Template code | `YXlVeG` |
+| Category | `Other`, sélectionnée dans l’éditeur actuel |
+| Keywords / GitHub topics | ERP, CRM, PHP, MariaDB, Invoicing, Inventory |
 | Source repository | `https://github.com/hallcyn/dolibarr` |
 | Documentation | `https://github.com/hallcyn/dolibarr/blob/main/docs/RAILWAY.md` |
 | Project website | `https://www.dolibarr.org` |
 | Support / issues | `https://github.com/hallcyn/dolibarr/issues` |
 | Long description / README | [TEMPLATE-README.md](TEMPLATE-README.md), à copier intégralement |
 | Service names | `Dolibarr`, `MariaDB` |
-| Logo | Logo officiel Dolibarr, en respectant les conditions d’utilisation de la marque |
+| Logo | https://raw.githubusercontent.com/Dolibarr/dolibarr/develop/htdocs/theme/dolibarr_256x256_color.png |
 
 Ne pas ajouter « Official », « Free hosting », « Unlimited », « Fully managed » ou « Production ready » à la fiche. Le logiciel est officiel ; ce template est communautaire. L’hébergement, le suivi de l’installation et la vérification des sauvegardes restent à la charge de la personne qui déploie.
 
@@ -28,7 +30,7 @@ Si GitHub ne les remplit pas automatiquement, ouvrir l’engrenage de la section
 Dolibarr ERP & CRM on Railway: private MariaDB, persistent documents and modules, automatic setup, backups, and a complete deployment guide.
 ```
 
-**Website :** utiliser l’URL réelle du template après création.
+**Website :** `https://railway.com/deploy/YXlVeG`.
 
 **Topics :**
 
@@ -38,4 +40,10 @@ dolibarr railway railway-template erp crm invoicing inventory php mariadb docker
 
 ## Bouton de déploiement
 
-Railway fournit le code après création du template. Utiliser ce code réel, puis ajouter le bouton décrit dans [RAILWAY.md](RAILWAY.md). Ne pas publier un bouton avec un code inventé ou vers le simple écran de création d’un service GitHub : il manquerait alors la base et les volumes.
+Le bouton réel est déjà ajouté au README :
+
+```markdown
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/YXlVeG)
+```
+
+Le template est partageable par ce lien. Sa fiche est enregistrée avec les sections imposées par Railway, mais le référencement au marketplace reste à effectuer après validation d’une instance réelle. Les métadonnées GitHub About ci-dessus sont proposées ; elles ne sont pas modifiées automatiquement par les fichiers du dépôt.

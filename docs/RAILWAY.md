@@ -2,6 +2,8 @@
 
 Ce guide permet d’enregistrer un véritable template **Dolibarr + MariaDB**, puis de le déployer. Tout se fait depuis le navigateur. Les intitulés de l’interface Railway peuvent évoluer.
 
+**Le template Hallcyn est déjà créé : [Déployer Dolibarr](https://railway.com/deploy/YXlVeG).** Pour l’utiliser, commencer à la section 5. Les sections 1 à 4 expliquent comment le reproduire ou le maintenir. Son [éditeur](https://railway.com/workspace/templates/1933a7e2-1c1e-4664-9dd3-92dc696d7645) est accessible aux membres autorisés du workspace. Le lien de partage fonctionne ; le référencement au marketplace attend la validation d’une instance réelle.
+
 ## 1. Ouvrir l’éditeur de template
 
 1. Se connecter à [Railway](https://railway.com).
@@ -34,6 +36,8 @@ Dans **Settings → Start Command**, copier :
 docker-entrypoint.sh mariadbd --bind-address=0.0.0.0,:: --innodb-buffer-pool-size=128M --max-connections=30 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 ```
 
+Cliquer **Save** après la saisie. Les réglages du service doivent ensuite être enregistrés avec **Apply** dans la barre des changements du template.
+
 L’image conserve son entrypoint officiel. La commande explicite reste compatible avec Railway et active l’écoute sur IPv6 pour son réseau privé. Les 128 Mo sont la taille du cache InnoDB, pas une limite totale de mémoire.
 
 Dans **Variables → Raw Editor**, copier le bloc **MariaDB** de [VARIABLES.md](VARIABLES.md). Ajouter aussi les descriptions des variables dans l’éditeur. Les deux mots de passe sont générés indépendamment ; ne jamais remplacer ces générateurs par `admin`, `root` ou un secret personnel.
@@ -53,7 +57,7 @@ Cliquer **Add New → GitHub Repo**, connecter GitHub à Railway si demandé et 
 | Start Command | **Laisser vide** pour conserver l’entrypoint et le CMD de l’image |
 | Pre-deploy Command | Laisser vide : les volumes ne sont pas disponibles pour y initialiser les données |
 | Healthcheck Path | `/railway-health.php` |
-| Healthcheck Timeout | `300` secondes |
+| Healthcheck Timeout | `300` secondes, valeur par défaut Railway |
 | Volume | **`/data`** |
 | Public Networking | HTTP activé, domaine généré |
 | Target Port | **`80`** |
@@ -72,12 +76,12 @@ Les valeurs à personnaliser à la création sont principalement `DOLI_COMPANY_N
 - **Nom** : `Dolibarr`.
 - **Description** : copier celle de [LISTING.md](LISTING.md).
 - **Présentation / README** : copier le contenu de [TEMPLATE-README.md](TEMPLATE-README.md).
-- **Catégories / tags** : choisir les catégories disponibles les plus proches d’ERP, CRM, PHP, MariaDB et Business.
+- **Catégorie** : `Other` dans l’éditeur actuel. Utiliser ERP, CRM, PHP et MariaDB dans les textes et les topics GitHub.
 - **Source / site du projet** : `https://github.com/hallcyn/dolibarr`.
 - **Icône** : utiliser le logo officiel Dolibarr en respectant son identité ; il ne faut pas laisser croire que le template est officiel.
 - **Démo publique** : facultative. Ne jamais pointer une démo vers les données réelles de l’entreprise.
 
-Cliquer **Create Template**. Copier et conserver l’URL fournie par Railway. À ce stade, le template peut être partagé avec cette URL ; l’ajout au catalogue public passe ensuite par **Publish**.
+Dans **Settings**, cliquer **Stage changes** pour les informations de base. Dans **Marketplace**, choisir la catégorie et coller le README en conservant ses sections obligatoires. Cliquer **Apply** pour enregistrer les changements, puis **Share** pour obtenir le lien. À ce stade, le template peut être partagé sans être référencé au marketplace. Notre lien est `https://railway.com/deploy/YXlVeG`.
 
 ## 5. Déployer une instance de validation
 
@@ -110,15 +114,15 @@ Le workflow GitHub vérifie l’image et Compose ; les étapes ci-dessus vérifi
 
 ## 7. Publier et ajouter le bouton GitHub
 
-Dans les paramètres du workspace, ouvrir **Templates → votre template → Publish**. La documentation Railway indique que la publication l’ajoute au catalogue. Respecter les éventuelles demandes du formulaire.
+Après la validation réelle, ouvrir **Templates → Dolibarr → Marketplace → Publish to marketplace**. Les exigences de fiche sont déjà remplies. Cette action ajoute le template au catalogue ; elle est distincte de son partage par lien, déjà disponible.
 
-Une fois le vrai code connu, ajouter en haut du README du dépôt, en remplaçant `CODE_DU_TEMPLATE` :
+Le bouton suivant, avec le vrai code, est déjà ajouté en haut du README :
 
 ```markdown
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/CODE_DU_TEMPLATE?utm_medium=integration&utm_source=button&utm_campaign=dolibarr)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/YXlVeG)
 ```
 
-Cette ligne est volontairement un exemple non cliquable tant que le template n’existe pas. Un lien vers le dépôt seul ne déploierait pas automatiquement MariaDB et les deux volumes.
+Ce lien ouvre le template complet avec MariaDB et les deux volumes. Il n’engage aucune consommation tant que le déploiement n’est pas lancé.
 
 ## Domaine personnel
 

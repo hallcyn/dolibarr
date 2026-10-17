@@ -1,12 +1,14 @@
 # Dolibarr sur Railway
 
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/YXlVeG)
+
 [![Vérification Docker](https://github.com/hallcyn/dolibarr/actions/workflows/verify.yml/badge.svg)](https://github.com/hallcyn/dolibarr/actions/workflows/verify.yml)
 
 Déployez **Dolibarr ERP & CRM** avec une base **MariaDB privée**, une installation automatique et des fichiers conservés après redéploiement. Guide en français, textes du catalogue en anglais.
 
-**Commencer : [Créer le template Railway, pas à pas](docs/RAILWAY.md).**
+**Commencer : [Déployer le template](https://railway.com/deploy/YXlVeG) · [Guide complet](docs/RAILWAY.md).**
 
-> Statut : dépôt préparé pour créer le template. Le lien « Deploy on Railway » sera ajouté après sa création dans Railway et un déploiement de validation. Ce dépôt ne crée aucun service facturé à lui seul.
+> Statut : template créé dans le workspace Hallcyn, partageable par lien et prêt à déployer. Les tests Docker ont réussi ; aucune instance Railway n’a encore été lancée. Le template n’est pas encore référencé dans le marketplace. Voir [VALIDATION.md](VALIDATION.md).
 
 ## Ce qui est inclus
 
@@ -85,7 +87,7 @@ Les volumes nommés restent après `docker compose down`. L’option `down -v` l
 
 Une instance et une base, sans haute disponibilité : un redéploiement avec volume implique une courte interruption. Le contrôle HTTP Railway sert à valider le déploiement ; ajouter un moniteur externe si une surveillance continue est nécessaire. Aucun serveur SMTP, fournisseur d’e-mails, sauvegarde hors site automatique ou module commercial n’est installé implicitement. Voir [les opérations](docs/OPERATIONS.md).
 
-Le workflow vérifie le démarrage avec MariaDB, l’installation, la persistance après recréation, les secrets de configuration et la sauvegarde. La validation spécifique à Railway doit ensuite être effectuée avec la checklist du guide avant publication du template. Une CI réussie ne prouve pas que les volumes ou le domaine ont été correctement configurés dans votre projet Railway.
+Le [workflow réussi](https://github.com/hallcyn/dolibarr/actions/runs/39063382223) vérifie le démarrage avec MariaDB, l’installation, la persistance après recréation, les secrets de configuration et la sauvegarde. L’aperçu de déploiement Railway affiche les deux services, leurs volumes et zéro valeur manquante. La validation d’une instance réelle doit encore être effectuée avec la checklist du guide avant publication au marketplace. Une CI réussie ne prouve pas le fonctionnement d’une instance Railway.
 
 ## Sources et licences
 

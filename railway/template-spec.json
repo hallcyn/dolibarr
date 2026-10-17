@@ -2,7 +2,7 @@
   "format": "hallcyn-railway-template-guide-v1",
   "notice": "Reference for the Railway template editor. This is NOT a Railway import format. The editor creates the deployable multi-service template.",
   "name": "Dolibarr",
-  "description": "Deploy Dolibarr ERP & CRM with private MariaDB, persistent files and modules, automatic setup, and optional scheduled jobs.",
+  "description": "Dolibarr ERP & CRM with private MariaDB, persistent files and auto setup.",
   "readme": "docs/TEMPLATE-README.md",
   "repository": "https://github.com/hallcyn/dolibarr",
   "services": {
@@ -158,5 +158,10 @@
         }
       }
     }
-  }
+  },
+  "templateUrl": "https://railway.com/deploy/YXlVeG",
+  "templateCode": "YXlVeG",
+  "templateId": "1933a7e2-1c1e-4664-9dd3-92dc696d7645",
+  "category": "Other",
+  "marketplacePublished": false
 }
