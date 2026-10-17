@@ -1,0 +1,54 @@
+name: Check upstream versions
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/check-versions.yml'
+      - 'scripts/check-versions.py'
+      - 'tests/test_versions.py'
+      - 'Dockerfile'
+      - 'compose.yaml'
+      - 'railway/template-spec.json'
+  pull_request:
+    paths:
+      - '.github/workflows/check-versions.yml'
+      - 'scripts/check-versions.py'
+      - 'tests/test_versions.py'
+      - 'Dockerfile'
+      - 'compose.yaml'
+      - 'railway/template-spec.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: versions-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test release selection and issue lifecycle
+        run: python3 -m unittest discover -s tests -p 'test_versions.py' -v
+
+  monitor:
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check stable images and maintain update issues
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/check-versions.py --write-issues

@@ -50,6 +50,12 @@ Un dépôt contenant un Dockerfile ne constitue pas, à lui seul, un template mu
 | Sauvegarder, restaurer, mettre à jour, activer cron / e-mails | [OPERATIONS.md](docs/OPERATIONS.md) |
 | Configurer une petite activité et le stock de vin | [PREMIERS-PAS.md](docs/PREMIERS-PAS.md) |
 
+## Surveillance des versions
+
+Le workflow [Check upstream versions](https://github.com/hallcyn/dolibarr/actions/workflows/check-versions.yml) vérifie chaque jour à **05:17 UTC** les images stables Dolibarr et les versions MariaDB LTS encore maintenues. Il crée une issue par composant à examiner, actualise l’issue existante et la ferme lorsque les références du dépôt sont à jour. Il peut aussi être lancé manuellement depuis **Actions → Check upstream versions → Run workflow**.
+
+Les mises à jour restent manuelles : aucune version du dépôt ni aucun service Railway n’est changé par cette CI. [Fonctionnement et limites](docs/OPERATIONS.md#surveillance-automatique-des-versions).
+
 ## Combien coûte Railway ?
 
 Dolibarr et ce template sont gratuits ; **l’hébergement ne l’est pas nécessairement**. Au 17 octobre 2026, Railway annonce Hobby à **5 $/mois minimum** avec 5 $ d’usage inclus et Pro à **20 $/mois minimum** avec 20 $ inclus. Vérifier le plan adapté à votre usage, les taxes et les tarifs actuels avant de souscrire.

@@ -88,6 +88,29 @@ Pour une archive portable : créer un projet séparé, couper son accès public 
 
 Ne pas bricoler une restauration directement sur l’instance de production sans avoir validé l’archive et la procédure sur une copie.
 
+## Surveillance automatique des versions
+
+Le workflow **Check upstream versions** s’exécute chaque jour à **05:17 UTC**, à la demande depuis GitHub Actions et après un changement des sources surveillées sur `main`. Les pull requests exécutent uniquement les tests du moniteur, sans permission d’écrire des issues.
+
+- **Dolibarr** : compare la version du Dockerfile aux tags numériques stables publiés dans l’image officielle. Les tags `develop`, RC et variantes PHP sont ignorés. Les versions sont comparées numériquement et l’image doit exister pour Linux amd64.
+- **MariaDB** : consulte l’API de la Fondation MariaDB, sélectionne la branche LTS stable maintenue la plus récente et vérifie son image Docker. Une nouvelle branche ouvre une demande d’examen, même si `11.4` reste maintenue ; cela ne prouve pas qu’une migration est nécessaire ou compatible. Une fin de support est signalée dans l’issue.
+- Le tag MariaDB `11.4` est flottant : il reçoit les correctifs de sa branche au prochain pull. Le moniteur ne connaît pas le patch exécuté par une instance Railway et ne détecte pas les seuls changements de digest d’un tag inchangé. Un tag de patch précis est comparé au patch disponible.
+
+Une issue créée par `github-actions[bot]` est maintenue par composant. Une nouvelle version actualise son titre et son corps, sans commentaire quotidien ni nouvelle issue tant qu’elle reste ouverte. Les échanges doivent rester dans les commentaires. Une issue fermée comme **not planned** ignore cette version précise. Une version ultérieure peut déclencher une nouvelle issue. Lorsque le dépôt est à jour, l’issue ouverte est fermée automatiquement au prochain contrôle.
+
+L’alerte contient les références actuelles et disponibles, les sources et une checklist : notes de version, compatibilité, sauvegarde, migration, CI puis mise à jour explicite du template. **Le moniteur ne met rien à jour et ne déploie aucun service.** Il n’utilise aucun secret Railway. Le jeton temporaire `GITHUB_TOKEN`, fourni par GitHub, reçoit uniquement `contents: read` et `issues: write` pour le job d’alerte.
+
+Si une API est indisponible, le contrôle échoue ; les issues existantes restent inchangées. Le résumé de l’exécution affiche les versions trouvées. Une nouvelle version détectée fait réussir le contrôle et ouvre une issue : ce n’est pas une panne de l’application.
+
+Pour vérifier sans écrire d’issue :
+
+```bash
+python3 scripts/check-versions.py
+python3 -m unittest discover -s tests -p 'test_versions.py' -v
+```
+
+GitHub peut retarder une tâche planifiée et désactive les workflows planifiés des dépôts publics après 60 jours sans activité. Vérifier que ce workflow reste actif dans l’onglet Actions. Voir [les événements planifiés GitHub](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule), [les permissions du jeton](https://docs.github.com/en/actions/tutorials/authenticate-with-github_token), [l’API MariaDB](https://mariadb.org/downloads-rest-api/) et [les tags Dolibarr](https://hub.docker.com/r/dolibarr/dolibarr/tags).
+
 ## Mise à jour de Dolibarr
 
 Les deux occurrences `24.0.2` du Dockerfile sont liées : la source de l’image et la variable `DOLI_VERSION` doivent correspondre. Ce choix évite qu’un redémarrage récupère silencieusement une nouvelle version majeure. Le tag MariaDB `11.4` accepte des correctifs de cette branche ; pour une reproductibilité stricte, choisir un patch précis ou un digest après validation.
