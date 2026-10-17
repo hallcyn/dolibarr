@@ -34,6 +34,9 @@ with sync_playwright() as p:
     rail = page.locator('#id-top').bounding_box()
     assert rail['x'] == 0 and rail['width'] == 108, rail
     assert page.locator('#id-top').evaluate('e => getComputedStyle(e).position') == 'fixed'
+    page.locator('#blockvmenusearch .select2-selection').click()
+    assert page.locator('.select2-dropdown').is_visible(), 'Global search is blocked by the main menu layer'
+    page.keyboard.press('Escape')
     page.locator('#topmenu-login-dropdown > a.dropdown-toggle').click()
     account = page.locator('#topmenu-login-dropdown .dropdown-menu')
     assert account.is_visible(), 'Account menu no longer opens from the vertical rail'
