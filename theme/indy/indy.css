@@ -675,7 +675,9 @@ textarea { line-height: 1.65; }
 }
 #id-right input.maxwidthdate { width: 110px; min-width: 0; }
 #id-right textarea { box-sizing: border-box; max-width: 100%; }
-#id-right input:disabled, #id-right input:read-only { background: #f5f7f8; }
+/* :read-only also matches submit/button controls. Only actual readonly
+ * fields should receive this surface; active actions keep their own colors. */
+#id-right input:disabled, #id-right input[readonly], #id-right textarea[readonly] { background: #f5f7f8; }
 .select2-container--default .select2-selection--single {
   box-sizing: border-box;
   height: 40px;

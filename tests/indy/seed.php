@@ -12,7 +12,7 @@ require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
 require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
 
 $user->fetch(0, 'admin');
-foreach (array('modIndyUI', 'modSociete', 'modFacture', 'modPropale', 'modBanque', 'modService', 'modProduct', 'modStock', 'modCommande', 'modExpedition') as $module) {
+foreach (array('modIndyUI', 'modImport', 'modSociete', 'modFacture', 'modPropale', 'modBanque', 'modService', 'modProduct', 'modStock', 'modCommande', 'modExpedition') as $module) {
     $result = activateModule($module);
     if (!empty($result['errors'])) {
         throw new RuntimeException(json_encode($result['errors']));
@@ -85,3 +85,10 @@ if ($order->create($user) <= 0 || $order->addline('Commande fictive', 24, 6, 20,
     throw new RuntimeException($order->error);
 }
 echo "Seeded six fictional clients and invoices, a product, warehouse, stock and draft order.\n";
+
+// Read-only import-summary regression: never run the simulation or import.
+require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+dol_mkdir($conf->import->dir_temp);
+if (file_put_contents($conf->import->dir_temp.'/indy-button-contrast.csv', "Nom\nClient fictif de contrôle\n") === false) {
+    throw new RuntimeException('Cannot write disposable import fixture');
+}

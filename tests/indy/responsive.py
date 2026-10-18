@@ -52,8 +52,10 @@ def screenshot(page, name):
     # Keep real touch viewports for the audit; desktop references stay full.
     # 1.5.5 intentionally redesigns the rail utilities. Compare the accepted
     # workspace and context menu pixels, excluding only that main rail.
+    # 1.5.6 intentionally repairs action-input colors. Mask only those inputs;
+    # their native semantics and contrast are checked in usability.py.
     if name.startswith('desktop-') and not name.startswith('desktop-login-'):
-        return page.locator('#id-container').screenshot(path=str(out / name), animations='disabled', caret='hide', mask=[page.locator('canvas')])
+        return page.locator('#id-container').screenshot(path=str(out / name), animations='disabled', caret='hide', mask=[page.locator('canvas'), page.locator('#id-right input:is([type=submit],[type=button],[type=reset]):not(:disabled)')])
     return page.screenshot(path=str(out / name), full_page=name.startswith('desktop-'), animations='disabled', caret='hide',
                            mask=[page.locator('canvas')] if name.startswith('desktop-') else [])
 
@@ -103,7 +105,14 @@ with sync_playwright() as p:
     browser = p.chromium.launch(executable_path=os.environ.get('PLAYWRIGHT_CHROMIUM_EXECUTABLE'))
     comparator = browser.new_page()
     auth = browser.new_context(viewport={'width': 1440, 'height': 1000}, locale='fr-FR')
-    assert auth.request.get(base + '/theme/indy/indy.css').text().startswith(old_css), 'Accepted desktop CSS was modified'
+    # Whitelist the single historical selector repair; all other accepted CSS
+    # must still be present byte-for-byte before the responsive additions.
+    repaired_reference = old_css.replace(
+        '#id-right input:disabled, #id-right input:read-only { background: #f5f7f8; }',
+        '/* :read-only also matches submit/button controls. Only actual readonly\n'
+        ' * fields should receive this surface; active actions keep their own colors. */\n'
+        '#id-right input:disabled, #id-right input[readonly], #id-right textarea[readonly] { background: #f5f7f8; }')
+    assert auth.request.get(base + '/theme/indy/indy.css').text().startswith(repaired_reference), 'Accepted desktop CSS was modified'
     assert auth.request.get(base + '/theme/indy/indy.js').text().startswith(old_js), 'Accepted desktop JS was modified'
     login = auth.new_page()
     login.goto(base + '/')

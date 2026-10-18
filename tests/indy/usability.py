@@ -43,6 +43,68 @@ with sync_playwright() as p:
  b=p.chromium.launch(executable_path=os.environ.get('PLAYWRIGHT_CHROMIUM_EXECUTABLE'))
  page=b.new_page(viewport={'width':1440,'height':1000},locale='fr-FR')
  page.goto(base+'/');page.locator('#username').fill('admin');page.locator('#password').fill(os.environ['DOLIBARR_TEST_PASSWORD']);page.locator('input[type=submit]').click();page.wait_for_load_state('networkidle')
+ # 1.5.6: audit native action controls, including the reported import summary.
+ # Never submit these forms: the fixture is disposable, but this is a visual audit.
+ action_routes = {
+  'import-summary': '/imports/import.php?step=4&datatoimport=societe_1&format=csv&filetoimport=indy-button-contrast.csv&separator=%3B',
+  'create-invoice': '/compta/facture/card.php?action=create&socid=1',
+  'create-client': '/societe/card.php?action=create',
+  'create-product': '/product/card.php?action=create&type=0',
+  'edit-product': '/product/card.php?id=1&action=edit',
+ }
+ action_selector = '#id-right input:is([type=submit],[type=button],[type=reset]), #id-right button, #id-right a:is(.button,.butAction,.butActionDelete,.butActionRefused)'
+ contrast = r'''e=>{
+  const rgba=s=>{const n=s.match(/[\d.]+/g).map(Number);return [n[0],n[1],n[2],n.length>3?n[3]:1]};
+  const over=(a,b)=>a.slice(0,3).map((v,i)=>v*a[3]+b[i]*(1-a[3]));
+  const lum=c=>{c=c.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4});return c[0]*.2126+c[1]*.7152+c[2]*.0722};
+  const chain=[];let opacity=1;
+  for(let p=e;p;p=p.parentElement){chain.unshift(p);opacity*=+getComputedStyle(p).opacity;}
+  let bg=[255,255,255];for(const p of chain)bg=over(rgba(getComputedStyle(p).backgroundColor),bg);
+  const style=getComputedStyle(e),fg=over(rgba(style.color),bg),a=lum(fg),b=lum(bg);
+  return {label:e.value||e.textContent.trim(),ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05),opacity,
+    disabled:e.matches(':disabled,.butActionRefused,[aria-disabled=true]'),background:style.backgroundColor,color:style.color};
+ }'''
+ action_results=[]
+ for width in (1440,768,390):
+  page.set_viewport_size({'width':width,'height':1000})
+  for name,path in action_routes.items():
+   response=page.goto(base+path,wait_until='networkidle')
+   assert response.status==200 and page.locator('#id-right').is_visible(),(name,width,'Native form missing')
+   text=page.locator('body').inner_text()
+   assert 'Fatal error' not in text and 'Warning: ' not in text and 'Accès refusé' not in text,(name,width,'Native fixture error')
+   checked=[]
+   for control in page.locator(action_selector).all():
+    if not control.is_visible():continue
+    result=control.evaluate(contrast)
+    if not result['label']:continue
+    assert result['ratio'] >= (3 if result['disabled'] else 4.5), (name,width,'Unreadable action',result)
+    if not result['disabled']:assert result['opacity']>=0.95,(name,width,'Faded enabled action',result)
+    checked.append(result)
+   assert checked,(name,width,'No native actions audited')
+   primary=page.locator('#id-right input[type=submit]:enabled:not([name=cancel])').first
+   assert primary.count() and primary.is_visible(),(name,width,'Primary native action missing')
+   # Submit inputs match :read-only by browser design, despite not having readonly.
+   assert primary.evaluate("e=>e.matches(':read-only')&&!e.hasAttribute('readonly')&&!!e.form")
+   primary.focus();assert primary.evaluate('e=>document.activeElement===e')
+   primary.hover();page.wait_for_timeout(200)
+   hovered=primary.evaluate(contrast);assert hovered['ratio']>=4.5,(name,width,'Unreadable hovered action',hovered)
+   page.mouse.move(0,0)
+   primary.scroll_into_view_if_needed()
+   page.screenshot(path=str(out/f'actions-{name}-{width}.png'),full_page=False)
+   action_results.append({'route':name,'width':width,'controls':checked})
+ # Preserve real readonly/disabled field states and native disabled semantics.
+ page.evaluate('''()=>{
+  const section=document.createElement('section');section.id='indy-field-state-audit';
+  section.innerHTML='<input type="text" readonly value="Lecture seule"><input type="text" value="Modifiable"><input type="submit" class="button" disabled value="Indisponible">';
+  document.querySelector('#id-right').prepend(section);
+ }''')
+ assert page.locator('#indy-field-state-audit input[readonly]').evaluate("e=>e.readOnly&&getComputedStyle(e).backgroundColor==='rgb(245, 247, 248)'")
+ assert page.locator('#indy-field-state-audit input[type=text]:not([readonly])').evaluate("e=>!e.readOnly&&getComputedStyle(e).backgroundColor==='rgb(255, 255, 255)'")
+ disabled=page.locator('#indy-field-state-audit input:disabled')
+ assert disabled.is_disabled() and disabled.evaluate(contrast)['ratio']>=3
+ page.locator('#indy-field-state-audit').evaluate('e=>e.remove()')
+ (out/'action-contrast.json').write_text(json.dumps(action_results,indent=2))
+ print('PASS native action contrast on import summary, invoice/client/product creation and product editing at 1440/768/390px, hover/focus and readonly/disabled states.',flush=True)
  for width in [1440,768,390]:
   page.set_viewport_size({'width':width,'height':1000})
   for name,path in routes.items():
