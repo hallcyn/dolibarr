@@ -25,7 +25,7 @@ jobs:
         run: docker compose build --pull
       - name: PHP and Apache syntax
         run: |
-          docker compose run --rm --no-deps --entrypoint bash dolibarr -c 'find /opt/railway /var/www/html/theme/indy -name "*.php" -print0 | xargs -0 -n1 php -l; apache2ctl configtest'
+          docker compose run --rm --no-deps --entrypoint bash dolibarr -c 'find /opt/railway /opt/railway-modules /var/www/html/theme/indy -name "*.php" -print0 | xargs -0 -n1 php -l; apache2ctl configtest'
       - name: Start services
         run: docker compose up -d
       - name: Check installation and durable state
@@ -36,10 +36,17 @@ jobs:
           python3 -m playwright install --with-deps chromium
           docker compose cp tests/indy/seed.php dolibarr:/tmp/indy-seed.php
           docker compose exec -T dolibarr php /tmp/indy-seed.php
+          docker compose cp tests/invoices/generate.php dolibarr:/tmp/indy-invoices.php
+          docker compose exec -T dolibarr php /tmp/indy-invoices.php /tmp/indy-invoice-fixtures
+          mkdir -p artifacts/invoices
+          docker compose cp dolibarr:/tmp/indy-invoice-fixtures/. artifacts/invoices/
+          python3 -m pip install PyMuPDF==1.26.6
+          python3 tests/invoices/verify.py
           python3 - <<'PY'
           import os, subprocess
           from pathlib import Path
           settings = dict(line.split('=', 1) for line in Path('.env').read_text().splitlines() if line and not line.startswith('#'))
+          subprocess.run(['python3', 'tests/invoices/browser.py'], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
           subprocess.run(['python3', 'tests/indy/browser.py'], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
           PY
       - uses: actions/upload-artifact@v4

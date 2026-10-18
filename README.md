@@ -15,6 +15,7 @@ Déployez **Dolibarr ERP & CRM** avec une base **MariaDB privée**, une installa
 - Image officielle `dolibarr/dolibarr:24.0.2`, adaptée sans recopier le code de Dolibarr.
 - MariaDB `11.4` LTS, utilisateur applicatif dédié, réseau privé et réglages sobres.
 - [Thème Indy](theme/README.md) embarqué : menu crème, espace blanc et boutons roses, cartes et formulaires modernisés, activation dans les réglages d’affichage.
+- [Factures Indy](modules/indyinvoice/README.md) : modèle PDF natif avec bandeau coloré, logo Dolibarr, police Inter et tableau configurable, sans conversion ODT.
 - Secrets différents générés pour chaque déploiement du template ; aucun mot de passe universel.
 - Documents, PDF, pièces jointes, modules externes et sessions PHP persistants.
 - Configuration reconstruite depuis les variables ; clé d’instance stable et protégée contre une modification accidentelle.
@@ -50,6 +51,7 @@ Un dépôt contenant un Dockerfile ne constitue pas, à lui seul, un template mu
 | README anglais à coller sur la page Railway | [TEMPLATE-README.md](docs/TEMPLATE-README.md) |
 | Sauvegarder, restaurer, mettre à jour, activer cron / e-mails | [OPERATIONS.md](docs/OPERATIONS.md) |
 | Activer ou mettre à jour le thème Indy | [theme/README.md](theme/README.md) |
+| Personnaliser les factures PDF et comprendre les modèles ODT | [modules/indyinvoice/README.md](modules/indyinvoice/README.md) |
 | Configurer une petite activité et le stock de vin | [PREMIERS-PAS.md](docs/PREMIERS-PAS.md) |
 
 ## Surveillance des versions
@@ -103,4 +105,4 @@ Le [workflow réussi](https://github.com/hallcyn/dolibarr/actions/runs/390633822
 - [Créer un template Railway](https://docs.railway.com/templates/create), [bonnes pratiques](https://docs.railway.com/templates/best-practices), [publication](https://docs.railway.com/templates/publish-and-share).
 - [Variables Railway](https://docs.railway.com/variables/reference), [réseau privé](https://docs.railway.com/networking/private-networking).
 
-Sauf mention contraire, les scripts et documents du template sont sous licence MIT, voir [LICENSE](LICENSE). Les fichiers du thème Indy et ses tests importés dans `tests/indy/` sont sous GPL v3 ou ultérieure, voir [theme/LICENSE](theme/LICENSE) ; sa police Inter conserve sa licence SIL OFL. Dolibarr est un logiciel distinct sous GPL v3 ou ultérieure ; MariaDB et les composants de l’image conservent leurs licences. Ce template communautaire n’est pas une publication officielle de Dolibarr ou de Railway.
+Sauf mention contraire, les scripts et documents du template sont sous licence MIT, voir [LICENSE](LICENSE). Les fichiers du thème Indy et ses tests importés dans `tests/indy/` sont sous GPL v3 ou ultérieure, voir [theme/LICENSE](theme/LICENSE). Le module `modules/indyinvoice/` est aussi sous GPL v3 ou ultérieure ; les polices Inter conservent leur licence SIL OFL. Dolibarr est un logiciel distinct sous GPL v3 ou ultérieure ; MariaDB et les composants de l’image conservent leurs licences. Ce template communautaire n’est pas une publication officielle de Dolibarr ou de Railway.

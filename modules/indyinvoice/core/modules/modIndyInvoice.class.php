@@ -1,0 +1,60 @@
+<?php
+/* Copyright (C) 2026 Hallcyn. SPDX-License-Identifier: GPL-3.0-or-later */
+require_once DOL_DOCUMENT_ROOT.'/core/modules/DolibarrModules.class.php';
+
+/** Native invoice presentation, without a business table or numbering scheme. */
+class modIndyInvoice extends DolibarrModules
+{
+    public function __construct($db)
+    {
+        $this->db = $db;
+        $this->numero = 500987; // Project-local ID; not a DoliStore registration.
+        $this->rights_class = 'indyinvoice';
+        $this->family = 'financial';
+        $this->module_position = '95';
+        $this->name = 'IndyInvoice';
+        $this->description = 'IndyInvoiceDescription';
+        $this->editor_name = 'Hallcyn';
+        $this->editor_url = 'https://github.com/hallcyn/dolibarr';
+        $this->version = '1.0.0';
+        $this->const_name = 'MAIN_MODULE_INDYINVOICE';
+        $this->picto = 'bill';
+        $this->module_parts = array('models' => 1);
+        $this->config_page_url = array('setup.php@indyinvoice');
+        $this->langfiles = array('indyinvoice@indyinvoice');
+        $this->depends = array('modFacture');
+        $this->phpmin = array(8, 1);
+        $this->need_dolibarr_version = array(24, 0);
+        $this->dirs = array();
+        $this->const = array();
+        $this->rights = array();
+        $this->menu = array();
+    }
+
+    public function init($options = '')
+    {
+        global $conf;
+        $entity = (int) $conf->entity;
+        return $this->_init(array(
+            "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom,type,entity) SELECT 'indy','invoice',".$entity.
+            " WHERE NOT EXISTS (SELECT 1 FROM ".MAIN_DB_PREFIX."document_model WHERE nom='indy' AND type='invoice' AND entity=".$entity.")"
+        ), $options);
+    }
+
+    public function remove($options = '')
+    {
+        global $conf;
+        require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+        if (getDolGlobalString('FACTURE_ADDON_PDF') === 'indy') {
+            $previous = getDolGlobalString('INDYINVOICE_PREVIOUS_MODEL', 'sponge');
+            // A removed third-party generator must not become the fallback.
+            if (!in_array($previous, array('sponge', 'octopus'), true)) {
+                $previous = 'sponge';
+            }
+            dolibarr_set_const($this->db, 'FACTURE_ADDON_PDF', $previous, 'chaine', 0, '', $conf->entity);
+        }
+        return $this->_remove(array(
+            "DELETE FROM ".MAIN_DB_PREFIX."document_model WHERE nom='indy' AND type='invoice' AND entity=".((int) $conf->entity)
+        ), $options);
+    }
+}

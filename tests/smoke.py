@@ -40,6 +40,8 @@ def healthy():
 
 
 healthy()
+php('if (!is_readable("/var/www/html/custom/indyinvoice/core/modules/modIndyInvoice.class.php") '
+    '|| !is_readable("/var/www/html/includes/tecnickcom/tcpdf/fonts/indyinter.php")) exit(1);')
 with urllib.request.urlopen('http://127.0.0.1:8080/', timeout=10) as reply:
     assert 'login' in reply.read().decode().lower(), 'Missing login form'
 
