@@ -26,7 +26,9 @@ trait IndyDocumentStyle
 
     public function write_file($object, $outputlangs, $srctemplatepath = '', $hidedetails = 0, $hidedesc = 0, $hideref = 0)
     {
-        global $conf;
+        global $conf, $langs;
+        if (!is_object($outputlangs)) $outputlangs = $langs;
+        $outputlangs->loadLangs(array('main', 'bills', 'products', 'dict', 'companies', 'compta', 'orders', 'banks'));
         $font = getDolGlobalString('INDYINVOICE_FONT', 'indyinter');
         if (!in_array($font, array('indyinter', 'helvetica', 'dejavusans', 'times', 'dejavuserif'), true)) {
             $font = 'dejavusans';

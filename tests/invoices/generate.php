@@ -138,7 +138,7 @@ foreach ($cases as $case) {
     $totals = array_map('floatval', array($invoice->total_ht, $invoice->total_tva, $invoice->total_ttc));
     $originalNote = $invoice->note_public;
     $model = new pdf_indy($db);
-    if ($model->write_file($invoice, $langs) <= 0) {
+    if ($model->write_file($invoice, $case === 'no-vat' ? null : $langs) <= 0) {
         throw new RuntimeException($model->error);
     }
     foreach ($snapshot as $key => $before) {
