@@ -15,7 +15,7 @@ version = re.search(r'FROM dolibarr/dolibarr:([\d.]+)', dockerfile).group(1)
 assert f'DOLI_VERSION={version}' in dockerfile
 assert 'COPY theme/ /opt/indy-theme/' in dockerfile
 assert 'bash /opt/indy-theme/install.sh /var/www/html' in dockerfile
-assert 'COPY modules/indyinvoice/ /opt/railway-modules/indyinvoice/' in dockerfile
+assert 'COPY modules/indyinvoice/ /var/www/html/indyinvoice/' in dockerfile
 assert 'fonts/indyinter*' in dockerfile
 assert (root / 'modules/indyinvoice/core/modules/facture/doc/pdf_indy.modules.php').is_file()
 theme = json.loads((root / 'theme/UPSTREAM.json').read_text())

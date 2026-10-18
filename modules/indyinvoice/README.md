@@ -8,7 +8,7 @@ Un modèle PDF natif pour Dolibarr 24.0.2, inspiré d’une facture à bandeau c
 
 ## Installer et activer dans ce template
 
-Le code et la police sont inclus dans l’image Docker. Au démarrage, le dossier `custom/indyinvoice` pointe vers le module livré avec l’image ; ses réglages restent dans MariaDB. Un dossier `custom/indyinvoice` déjà géré par l’utilisateur est conservé et n’est pas remplacé.
+Le code et la police sont inclus dans l’image Docker. Le module est installé dans `htdocs/indyinvoice`, parmi les répertoires que Dolibarr détecte nativement. Son code suit la version de l’image et ses réglages restent dans MariaDB. Le dossier persistant des modules externes reste disponible pour les autres extensions.
 
 1. Déployer une image contenant ce module.
 2. Dans **Accueil → Configuration → Modules / Applications**, rechercher **Factures Indy** et activer le module.

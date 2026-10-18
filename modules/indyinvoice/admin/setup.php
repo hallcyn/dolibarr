@@ -1,8 +1,8 @@
 <?php
 /* Copyright (C) 2026 Hallcyn. SPDX-License-Identifier: GPL-3.0-or-later */
-// DOCUMENT_ROOT also works when the bundled module is reached through a symlink.
+// Use the native document root for the bundled module and manual installations.
 $loaded = false;
-foreach (array($_SERVER['CONTEXT_DOCUMENT_ROOT'] ?? '', $_SERVER['DOCUMENT_ROOT'] ?? '', dirname(__DIR__, 3)) as $root) {
+foreach (array($_SERVER['CONTEXT_DOCUMENT_ROOT'] ?? '', $_SERVER['DOCUMENT_ROOT'] ?? '', dirname(__DIR__, 2), dirname(__DIR__, 3)) as $root) {
     if ($root && is_readable(rtrim($root, '/').'/main.inc.php')) {
         require rtrim($root, '/').'/main.inc.php';
         $loaded = true;

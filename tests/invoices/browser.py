@@ -14,7 +14,9 @@ with sync_playwright() as p:
     page.locator('#password').fill(os.environ['DOLIBARR_TEST_PASSWORD'])
     page.locator('input[type="submit"]').first.click()
     page.wait_for_load_state('networkidle')
-    response = page.goto(base + '/custom/indyinvoice/admin/setup.php', wait_until='networkidle')
+    page.goto(base + '/admin/modules.php?search_keyword=Indy&mode=common', wait_until='networkidle')
+    assert 'Factures Indy' in page.locator('body').inner_text(), 'Module missing from native module management'
+    response = page.goto(base + '/indyinvoice/admin/setup.php', wait_until='networkidle')
     assert response.status == 200
     assert 'Présentation des factures Indy' in page.locator('body').inner_text()
     page.locator('#INDYINVOICE_FONT').select_option('dejavusans')
@@ -27,7 +29,7 @@ with sync_playwright() as p:
     page.goto(base + '/admin/invoice.php', wait_until='networkidle')
     assert 'indy' in page.locator('body').inner_text().lower(), 'Native invoice model list does not expose indy'
     page.set_viewport_size({'width': 390, 'height': 844})
-    page.goto(base + '/custom/indyinvoice/admin/setup.php', wait_until='networkidle')
+    page.goto(base + '/indyinvoice/admin/setup.php', wait_until='networkidle')
     assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth'), 'Mobile settings overflow'
     page.screenshot(path=str(artifacts / 'settings-mobile.png'), full_page=True)
     browser.close()

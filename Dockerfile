@@ -12,8 +12,8 @@ LABEL org.opencontainers.image.title="Dolibarr on Railway" \
 COPY theme/ /opt/indy-theme/
 RUN bash /opt/indy-theme/install.sh /var/www/html
 
-COPY modules/indyinvoice/ /opt/railway-modules/indyinvoice/
-RUN cp /opt/railway-modules/indyinvoice/fonts/indyinter* /var/www/html/includes/tecnickcom/tcpdf/fonts/
+COPY modules/indyinvoice/ /var/www/html/indyinvoice/
+RUN cp /var/www/html/indyinvoice/fonts/indyinter* /var/www/html/includes/tecnickcom/tcpdf/fonts/
 
 COPY docker/ /opt/railway/
 COPY scripts/backup.sh /usr/local/bin/dolibarr-backup

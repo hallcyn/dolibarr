@@ -9,7 +9,7 @@ define('NOREQUIREMENU', 1);
 require '/var/www/html/main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
-require_once DOL_DOCUMENT_ROOT.'/custom/indyinvoice/core/modules/facture/doc/pdf_indy.modules.php';
+require_once DOL_DOCUMENT_ROOT.'/indyinvoice/core/modules/facture/doc/pdf_indy.modules.php';
 $user->fetch(0, 'admin');
 $activated = activateModule('modIndyInvoice');
 if (!empty($activated['errors'])) {

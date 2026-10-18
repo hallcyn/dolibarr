@@ -24,14 +24,10 @@ for item in documents html/custom; do
         ln -s "$target" "$source"
     fi
 done
-# The bundled invoice module follows the image version. Its settings live in
-# MariaDB; custom user modules remain in the volume. Never replace a user folder.
-if [[ ! -e /data/custom/indyinvoice && ! -L /data/custom/indyinvoice ]]; then
-    ln -s /opt/railway-modules/indyinvoice /data/custom/indyinvoice
-elif [[ -L /data/custom/indyinvoice && "$(readlink /data/custom/indyinvoice)" == /opt/railway-modules/indyinvoice ]]; then
-    :
-else
-    echo '[railway] Keeping the existing user-managed custom/indyinvoice module.'
+# Migrate only the link created by the first invoice-module image. Bundled
+# code now lives in the application image; never replace a user's module folder.
+if [[ -L /data/custom/indyinvoice && "$(readlink /data/custom/indyinvoice)" == /opt/railway-modules/indyinvoice ]]; then
+    rm /data/custom/indyinvoice
 fi
 chown -R www-data:www-data /data/documents /data/custom /data/sessions
 # The official custom/ seed directory is read-only. Ownership alone does not
