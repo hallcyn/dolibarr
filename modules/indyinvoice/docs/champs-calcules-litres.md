@@ -23,12 +23,14 @@ Le modèle de facture `indy` hérite de Sponge et conserve ses colonnes natives 
 ```php
 (
     ($objectoffield->fk_product > 0)
-    && ($reloadedobj = new Product($db))
-    && ($reloadedobj->fetchNoCompute($objectoffield->fk_product) > 0)
+    && ($varProduct = new Product($db))
+    && ($varProduct->fetchNoCompute($objectoffield->fk_product) > 0)
 )
-? round($reloadedobj->volume * $objectoffield->qty, 2)
+? round($varProduct->volume * $objectoffield->qty, 2)
 : 0
 ```
+
+**Important pour Dolibarr 24 :** les variables temporaires doivent commencer par `$var`. La variante utilisant `$reloadedobj` est refusée par le filtre natif ; utiliser `$varProduct` comme ci-dessus.
 
 Pour une seconde colonne **Contenance (L)**, créer `contenance_l`, de même type, position `50`, avec l’affichage PDF `1` et retirer `* $objectoffield->qty` de la formule.
 

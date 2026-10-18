@@ -196,8 +196,8 @@ foreach (array('order', 'order-shared', 'order-own', 'order-bank', 'long-order')
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 $extrafields = new ExtraFields($db);
-$unitFormula = '(($objectoffield->fk_product > 0) && ($reloadedobj = new Product($db)) && ($reloadedobj->fetchNoCompute($objectoffield->fk_product) > 0)) ? round($reloadedobj->volume, 2) : 0';
-$litresFormula = '(($objectoffield->fk_product > 0) && ($reloadedobj = new Product($db)) && ($reloadedobj->fetchNoCompute($objectoffield->fk_product) > 0)) ? round($reloadedobj->volume * $objectoffield->qty, 2) : 0';
+$unitFormula = '(($objectoffield->fk_product > 0) && ($varProduct = new Product($db)) && ($varProduct->fetchNoCompute($objectoffield->fk_product) > 0)) ? round($varProduct->volume, 2) : 0';
+$litresFormula = '(($objectoffield->fk_product > 0) && ($varProduct = new Product($db)) && ($varProduct->fetchNoCompute($objectoffield->fk_product) > 0)) ? round($varProduct->volume * $objectoffield->qty, 2) : 0';
 foreach (array('contenance_l' => array('Contenance (L)', 50, $unitFormula, 1), 'litres_vendus' => array('Litres vendus', 52, $litresFormula, 1), 'litres_interne' => array('LITRES NON IMPRIMABLES', 54, $litresFormula, 0)) as $code => $field) {
     if ($extrafields->addExtraField($code, $field[0], 'double', $field[1], '24,8', 'facturedet', 0, 0, '', '', 0, '', '1', '', $field[2], (string) $conf->entity, '', '1', 0, $field[3]) <= 0) throw new RuntimeException('Computed extrafield creation failed: '.$extrafields->error);
 }
