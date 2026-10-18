@@ -68,6 +68,7 @@ $conf->global->INDYINVOICE_BANNER_HEIGHT = 32;
 $conf->global->INDYINVOICE_FONT_SIZE = 11;
 $conf->global->INDYINVOICE_LOGO_HEIGHT = 18;
 foreach ($cases as $case) {
+    $conf->global->MAIN_PDF_DONOTREPEAT_HEAD = $case === 'long-invoice' ? 1 : 0;
     $conf->global->FACTURE_RIB_NUMBER = strpos($case, 'bank-') === 0 ? $bankIds['A'] : 0;
     $conf->global->INDYINVOICE_SHOW_BANK_DETAILS = in_array($case, array('bank-card-shown', 'bank-credit'), true) ? 1 : 0;
     $conf->global->INVOICE_FREE_TEXT = strpos($case, 'mentions-') === 0 ? $longText : 'Données fictives — document de démonstration uniquement.';
@@ -80,7 +81,7 @@ foreach ($cases as $case) {
     $conf->global->INDYINVOICE_TABLE_TEXT_COLOR = '354080';
     $conf->global->INDYINVOICE_TOTAL_TEXT_COLOR = 'FFF4DB';
     $conf->global->INDYINVOICE_FOOTER_TEXT_COLOR = $case === 'text-colors' ? '354080' : '5B6770';
-    $conf->global->INDYINVOICE_PAPER_COLOR = $case === 'sage' ? 'F4F7F2' : 'FFFFFF';
+    $conf->global->INDYINVOICE_PAPER_COLOR = in_array($case, array('sage', 'long-invoice', 'mentions-long-pages'), true) ? 'EAF4EE' : ($case === 'grid' ? 'FFF0F5' : 'FFFFFF');
     $conf->global->INDYINVOICE_TABLE_COLOR = $case === 'sage' ? '286347' : 'FCEBD8';
     $conf->global->INDYINVOICE_BANNER_COLOR = $case === 'sage' ? 'EDF5EF' : 'FCEBD8';
     $conf->global->INDYINVOICE_ACCENT_COLOR = $case === 'sage' ? '286347' : 'D82B68';
@@ -169,6 +170,7 @@ foreach (array('HEADER', 'TABLE', 'TOTAL') as $zone) $conf->global->{'INDYINVOIC
 $conf->global->PDF_ALLOW_HTML_FOR_FREE_TEXT = 0;
 $conf->global->FACTURE_RIB_NUMBER = $bankIds['A'];
 foreach (array('order', 'order-shared', 'order-own', 'order-bank', 'long-order') as $case) {
+    $conf->global->INDYINVOICE_PAPER_COLOR = $case === 'long-order' ? 'EAF4EE' : 'FFFFFF';
     $conf->global->ORDER_FREE_TEXT = $case === 'order-own' ? 'Données fictives — MENTION COMMANDE PRIORITAIRE.' : '';
     $conf->global->INDYINVOICE_USE_INVOICE_TEXT_FOR_ORDERS = in_array($case, array('order-shared', 'order-own'), true) ? 1 : 0;
     $conf->global->INVOICE_FREE_TEXT = 'Données fictives — MENTION FACTURE PARTAGÉE.';

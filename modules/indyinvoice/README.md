@@ -38,8 +38,8 @@ Pour obtenir une facture à partir d’une commande, utiliser ensuite le parcour
 ## Personnalisation disponible
 
 - Cinq palettes de départ : crème, rose, sauge, terracotta et minimal ; toutes les couleurs restent modifiables.
-- Couleur et hauteur du bandeau, couleur de l’en-tête du tableau et accent des totaux. Couleurs de texte distinctes pour le contenu, le bandeau, les titres du tableau, le total TTC et le pied de page. Le mode automatique choisit un texte lisible ; le désactiver pour choisir sa couleur. Un contraste minimal de 4,5:1 est requis à l’enregistrement.
-- Teinte claire des marges ; le contenu reste sur fond blanc. Les mises en page intégralement foncées de certaines références Indy ne sont pas reproduites par ces modèles natifs.
+- Couleur et hauteur du bandeau, couleur de l’en-tête du tableau et accent des totaux. Couleurs de texte distinctes pour le contenu, le bandeau, les titres du tableau, le total TTC et le pied de page. Le mode automatique choisit un texte lisible ; le désactiver pour choisir sa couleur. Un contraste minimal de 4,5:1 est requis à l’enregistrement, y compris sur le fond de page choisi.
+- Fond clair du document entier : la couleur choisie couvre aussi les adresses, les lignes et les espaces vides, sans panneau blanc imposé. L’aperçu utilise le même fond. Les fonds sombres restent réservés au bandeau et aux titres ; le contraste du texte principal et des mentions est vérifié sur le fond de page choisi.
 - Inter, Helvetica, DejaVu Sans, Times et DejaVu Serif ; taille de base de 9 à 12 points ; logo de 8 à 24 mm.
 - Tableau épuré ou encadré natif. Le mode encadré conserve les fonds natifs des totaux ; la couleur du texte principal s’y applique aussi.
 - Bannière panoramique facultative au-dessus de l’en-tête : PNG/JPEG, maximum 2 Mo et 6000 × 2000 px, recadrage au centre en 1680 × 160 px, réencodage PNG sans métadonnées. L’image est privée aux administrateurs dans les réglages et apparaît sur les PDF générés.
@@ -63,7 +63,7 @@ Le logo conserve sa transparence d’origine. Un logo JPEG à fond blanc reste b
 
 La catégorie d’opérations utilise l’emplacement natif sous les conditions de règlement pour éviter de recouvrir la note publique. Le module ne contient aucune adresse, information bancaire ou mention fiscale d’une entreprise réelle. Il ne modifie ni les montants ni le statut d’un document.
 
-Les préférences PDF temporaires sont restaurées après chaque génération. Les variantes multidevises et bilingues conservent le tableau natif. Les polices Inter couvrent le latin et les accents français, sous [SIL OFL](fonts/OFL.txt). Les modules tiers et évolutions majeures de Dolibarr doivent être vérifiés avec les documents concernés.
+Le fond est ajouté sous les dessins natifs avant la sortie du PDF, y compris sur les pages suivantes lorsque la répétition de l’en-tête est désactivée. Les préférences PDF temporaires sont restaurées après chaque génération. Les variantes multidevises et bilingues conservent le tableau natif. Les polices Inter couvrent le latin et les accents français, sous [SIL OFL](fonts/OFL.txt). Les modules tiers et évolutions majeures de Dolibarr doivent être vérifiés avec les documents concernés.
 
 ## Afficher le RIB et les informations de virement
 
@@ -113,7 +113,7 @@ Références : [modèles ODT](https://wiki.dolibarr.org/index.php/Create_an_ODT_
 
 ## Tests et maintenance
 
-La CI génère 25 scénarios fictifs : TVA multiples et remises, taux nul, avoir, 48 lignes, tableau encadré, polices Unicode et serif, palette sombre pour les titres, image de bannière, spécimen natif, commande et commande longue, RIB selon le mode de paiement et la priorité du compte, mentions longues ou HTML, mentions propres ou partagées avec les commandes et couleurs de texte manuelles. Elle vérifie montants, lignes, en-têtes, pieds de page, polices, contraste, séparation note/catégorie et limites des pages.
+La CI génère 25 scénarios fictifs : TVA multiples et remises, taux nul, avoir, 48 lignes, tableau encadré, polices Unicode et serif, palette sombre pour les titres, image de bannière, spécimen natif, commande et commande longue, RIB selon le mode de paiement et la priorité du compte, mentions longues ou HTML, mentions propres ou partagées avec les commandes et couleurs de texte manuelles. Elle vérifie montants, lignes, en-têtes, pieds de page, polices, contraste, séparation note/catégorie et limites des pages. Les contrôles de pixels vérifient le fond choisi au centre et dans les marges des factures et commandes, y compris sur plusieurs pages.
 
 Les tests navigateur enregistrent les mentions et le compte bancaire dans les formulaires natifs puis téléchargent une facture régénérée pour contrôler leur présence. Ils vérifient aussi les couleurs manuelles, le rejet d’un contraste insuffisant, les options RIB/mention partagée et les deux modèles par défaut après rechargement, leur retour au choix précédent, les palettes, le rejet d’une fausse image, le téléversement réel d’un PNG, les réglages à 320/390/768 px et la génération du PDF depuis une commande existante.
 

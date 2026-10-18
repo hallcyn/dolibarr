@@ -10,8 +10,10 @@ class IndyTotalsCanvas
     private $fill = array(255,255,255);
     private $text = array(39,51,62);
     private $totalText;
+    private $paper;
+    private $decorate;
 
-    public function __construct($pdf, $accent, $text = array(39,51,62), $totalText = null) { $this->pdf=$pdf; $this->accent=$accent; $this->text=$text; $this->totalText=$totalText; }
+    public function __construct($pdf, $accent, $text = array(39,51,62), $totalText = null, $paper = array(255,255,255), $decorate = true) { $this->pdf=$pdf; $this->accent=$accent; $this->text=$text; $this->totalText=$totalText; $this->paper=$paper; $this->decorate=$decorate; }
     public static function contrast($rgb)
     {
         $luma=0;
@@ -35,14 +37,16 @@ class IndyTotalsCanvas
         return (max($x, $y)+0.05)/(min($x, $y)+0.05);
     }
     public function __get($name) { return $this->pdf->$name; }
+    public function nativePdf() { return method_exists($this->pdf, 'nativePdf') ? $this->pdf->nativePdf() : $this->pdf; }
     public function __set($name,$value) { $this->pdf->$name=$value; }
     public function __call($name,$args)
     {
         $method=strtolower($name);
         if ($method==='setfillcolor' && count($args)>=3) {
             $grey=max($args[0],$args[1],$args[2])-min($args[0],$args[1],$args[2])<3;
-            if ($grey && $args[0]>=200 && $args[0]<=230) $args=$this->accent;
-            elseif ($grey && $args[0]>230 && $args[0]<252) $args=array_map(function($c){return (int)round(255*0.94+$c*0.06);},$this->accent);
+            if ($this->decorate && $grey && $args[0]>=200 && $args[0]<=230) $args=$this->accent;
+            elseif ($this->decorate && $grey && $args[0]>230 && $args[0]<252) $args=array_map(function($c,$p){return (int)round($p*0.94+$c*0.06);},$this->accent,$this->paper);
+            elseif ($grey && $args[0]>=252) $args=$this->paper;
             $this->fill=array_slice($args,0,3);
         } elseif ($method==='settextcolor') {
             $args=$this->text;

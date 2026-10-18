@@ -10,7 +10,7 @@ class pdf_indy extends pdf_sponge
         parent::__construct($db);
         $this->name = 'indy';
         $this->description = 'Indy — facture personnalisable';
-        $this->version = '1.2.0';
+        $this->version = '1.3.0';
         $this->corner_radius = 1.6;
     }
     protected function _pagehead(&$pdf, $object, $showaddress, $outputlangs, $outputlangsbis = null)

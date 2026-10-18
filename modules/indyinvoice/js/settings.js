@@ -21,7 +21,7 @@
     const colors=names.map(n=>form.elements['INDYINVOICE_'+n].value);
     ['--doc-band','--doc-table','--doc-accent','--doc-paper'].forEach((n,i)=>paper.style.setProperty(n,colors[i]));
     const noBand=Number(form.elements.INDYINVOICE_BANNER_HEIGHT.value)===0;
-    if (noBand) paper.style.setProperty('--doc-band','#ffffff');
+    if (noBand) paper.style.setProperty('--doc-band',colors[3]);
     ['HEADER','TABLE','TOTAL'].forEach((zone,i)=>{
       const auto=form.elements['INDYINVOICE_'+zone+'_TEXT_AUTO'].checked;
       const input=form.elements['INDYINVOICE_'+zone+'_TEXT_COLOR'];

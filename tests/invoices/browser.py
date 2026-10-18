@@ -27,6 +27,7 @@ with sync_playwright() as p:
     assert page.locator('[name=make_default_order]').is_checked(), 'Order default check must reflect the saved model'
     assert page.locator('#INDYINVOICE_FONT').input_value()=='dejavusans'
     assert page.locator('#INDYINVOICE_TABLE_COLOR').input_value()=='#286347'
+    assert page.locator('.indy-preview-body').evaluate('e=>getComputedStyle(e).backgroundColor')=='rgb(244, 248, 243)', 'White panel in paper preview'
     for url,name in [('/admin/invoice.php','indy'),('/admin/order.php','indyorder')]:
         page.goto(base+url,wait_until='networkidle')
         row=page.locator('tr').filter(has=page.get_by_text(name,exact=True)).last
@@ -45,6 +46,9 @@ with sync_playwright() as p:
     assert 'Commande' in pdf[0].get_text()
     pixel=pdf[0].get_pixmap(clip=fitz.Rect(3,3,9,9),alpha=False).pixel(2,2)
     assert pixel[1]>pixel[0], 'Draft order used the classic PDF instead of the saved sage style'
+    for p in pdf:
+        px=p.get_pixmap(clip=fitz.Rect(300,600,306,606),alpha=False).pixel(1,1)
+        assert all(abs(a-b)<4 for a,b in zip(px,(244,248,243))), 'Generated order ignores the selected full-page background'
     page.goto(base+'/indyinvoice/admin/setup.php',wait_until='networkidle')
     # Every text color and bank/order option survives an actual form POST.
     page.locator('[data-palette=cream]').click()

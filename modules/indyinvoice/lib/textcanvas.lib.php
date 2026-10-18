@@ -12,6 +12,7 @@ class IndyTextCanvas
     public function __construct($pdf, $color = null, $band = null, $wrap = false)
     { $this->pdf = $pdf; $this->color = $color; $this->band = $band; $this->wrap = $wrap; }
     public function __get($name) { return $this->pdf->$name; }
+    public function nativePdf() { return method_exists($this->pdf, 'nativePdf') ? $this->pdf->nativePdf() : $this->pdf; }
     public function __set($name, $value) { $this->pdf->$name = $value; }
     public function __call($name, $args)
     {

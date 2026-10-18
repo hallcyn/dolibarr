@@ -102,11 +102,10 @@ trait IndyDocumentStyle
         $photo = DOL_DATA_ROOT.'/indyinvoice/banner-'.((int) $conf->entity).'.png';
         $strip = getDolGlobalInt('INDYINVOICE_USE_BANNER_IMAGE') && is_readable($photo) ? 20 : 0;
         $height = max(0, min(35, getDolGlobalInt('INDYINVOICE_BANNER_HEIGHT', 32)));
-        // Only decorate the margins. Native financial content stays on white.
+        // Use the same full-page paper colour as the live preview.
         $paper = $this->rgb('INDYINVOICE_PAPER_COLOR', 'FFFFFF');
-        $pdf->SetFillColor(...$paper);
-        $pdf->Rect(0, 0, max(0, $this->marge_gauche - 1), $this->page_hauteur, 'F');
-        $pdf->Rect($this->page_largeur - $this->marge_droite + 1, 0, $this->marge_droite - 1, $this->page_hauteur, 'F');
+        require_once __DIR__.'/pagecanvas.lib.php';
+        IndyPageCanvas::paint($pdf, $paper);
         if ($strip) {
             $pdf->Image($photo, 0, 0, $this->page_largeur, 20, 'PNG');
         }
@@ -213,10 +212,10 @@ trait IndyDocumentStyle
         $pdf->SetLineWidth(0.2);
         if (getDolGlobalString('INDYINVOICE_TABLE_STYLE', 'light') === 'light') {
             $canvas = new IndyTotalsCanvas($pdf, $this->rgb('INDYINVOICE_ACCENT_COLOR', 'D82B68'), $this->rgb('INDYINVOICE_TEXT_COLOR', '27333E'),
-                getDolGlobalInt('INDYINVOICE_TOTAL_TEXT_AUTO', 1) ? null : $this->rgb('INDYINVOICE_TOTAL_TEXT_COLOR', 'FFFFFF'));
+                getDolGlobalInt('INDYINVOICE_TOTAL_TEXT_AUTO', 1) ? null : $this->rgb('INDYINVOICE_TOTAL_TEXT_COLOR', 'FFFFFF'), $this->rgb('INDYINVOICE_PAPER_COLOR', 'FFFFFF'));
             return parent::drawTotalTable($canvas, $object, $deja_regle, $posy, $outputlangs, $outputlangsbis);
         }
-        $canvas = new IndyTextCanvas($pdf, $this->rgb('INDYINVOICE_TEXT_COLOR', '27333E'));
+        $canvas = new IndyTotalsCanvas($pdf, $this->rgb('INDYINVOICE_ACCENT_COLOR', 'D82B68'), $this->rgb('INDYINVOICE_TEXT_COLOR', '27333E'), null, $this->rgb('INDYINVOICE_PAPER_COLOR', 'FFFFFF'), false);
         return parent::drawTotalTable($canvas, $object, $deja_regle, $posy, $outputlangs, $outputlangsbis);
     }
 
@@ -234,6 +233,8 @@ trait IndyDocumentStyle
 
     protected function _pagefoot(&$pdf, $object, $outputlangs, $hidefreetext = 0, $heightforqrinvoice = 0)
     {
+        require_once __DIR__.'/pagecanvas.lib.php';
+        IndyPageCanvas::paint($pdf, $this->rgb('INDYINVOICE_PAPER_COLOR', 'FFFFFF'));
         $canvas = new IndyTextCanvas($pdf, null, null, true);
         if ($this->name === 'indyorder') return parent::_pagefoot($canvas, $object, $outputlangs, $hidefreetext);
         return parent::_pagefoot($canvas, $object, $outputlangs, $hidefreetext, $heightforqrinvoice);

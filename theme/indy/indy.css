@@ -73,8 +73,13 @@
   --textbutaction: #fff;
   --butactiondeletebg: #fff0f4;
   --butactioncancelbg: #fff;
-  --tooltipbgcolor: var(--indy-ink);
-  --tooltipfontcolor: #fff;
+  --tooltipbgcolor: #fff;
+  --tooltipfontcolor: var(--indy-ink);
+  --tooltip-txt-color: var(--indy-ink);
+  --tooltip-bg-color: #fff;
+  --tooltip-txt-color-dark-theme: var(--indy-ink);
+  --tooltip-bg-color-dark-theme: #fff;
+  --tooltip-border-color-dark-theme: var(--indy-border);
   --amountpaymentcomplete: #008c7a;
   --amountremaintopaycolor: var(--indy-danger);
 }
@@ -950,3 +955,41 @@ body #id-right .indy-filter-actions button[name="button_search_x"] { background:
 #id-right .indy-filter-controls .divfordateinput { display: inline-flex; align-items: center; gap: 6px; }
 #id-right .indy-filter-controls .divfordateinput input { flex: 1 1 auto; }
 #id-right :is(input,select,textarea):focus { outline: none; }
+
+/* Rich native tooltips contain their own tables, status spans and links.
+ * Keep one light surface and explicit ink throughout, instead of mixing a
+ * dark bubble with the normal dark table typography. */
+body :is(div.ui-tooltip.mytooltip, div.ui-tooltip.jquery-tooltip, div.ui-tooltip.jquery-tooltip.--dark-mode, div.ui-tooltip.mytooltip-hover-tooltip) {
+  --tooltipbgcolor: #fff;
+  --tooltipfontcolor: #27333e;
+  --tooltip-txt-color: #27333e;
+  --tooltip-bg-color: #fff;
+  --tooltip-border-color: #d7e1e9;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: min(700px, calc(100vw - 24px)) !important;
+  padding: 16px 18px;
+  background: #fff !important;
+  color: #27333e !important;
+  border: 1px solid #d7e1e9 !important;
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgb(39 51 62 / 14%);
+  font: 400 13px/1.6 var(--indy-font);
+  overflow-wrap: anywhere;
+}
+body .ui-tooltip :is(.ui-tooltip-content, div, p, td, th, span, label, b, strong, small, pre, code, u, li) {
+  color: #27333e !important;
+  opacity: 1;
+  text-shadow: none;
+}
+body .ui-tooltip :is(table, tbody, tr, td, th) {
+  background: transparent !important;
+  border-color: #d7e1e9;
+  max-width: 100%;
+}
+body .ui-tooltip :is(td, th) { white-space: normal; }
+body .ui-tooltip :is(pre, code) { white-space: pre-wrap; }
+body .ui-tooltip a { color: #354d61 !important; text-decoration: underline; }
+body .ui-tooltip a:hover { color: #172e42 !important; }
+body .ui-tooltip :is(.ok, .badge-status4, .amountpaymentcomplete) { color: #00665b !important; }
+body .ui-tooltip :is(.error, .warning) { color: #ad3555 !important; }

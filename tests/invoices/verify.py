@@ -1,5 +1,6 @@
 """Validate actual Dolibarr-generated PDFs, including a multi-page invoice."""
 import json
+from collections import Counter
 import re
 from pathlib import Path
 import fitz
@@ -22,13 +23,22 @@ for name, expected in manifest.items():
     assert 'Données fictives' in text and 'Maison Démonstration' in text, (name, 'Fixture information missing')
     assert "Un mode de paiement a été défini" not in text, (name, 'Incomplete payment fixture')
     for index, page in enumerate(document):
-        assert ('Commande' if name in ('order', 'order-shared', 'order-own', 'order-bank', 'long-order') else 'Facture') in page.get_text(), (name, index, 'Repeated document heading missing')
+        if name != 'long-invoice' or index == 0: assert ('Commande' if name in ('order', 'order-shared', 'order-own', 'order-bank', 'long-order') else 'Facture') in page.get_text(), (name, index, 'Repeated document heading missing')
         assert 'Siège social' in page.get_text(), (name, index, 'Native footer missing')
         # Check the rendered banner, rather than merely a hidden PDF drawing.
         banner = page.get_pixmap(clip=fitz.Rect(3, 3, 9, 9), alpha=False)
         pixel = banner.pixel(2, 2)
         expected_color = (42,99,75) if name == 'banner' else ((237,245,239) if name == 'sage' else ((69,32,96) if name == 'text-colors' else (252,235,216)))
+        if name == 'long-invoice' and index > 0: expected_color = (234,244,238)
         assert all(abs(a-b)<4 for a,b in zip(pixel,expected_color)), (name,index,'Banner missing',pixel)
+        if name in ('sage', 'long-invoice', 'mentions-long-pages', 'long-order', 'grid'):
+            # Empty content and margin areas must share the chosen paper color,
+            # including pages whose native header is intentionally hidden.
+            paper=(255,240,245) if name=='grid' else (234,244,238)
+            for x,y in [(1,180),(30,180),(105,230),(207,270)]:
+                swatch=page.get_pixmap(clip=fitz.Rect(x*72/25.4,y*72/25.4,(x+2)*72/25.4,(y+2)*72/25.4),alpha=False)
+                px=Counter(tuple(swatch.samples[i:i+3]) for i in range(0,len(swatch.samples),3)).most_common(1)[0][0]
+                assert all(abs(a-b)<4 for a,b in zip(px,paper)), (name,index,'Hardcoded white content background',x,y,px)
         for word in page.get_text('words'):
             assert word[0] >= -1 and word[1] >= -1 and word[2] <= page.rect.width + 1 and word[3] <= page.rect.height + 1, (name, index, 'Text outside the page')
     if name in ('long-invoice', 'mentions-long-pages'):

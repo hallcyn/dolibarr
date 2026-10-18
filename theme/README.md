@@ -32,3 +32,5 @@ python3 tests/check_repository.py
 Le script ne change que les fichiers du thème, son installateur, sa licence et ses tests. Ouvrir une PR puis laisser la CI construire l'image, vérifier l'installation et produire les captures des vrais écrans Dolibarr avec des données fictives.
 
 Prérequis : Git et Python 3. Le dépôt source étant privé, Git doit déjà disposer d'un accès de lecture à celui-ci. Les déploiements du template utilisent uniquement la copie embarquée et ne demandent aucun accès à ce dépôt privé.
+
+Les infobulles natives, leurs tableaux et leurs liens utilisent une surface claire lisible depuis la version 1.4.1. Leur largeur est contrôlée à 320/390 px ; l’aide ouverte au toucher reste native.

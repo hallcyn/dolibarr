@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && GETPOST('action', 'aZ09') === 'save
     }
     foreach ($switches as $key => $fallback) $values[$key] = GETPOSTINT($key) === 1 ? 1 : 0;
     $rgb = function ($hex) { return array(hexdec(substr($hex,0,2)), hexdec(substr($hex,2,2)), hexdec(substr($hex,4,2))); };
-    $pairs = array('TEXT' => 'FFFFFF', 'FOOTER_TEXT' => 'FFFFFF');
+    $pairs = array('TEXT' => $values['INDYINVOICE_PAPER_COLOR'], 'FOOTER_TEXT' => $values['INDYINVOICE_PAPER_COLOR']);
     foreach (array('HEADER' => ((int)$values['INDYINVOICE_BANNER_HEIGHT'] > 0 ? 'BANNER_COLOR' : null), 'TABLE' => 'TABLE_COLOR', 'TOTAL' => 'ACCENT_COLOR') as $zone => $background) {
         if ($zone === 'HEADER' && $background === null) continue;
         if (!$values['INDYINVOICE_'.$zone.'_TEXT_AUTO']) $pairs[$zone.'_TEXT'] = $background ? $values['INDYINVOICE_'.$background] : 'FFFFFF';
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && GETPOST('action', 'aZ09') === 'save
     }
 }
 llxHeader('', $langs->trans('IndyInvoiceSettings'));
-print '<link rel="stylesheet" href="'.dol_buildpath('/indyinvoice/css/settings.css',1).'?v=120">';
+print '<link rel="stylesheet" href="'.dol_buildpath('/indyinvoice/css/settings.css',1).'?v=130">';
 print load_fiche_titre($langs->trans('IndyInvoiceSettings'), '', 'bill');
 if (GETPOSTINT('saved') === 1) print '<div class="ok">'.$langs->trans('SetupSaved').'</div>';
 print '<p>'.$langs->trans('IndyInvoiceScope').'</p>';
@@ -182,5 +182,5 @@ print '<aside class="indy-document-preview"><h2>'.$langs->trans('IndyStylePrevie
 print '<p><a class="butAction" href="'.DOL_URL_ROOT.'/admin/invoice.php?action=specimen&module=indy&token='.newToken().'">'.$langs->trans('IndyInvoicePreview').'</a></p>';
 if (isModEnabled('commande')) print '<p><a class="butAction" href="'.DOL_URL_ROOT.'/admin/order.php?action=specimen&module=indyorder&token='.newToken().'">'.$langs->trans('IndyOrderPreview').'</a></p>';
 print '</aside></div></form><p>'.$langs->trans('IndyFontHelp').'</p>';
-print '<script nonce="'.getNonce().'" src="'.dol_buildpath('/indyinvoice/js/settings.js',1).'?v=120"></script>';
+print '<script nonce="'.getNonce().'" src="'.dol_buildpath('/indyinvoice/js/settings.js',1).'?v=130"></script>';
 llxFooter(); $db->close();

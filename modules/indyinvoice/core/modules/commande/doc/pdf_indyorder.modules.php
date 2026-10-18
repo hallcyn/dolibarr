@@ -10,7 +10,7 @@ class pdf_indyorder extends pdf_eratosthene
         parent::__construct($db);
         $this->name = 'indyorder';
         $this->description = 'Indy — commande personnalisable';
-        $this->version = '1.2.0';
+        $this->version = '1.3.0';
         $this->corner_radius = 1.6;
     }
     protected function _pagehead(&$pdf, $object, $showaddress, $outputlangs, $outputlangsbis = null, $titlekey = 'PdfOrderTitle')

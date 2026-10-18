@@ -127,6 +127,54 @@ with sync_playwright() as p:
   assert page.locator('.indy-form-grid').count()>0
   assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth')
   page.screenshot(path=str(out/f'new-client-{width}.png'),full_page=True)
+ # Rich tooltip regression: native invoice model capabilities and free-text help.
+ for width in [1440,390,320]:
+  page.set_viewport_size({'width':width,'height':1000})
+  page.goto(base+'/admin/invoice.php',wait_until='networkidle')
+  for name,trigger in [('sponge',page.locator('tr').filter(has=page.get_by_text('sponge',exact=True)).last.locator('.classfortooltip').last),('freetext',page.locator('[dolid="freetexttooltip"]'))]:
+   if name == 'freetext':
+    trigger.click();tip=page.locator('.ui-dialog:visible').last
+   else:
+    trigger.hover();tip=page.locator('div.ui-tooltip:visible').last
+   tip.wait_for(state='visible')
+   assert tip.inner_text().strip(),(name,width,'Empty info popup')
+   assert tip.evaluate(r'''e=>{
+    const lum=s=>{const c=s.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4});return c[0]*.2126+c[1]*.7152+c[2]*.0722};
+    const r=e.getBoundingClientRect();
+    if(r.left<0||r.right>innerWidth||r.width<200) return false;
+    const text=[e,...e.querySelectorAll('*')].filter(x=>x.getBoundingClientRect().width>1&&x.getBoundingClientRect().height>1&&[...x.childNodes].some(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.trim()));
+    return text.every(x=>{
+     let p=x,bg;
+     while(p){bg=getComputedStyle(p).backgroundColor;if(bg!=='rgba(0, 0, 0, 0)'&&bg!=='transparent')break;p=p.parentElement;}
+     const a=lum(getComputedStyle(x).color),b=lum(bg||'rgb(255,255,255)');
+     return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=4.5;
+    });
+   }'''),(name,width,'Unreadable or overflowing info popup')
+   page.screenshot(path=str(out/f'tooltip-{name}-{width}.png'),full_page=True)
+   page.mouse.move(0,0);page.keyboard.press('Escape')
+ # Also inspect rich tables and links in a native jQuery tooltip variant.
+ page.set_viewport_size({'width':1440,'height':1000})
+ page.evaluate('''()=>{
+  const b=document.createElement('button');b.id='indy-tooltip-fixture';b.textContent='Aide de démonstration';document.querySelector('#id-right').prepend(b);
+  jQuery(b).tooltip({items:'button',classes:{'ui-tooltip':'jquery-tooltip --dark-mode'},content:'<table><tr><td>Compte bancaire</td><td><a href="#">Consulter le compte</a></td></tr></table>'});
+ }''')
+ page.locator('#indy-tooltip-fixture').hover()
+ tip=page.locator('div.ui-tooltip:visible').last;tip.wait_for(state='visible')
+ assert tip.evaluate('e=>getComputedStyle(e).backgroundColor')=='rgb(255, 255, 255)'
+ assert tip.locator('a').evaluate('e=>getComputedStyle(e).color')=='rgb(53, 77, 97)'
+ page.mouse.move(0,0);page.keyboard.press('Escape')
+ print('PASS: six native information tooltips at desktop/390/320px and rich jQuery content, text/link contrast and viewport bounds.',flush=True)
+ # Touch devices use Dolibarr's native click-to-open information dialog.
+ touch=b.new_page(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,user_agent='Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36')
+ touch.goto(base+'/');touch.locator('#username').fill('admin');touch.locator('#password').fill(os.environ['DOLIBARR_TEST_PASSWORD']);touch.locator('input[type=submit]').first.tap();touch.wait_for_load_state('networkidle')
+ touch.goto(base+'/admin/invoice.php',wait_until='networkidle')
+ touch.locator('[dolid="freetexttooltip"]').tap()
+ dialog=touch.locator('.ui-dialog:visible');dialog.wait_for(state='visible')
+ assert dialog.inner_text().strip()
+ assert dialog.evaluate('e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth}')
+ assert dialog.locator('.ui-dialog-content').evaluate('e=>getComputedStyle(e).color')=='rgb(39, 51, 62)'
+ touch.screenshot(path=str(out/'tooltip-help-touch.png'),full_page=True)
+ touch.close()
  b.close()
 (out/'audit-report.json').write_text(json.dumps(report,indent=2))
 passed=sum(r['status']=='passed' for r in report)
