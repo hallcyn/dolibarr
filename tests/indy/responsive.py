@@ -288,6 +288,8 @@ with sync_playwright() as p:
         assert '/commande/note.php' in page.url
         page.goto(base + '/commande/card.php?id=1', wait_until='networkidle')
         if width <= 600:
+            assert page.locator('#select_type').evaluate('''e=>{const a=e.getBoundingClientRect(),b=document.querySelector('#prod_entry_mode_free').getBoundingClientRect();return Math.abs(a.y+a.height/2-b.y-b.height/2)<3}'''), 'Free-line choice overlaps its type field'
+            assert page.locator('#select2-idprod-container').evaluate('''e=>{const a=e.closest('.select2-selection').getBoundingClientRect(),b=document.querySelector('#prod_entry_mode_predef').getBoundingClientRect();return Math.abs(a.y+a.height/2-b.y-b.height/2)<3}'''), 'Predefined product choice is misaligned'
             for selector in ('#price_ht', '#price_ttc', '#qty'):
                 field = page.locator(selector)
                 assert field.bounding_box()['width'] >= 80
