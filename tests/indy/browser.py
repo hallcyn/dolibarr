@@ -275,7 +275,7 @@ with sync_playwright() as p:
                     check_card_frames(touch_page, (profile, 'scrolled-list'))
                     scroller.evaluate('e => e.scrollLeft = 0')
             if name in ('thirdparty-space', 'clients', 'new-invoice', 'new-order'):
-                touch_page.screenshot(path=str(artifacts / f'{name}-{profile}.png'), full_page=True)
+                touch_page.screenshot(path=str(artifacts / f'{name}-{profile}.png'), full_page=False)
             print(f'PASS touch: {profile} {name}', flush=True)
         touch_page.goto(base + routes['configuration'], wait_until='networkidle')
         drawer_toggle = touch_page.locator('.indy-menu-toggle')

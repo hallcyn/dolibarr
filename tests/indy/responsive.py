@@ -46,7 +46,10 @@ def screenshot(page, name):
     settled(page)
     # Native Chart.js bitmap animation is independent of the theme. Mask only
     # its pixels; canvas position/size and the surrounding UI still compare.
-    return page.screenshot(path=str(out / name), full_page='navigation' not in name, animations='disabled', caret='hide',
+    # A full-page capture temporarily changes mobile device metrics. Some
+    # Chromium versions then lose touch emulation on the next navigation.
+    # Keep real touch viewports for the audit; desktop references stay full.
+    return page.screenshot(path=str(out / name), full_page=name.startswith('desktop-'), animations='disabled', caret='hide',
                            mask=[page.locator('canvas')] if name.startswith('desktop-') else [])
 
 
@@ -155,6 +158,7 @@ with sync_playwright() as p:
             try:
                 assert response.status == 200, (name, response.status)
                 assert 'Fatal error' not in text and 'Warning: ' not in text
+                assert page.evaluate('navigator.maxTouchPoints > 0'), 'Browser fixture lost touch emulation'
                 page.locator('.indy-menu-toggle').wait_for(state='visible')
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Page overflow'
                 assert page.locator('#id-right').bounding_box()['width'] >= width - 2, 'Navigation consumes tablet workspace'
@@ -288,6 +292,7 @@ with sync_playwright() as p:
                 field = page.locator(selector)
                 assert field.bounding_box()['width'] >= 80
                 assert field.evaluate('e=>e.form===document.querySelector("#addline").form'), 'Native line form lost'
+            page.locator('.indy-line-editor').scroll_into_view_if_needed()
             screenshot(page, f'{profile}-line-entry.png')
             page.locator('#select2-idprod-container').tap()
             page.locator('.select2-dropdown input.select2-search__field').fill('INDY')
