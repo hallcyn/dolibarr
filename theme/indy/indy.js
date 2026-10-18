@@ -275,7 +275,7 @@
           if(cell.hidden||cell.style.display==='none'||cell.classList.contains('hideobject'))return;
           attr(cell,'data-indy-label',labels[i]);
           const checkbox=!!cell.querySelector('input[type=checkbox]');
-          const important=i===primary||/\.(nom|name|total_ttc|fk_statut|statut|status|datef|date_commande)$/.test(fields[i])||/^(état|statut|status)$/i.test(labels[i]);
+          const important=i===primary||/\.(nom|name|label|lieu|phone|phone_mobile|email|price|stock|reel|qty|total_ttc|fk_statut|statut|status|datef|date_commande)$/.test(fields[i])||/^(état|statut|status|libellé|solde|stock|quantité)$/i.test(labels[i]);
           const kind=checkbox?'check':i===primary?'key':important?'summary':'detail';
           attr(cell,'data-indy-cell',kind);
           if(checkbox){

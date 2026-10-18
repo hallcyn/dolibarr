@@ -165,6 +165,9 @@ with sync_playwright() as p:
                   return r.height<43||parseFloat(s.fontSize)<16;
                 }).slice(0,8).map(e=>({id:e.id,cls:e.className,height:e.getBoundingClientRect().height,font:getComputedStyle(e).fontSize}))''')
                 assert not violations, ('Cramped controls / mobile zoom', violations)
+                if width <= 600 and name == 'products':
+                    label = page.locator('table.indy-card-list [data-indy-cell=summary]').filter(has_text='Cuvée de démonstration')
+                    assert label.is_visible(), 'Product name hidden behind extra details'
                 if name in ('dashboard', 'invoices', 'new-client', 'order-card', 'indy-settings'):
                     screenshot(page, f'{profile}-{name}.png')
                 report.append({'kind': profile, 'route': name, 'status': 'passed'})
