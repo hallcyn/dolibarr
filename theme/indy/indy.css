@@ -1395,3 +1395,6 @@ body .ui-tooltip :is(.error, .warning) { color: #ad3555 !important; }
  #id-top #topmenu-login-dropdown .user-footer a[accesskey=l]{color:var(--indy-danger)!important;border-color:#f3d3dd;background:#fff5f7}
  #id-top #topmenu-login-dropdown .user-footer a>.fa{position:static;display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;width:20px;height:20px;margin:0;padding:0;font-size:17px;line-height:1;color:inherit}
 }
+
+/* Native date shortcuts remain available actions, not disabled-looking text. */
+#id-right .datenowlink:not(:disabled) { opacity: 1; color: var(--indy-link); }

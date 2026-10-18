@@ -55,7 +55,7 @@ def screenshot(page, name):
     # 1.5.6 intentionally repairs action-input colors. Mask only those inputs;
     # their native semantics and contrast are checked in usability.py.
     if name.startswith('desktop-') and not name.startswith('desktop-login-'):
-        return page.locator('#id-container').screenshot(path=str(out / name), animations='disabled', caret='hide', mask=[page.locator('canvas'), page.locator('#id-right input:is([type=submit],[type=button],[type=reset]):not(:disabled)')])
+        return page.locator('#id-container').screenshot(path=str(out / name), animations='disabled', caret='hide', mask=[page.locator('canvas'), page.locator('#id-right input:is([type=submit],[type=button],[type=reset]):not(:disabled), #id-right .datenowlink:not(:disabled)')])
     return page.screenshot(path=str(out / name), full_page=name.startswith('desktop-'), animations='disabled', caret='hide',
                            mask=[page.locator('canvas')] if name.startswith('desktop-') else [])
 
