@@ -150,6 +150,8 @@ with sync_playwright() as p:
                 # change, so this second check does not compare chart heights.
                 assert desktop_structure(a) == structure, (name, 'Native desktop structure not restored')
                 assert a.locator('.indy-r-only').count() == 0
+                assert a.locator('.indy-account-toolbar,.indy-account-person,.indy-account-action-label,.indy-account-disclosure-label,.indy-account-legacy-label').count() == 0
+                assert a.locator('#topmenu-login-dropdown .user-body + .user-footer').count() == 1
                 screenshot(a, f'desktop-{name}-{width}-restored.png')
             report.append({'kind': 'desktop-reference', 'route': name, 'width': width, 'status': 'passed'})
         before.close()
@@ -208,6 +210,10 @@ with sync_playwright() as p:
         with start.expect_navigation(wait_until='networkidle'):
             start.locator('#login-submit-wrapper input[type=submit]').tap()
         assert start.locator('.indy-menu-toggle').is_visible(), 'Native mobile login failed'
+        start.locator('#topmenu-login-dropdown>a').tap()
+        with start.expect_navigation(wait_until='networkidle'):
+            start.locator('[data-indy-account-action=logout]').tap()
+        assert start.locator('#username').is_visible(), 'Native account logout failed'
         unsigned.close()
         context = browser.new_context(**{**p.devices[device], 'viewport': {'width': width, 'height': height},
                                          'device_scale_factor': 1, 'locale': 'fr-FR', 'storage_state': state})
@@ -298,11 +304,66 @@ with sync_playwright() as p:
         with page.expect_navigation(wait_until='networkidle'):
             page.locator('.indy-module-nav a[href*="mainmenu=companies"]').first.tap()
         assert 'mainmenu=companies' in page.url
-        page.locator('#topmenu-login-dropdown>a').tap()
-        account = page.locator('#topmenu-login-dropdown .dropdown-menu')
+        # Native account URLs, disclosures and virtual-card dialog remain
+        # functional inside the responsive presentation.
+        trigger = page.locator('#topmenu-login-dropdown>a')
+        trigger.tap()
+        account = page.locator('#indy-account-panel')
         assert account.is_visible()
+        assert trigger.get_attribute('aria-expanded') == 'true'
         assert account.evaluate('e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.bottom<=innerHeight}')
-        page.locator('#topmenu-login-dropdown>a').tap()
+        assert trigger.evaluate('e=>{const r=e.getBoundingClientRect(),i=e.querySelector(".photo").getBoundingClientRect();return r.width===44&&r.height===44&&Math.abs((r.left+r.right-i.left-i.right)/2)<1&&Math.abs((r.top+r.bottom-i.top-i.bottom)/2)<1}')
+        assert trigger.evaluate("e=>getComputedStyle(e,'::after').display==='none'"), 'Native caret distorts avatar button'
+        actions=page.locator('[data-indy-account-action]')
+        assert actions.count() == 3
+        for action in actions.all():
+            assert action.bounding_box()['height'] >= 48
+            assert action.locator('.indy-account-action-label').is_visible()
+        assert page.locator('[data-indy-account-action=profile]').get_attribute('href') == trigger.get_attribute('href')
+        assert '/user/logout.php?' in page.locator('[data-indy-account-action=logout]').get_attribute('href')
+        assert 'token=' in page.locator('[data-indy-account-action=logout]').get_attribute('href'), 'Native logout token lost'
+        name=page.locator('.indy-account-person strong');original=name.inner_text()
+        name.evaluate("e=>e.textContent='Alexandrine de la Très Longue Organisation Internationale'")
+        assert account.evaluate('e=>e.scrollWidth<=e.clientWidth+1'), 'Long user name overflows account panel'
+        name.evaluate('(e,text)=>e.textContent=text',original)
+        screenshot(page, f'{profile}-account.png')
+        company=page.locator('#topmenulogincompanyinfo-btn');session=page.locator('#topmenuloginmoreinfo-btn')
+        company.tap()
+        page.wait_for_function("document.querySelector('#topmenulogincompanyinfo-btn').getAttribute('aria-expanded')==='true'")
+        assert 'Atelier Hallcyn' in page.locator('#topmenulogincompanyinfo').inner_text()
+        session.tap()
+        page.wait_for_function("document.querySelector('#topmenuloginmoreinfo-btn').getAttribute('aria-expanded')==='true'")
+        page.wait_for_function("document.querySelector('#topmenulogincompanyinfo-btn').getAttribute('aria-expanded')==='false'")
+        assert 'indy' in page.locator('#topmenuloginmoreinfo').inner_text()
+        assert account.evaluate('e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.bottom<=innerHeight}'), 'Expanded account escapes viewport'
+        session.focus();page.keyboard.press('Enter')
+        page.wait_for_function("document.querySelector('#topmenuloginmoreinfo-btn').getAttribute('aria-expanded')==='false'")
+        page.keyboard.press('Escape')
+        assert not account.is_visible() and trigger.get_attribute('aria-expanded') == 'false'
+        assert trigger.evaluate('e=>e===document.activeElement')
+        page.keyboard.press('Space')
+        assert account.is_visible()
+        page.locator('.indy-account-close').tap()
+        assert not account.is_visible() and trigger.evaluate('e=>e===document.activeElement')
+        trigger.tap();page.touchscreen.tap(4,height-8)
+        assert not account.is_visible(), 'Outside tap fails to close account'
+        trigger.tap();page.locator('.indy-menu-toggle').tap()
+        assert not account.is_visible(), 'Account overlaps main navigation'
+        page.locator('.indy-menu-close').tap()
+        trigger.tap();page.locator('[data-indy-account-action=card]').tap()
+        dialog=page.locator('.ui-dialog:visible')
+        dialog.wait_for(state='visible')
+        assert not account.is_visible()
+        frame=page.frame_locator('#iframedialogpublicvirtualcardmenu')
+        frame.locator('body').wait_for(state='visible')
+        frame.locator('#USER_ENABLE_PUBLIC').wait_for(state='attached')
+        assert 'Fatal error' not in frame.locator('body').inner_text()
+        dialog.locator('.ui-dialog-titlebar-close').tap()
+        assert trigger.evaluate('e=>e===document.activeElement'), 'Virtual card fails to return focus'
+        trigger.tap()
+        with page.expect_navigation(wait_until='networkidle'):
+            page.locator('[data-indy-account-action=profile]').tap()
+        assert '/user/card.php?' in page.url and page.locator('#id-right').is_visible()
 
         page.goto(base + '/compta/facture/list.php', wait_until='networkidle')
         if width <= 600:

@@ -1,25 +1,25 @@
 {
   "repository": "hallcyn/dolibarr-indy-theme",
-  "commit": "a6e7ede272ecdbc4e6daf24263779ee07552c5bf",
-  "version": "1.5.1",
+  "commit": "64744df409180379cc1a7141c7a602380e08d909",
+  "version": "1.5.2",
   "sha256": {
     "tests/indy/browser.py": "dea6d4854188d168783c5ce4268bcb0d67537014b1bd14ef20b042f578a2faa2",
     "tests/indy/reference/desktop.json": "1ef187148f34749892c94d70edd2d5acd8ae247c2269a861aee580cd6b342d0f",
     "tests/indy/reference/indy-1.4.1.css": "5a7a052f5ae894c79f4bc857fd173c86e90b5cc724cbecfa5c04feaec055669f",
     "tests/indy/reference/indy-1.4.1.js": "b3b8729a3be20790ba098ad60fb50ef7cfe2a0855199e84e0f06f8f1303fc042",
-    "tests/indy/responsive.py": "8d39b9fade290aa56a5fbb6272eca7e7d7be5949a3081bac9e003e327d9656d8",
+    "tests/indy/responsive.py": "aa0bb0df71fe237961b7ce1618e44519a2565ee11b7ba4c9f6ef45a394683391",
     "tests/indy/seed.php": "5b8bc073cdd3304ce7b77dd26a6eebf285e3fdf37841f492a1c986c32c5b2884",
     "tests/indy/usability.py": "70c325760c6b9196e3bcbc0c69ca5c1a8084722fd05419a0d0880d252a7a10e4",
     "theme/LICENSE": "e79e9c8a0c85d735ff98185918ec94ed7d175efc377012787aebcf3b80f0d90b",
     "theme/indy/fonts/OFL.txt": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
     "theme/indy/fonts/inter-latin.woff2": "4716c7c50942309fccfe663ff567c664cc82e4f6fa374705f8f329bc2f967d64",
-    "theme/indy/indy.css": "b29ca074c3640207010246653c3c0cecd4f3c133979ba9dcf80783ff52251ea5",
-    "theme/indy/indy.js": "b38be98f82db273ab6e1f05f29d90296ab2cca1b0feac532f74153d23070f254",
+    "theme/indy/indy.css": "e15897507f3c6b369936c3cfd946f7840a5d44adfbfb7d872e7bbae21a78bf3a",
+    "theme/indy/indy.js": "45d1bd1e4412e05c6be9fe18bd1fb375e140c6111030e4f78b40719f230ccb30",
     "theme/indy/style.css.php": "e95ee4594164c641df48671c425af1e9259ef4621279c9f6efcc4b9deb16bb3f",
-    "theme/indy/theme_descriptor.php": "fa76d985ac9543cb02f8397b616ca91ae8e8ad2c343c75fad9dc612bb710f8f0",
+    "theme/indy/theme_descriptor.php": "22300cf66f2a9ff45ee29126099fbf3e3a5c37d8c386d2b7f493669d73d3e47a",
     "theme/indy/theme_vars.inc.php": "a05d9a7db71186b3cb22ab4993bc4e4a935caf7b4772059a055494c374a5cfed",
     "theme/indy/thumb.png": "c2971ddd17de0fd019bac1dc98667e2745ac2d54e8339a7769356cb399f0f830",
-    "theme/indy/version.json": "a4aa126bb0991748fbcb14428602cdf4a4370fa9a218c218f0484af02059bb14",
+    "theme/indy/version.json": "1ed058e53b2d6474d8cb13c769e40b4b146b6bc68c0ebe17118b9d2541855713",
     "theme/install.sh": "f3b237b7e1de7e9c8006ba1a426a0ea5df334c55a7cb542cf7a46e21d5cdd37e"
   }
 }

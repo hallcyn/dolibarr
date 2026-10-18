@@ -158,6 +158,67 @@
       move(account, bar);
       const trigger = account.querySelector('a.dropdown-toggle');
       if (trigger) { attr(trigger, 'aria-label', fr ? 'Mon compte' : 'My account'); attr(trigger, 'title', fr ? 'Mon compte' : 'My account'); }
+      const panel=account.querySelector('.dropdown-menu');
+      if(trigger&&panel){
+        attr(trigger,'role','button');attr(trigger,'aria-haspopup','dialog');attr(trigger,'aria-controls','indy-account-panel');attr(trigger,'aria-expanded',String(account.classList.contains('open')));
+        attr(panel,'id','indy-account-panel');attr(panel,'role','dialog');attr(panel,'aria-label',fr?'Mon compte':'My account');
+        const toolbar=add(document.createElement('div'));toolbar.className='indy-account-toolbar';
+        const heading=document.createElement('strong');heading.textContent=fr?'Mon compte':'My account';
+        const dismiss=button('×','indy-account-close');dismiss.setAttribute('aria-label',fr?'Fermer le compte':'Close account');toolbar.append(heading,dismiss);panel.prepend(toolbar);
+        const closeAccount=(restore=false)=>{account.classList.remove('open');if(restore)trigger.focus({preventScroll:true});};
+        dismiss.addEventListener('click',()=>closeAccount(true));
+        const header=panel.querySelector('.user-header'),nativeName=header?.querySelector('p');
+        if(header&&nativeName){
+          const copy=nativeName.cloneNode(true);copy.querySelectorAll('small,br,.fa,.fas,.far,.fab').forEach(e=>e.remove());
+          const text=copy.textContent.trim(),match=text.match(/^(.*?)\s*\(([^()]*)\)$/);
+          const name=match?.[1]||text,login=match?.[2]||'';
+          const identity=add(document.createElement('div'));identity.className='indy-account-person';
+          const avatar=document.createElement('span');avatar.className='indy-account-avatar';avatar.setAttribute('aria-hidden','true');
+          const photo=header.querySelector('img.dropdown-user-image:not([aria-hidden=true])');
+          if(photo)avatar.append(photo.cloneNode(true));
+          else avatar.textContent=name.split(/\s+/).filter(Boolean).slice(0,2).map(v=>[...v][0]).join('').toLocaleUpperCase().slice(0,2)||'•';
+          const info=document.createElement('div'),title=document.createElement('strong'),meta=document.createElement('small');
+          title.textContent=name;meta.textContent=[login?'@'+login:'',nativeName.querySelector('.fa-star')?(fr?'Administrateur':'Administrator'):''].filter(Boolean).join(' · ');
+          info.append(title,meta);identity.append(avatar,info);header.append(identity);
+        }
+        const hideNativeText=element=>[...element.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.trim()).forEach(node=>{
+          const legacy=add(document.createElement('span'));legacy.className='indy-account-legacy-label';node.before(legacy);move(node,legacy);
+        });
+        const footer=panel.querySelector('.user-footer'),body=panel.querySelector('.user-body');
+        if(footer&&body)move(footer,panel,body);
+        for(const [key,kind,label] of [['u','profile',fr?'Mon profil':'My profile'],['v','card',fr?'Ma carte de visite':'My business card'],['l','logout',fr?'Se déconnecter':'Sign out']]){
+          const link=footer?.querySelector('a[accesskey="'+key+'"]');if(!link)continue;
+          hideNativeText(link);
+          attr(link,'data-indy-account-action',kind);attr(link,'aria-label',label);attr(link,'title',label);
+          const caption=add(document.createElement('span'));caption.className='indy-account-action-label';caption.textContent=label;link.append(caption);
+        }
+        const expandedObservers=[];
+        for(const [id,label] of [['companyinfo',fr?'Entreprise':'Company'],['moreinfo',fr?'Informations de session':'Session information']]){
+          const control=panel.querySelector('#topmenulogin'+id+'-btn'),details=panel.querySelector('#topmenulogin'+id);if(!control||!details)continue;
+          hideNativeText(control);attr(control,'aria-label',label);
+          attr(control,'role','button');attr(control,'tabindex','0');attr(control,'aria-controls',details.id);attr(control,'aria-expanded',String(getComputedStyle(details).display!=='none'));
+          const caption=add(document.createElement('span'));caption.className='indy-account-disclosure-label';caption.textContent=label;control.append(caption);
+          const keys=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();control.click();}};
+          control.addEventListener('keydown',keys);undo.push(()=>control.removeEventListener('keydown',keys));
+          const observer=new MutationObserver(()=>control.setAttribute('aria-expanded',String(getComputedStyle(details).display!=='none')));
+          observer.observe(details,{attributes:true,attributeFilter:['style']});expandedObservers.push(observer);
+        }
+        const observer=new MutationObserver(()=>{
+          const isOpen=account.classList.contains('open');trigger.setAttribute('aria-expanded',String(isOpen));
+          if(isOpen)dismiss.focus({preventScroll:true});
+        });observer.observe(account,{attributes:true,attributeFilter:['class']});
+        const accountKey=e=>{if(e.key==='Escape'&&account.classList.contains('open')){e.preventDefault();closeAccount(true);}else if(e.target===trigger&&e.key===' '){e.preventDefault();trigger.click();}};
+        let accountActive=true;
+        const accountFocus=()=>{setTimeout(()=>{if(accountActive&&account.isConnected&&!account.contains(document.activeElement))closeAccount();},0);};
+        account.addEventListener('keydown',accountKey);account.addEventListener('focusout',accountFocus);
+        const cardDialog=account.querySelector('#idfordialogpublicvirtualcardmenu');
+        if(cardDialog&&window.jQuery){
+          const restore=()=>trigger.focus({preventScroll:true});
+          window.jQuery(cardDialog).on('dialogclose.indyAccount',restore);
+          undo.push(()=>window.jQuery(cardDialog).off('dialogclose.indyAccount',restore));
+        }
+        undo.push(()=>{accountActive=false;observer.disconnect();expandedObservers.forEach(o=>o.disconnect());account.removeEventListener('keydown',accountKey);account.removeEventListener('focusout',accountFocus);closeAccount();});
+      }
     }
     const backdrop = add(button(fr ? 'Fermer le menu' : 'Close menu', 'indy-nav-backdrop indy-r-only'));backdrop.tabIndex = -1;backdrop.hidden = true;
     document.body.append(backdrop);
@@ -180,6 +241,7 @@
     let open = false, overflow = '', previousFocus = null;
     function setOpen(next) {
       if(open===next)return;
+      if(next)account?.classList.remove('open');
       open=next;toggle.setAttribute('aria-expanded',String(open));side.inert=!open;backdrop.hidden=!open;
       document.body.classList.toggle('indy-nav-open',open);
       if(open){previousFocus=document.activeElement;overflow=document.body.style.overflow;document.body.style.overflow='hidden';content.inert=true;side.setAttribute('aria-modal','true');close.focus();}
