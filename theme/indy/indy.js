@@ -171,8 +171,9 @@
       if (!link.textContent.trim()) return;
       const item = document.createElement('a');item.href=link.href;
       if (link.closest('li').classList.contains('tmenusel')) { item.classList.add('is-current');item.setAttribute('aria-current','page'); }
-      const icon=link.parentElement.querySelector('.mainmenu > span');if(icon)item.append(icon.cloneNode(true));
-      const label=document.createElement('span');label.textContent=link.textContent.trim();item.append(label);modules.append(item);
+      const iconBox=document.createElement('span');iconBox.className='indy-module-icon';iconBox.setAttribute('aria-hidden','true');
+      const icon=link.parentElement.querySelector('.mainmenu > :is(span,img,svg)');if(icon)iconBox.append(icon.cloneNode(true));
+      const label=document.createElement('span');label.className='indy-module-label';label.textContent=link.textContent.trim();item.append(iconBox,label);modules.append(item);
     });
     head.after(modules);
     const search = document.querySelector('#blockvmenusearch');if(search)move(search,side,modules);

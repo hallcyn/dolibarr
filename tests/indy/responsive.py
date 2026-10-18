@@ -153,6 +153,24 @@ with sync_playwright() as p:
                 screenshot(a, f'desktop-{name}-{width}-restored.png')
             report.append({'kind': 'desktop-reference', 'route': name, 'width': width, 'status': 'passed'})
         before.close()
+        unsigned_desktop = browser.new_context(viewport={'width': width, 'height': 1000}, locale='fr-FR')
+        unsigned_desktop.route('**/theme/indy/style.css.php*', old_style)
+        unsigned_desktop.route('**/theme/indy/indy.js*', old_script)
+        desktop_login = unsigned_desktop.new_page()
+        desktop_login.goto(base + '/', wait_until='networkidle')
+        first = screenshot(desktop_login, f'desktop-login-{width}-accepted.png')
+        unsigned_desktop.unroute('**/theme/indy/style.css.php*')
+        unsigned_desktop.unroute('**/theme/indy/indy.js*')
+        desktop_login.evaluate('''() => new Promise((resolve,reject)=>{
+          const link=document.querySelector('link[href*="/theme/indy/style.css.php"]');
+          link.onload=resolve;link.onerror=reject;link.href=link.href+'&indy_reference=current';
+        })''')
+        desktop_login.add_script_tag(url=base + '/theme/indy/indy.js?indy_reference=current')
+        second = screenshot(desktop_login, f'desktop-login-{width}-current.png')
+        pixels = desktop_pixels(comparator, first, second)
+        assert pixels['same_size'] and pixels['changed'] <= 200 and pixels['max_channel_delta'] <= 2, ('login', width, pixels)
+        report.append({'kind': 'desktop-reference', 'route': 'login', 'width': width, 'status': 'passed'})
+        unsigned_desktop.close()
         print('PASS accepted desktop pixels and resize restoration:', width, flush=True)
 
     profiles = [('small-phone', 'Pixel 7', 320, 740), ('phone', 'iPhone 13', 390, 844),
@@ -166,7 +184,30 @@ with sync_playwright() as p:
             assert field.bounding_box()['height'] >= 44
             assert field.evaluate('e=>parseFloat(getComputedStyle(e).fontSize)') >= 16
         assert start.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        # The native phone stylesheet caps fields at 180px and their parent
+        # at 240px. Check useful width and eye alignment, not just no overflow.
+        login_geometry = start.evaluate('''()=>{
+          const card=document.querySelector('.login_table'),c=getComputedStyle(card),r=card.getBoundingClientRect();
+          const usable=r.width-parseFloat(c.paddingLeft)-parseFloat(c.paddingRight)-2;
+          const fields=[...document.querySelectorAll('#username,#password')].map(e=>e.getBoundingClientRect());
+          const eye=document.querySelector('#togglepassword').getBoundingClientRect(),password=fields[1];
+          const submit=document.querySelector('#login-submit-wrapper input').getBoundingClientRect();
+          return {full:fields.every(f=>f.width>=usable-1)&&submit.width>=usable-1,
+            inside:eye.left>=password.left&&eye.right<=password.right&&eye.top>=password.top&&eye.bottom<=password.bottom,
+            eye:eye.width>=44&&eye.height>=44,
+            reserved:parseFloat(getComputedStyle(document.querySelector('#password')).paddingRight)>=eye.width+4};
+        }''')
+        assert all(login_geometry.values()), ('Mobile login geometry', login_geometry)
         screenshot(start, f'{profile}-login.png')
+        start.locator('#username').fill('admin')
+        start.locator('#password').fill(os.environ['DOLIBARR_TEST_PASSWORD'])
+        start.locator('#togglepassword').tap()
+        assert start.locator('#password').get_attribute('type') == 'text'
+        start.locator('#togglepassword').tap()
+        assert start.locator('#password').get_attribute('type') == 'password'
+        with start.expect_navigation(wait_until='networkidle'):
+            start.locator('#login-submit-wrapper input[type=submit]').tap()
+        assert start.locator('.indy-menu-toggle').is_visible(), 'Native mobile login failed'
         unsigned.close()
         context = browser.new_context(**{**p.devices[device], 'viewport': {'width': width, 'height': height},
                                          'device_scale_factor': 1, 'locale': 'fr-FR', 'storage_state': state})
@@ -213,6 +254,21 @@ with sync_playwright() as p:
         assert page.locator('body').evaluate('e => e.style.overflow') == 'hidden'
         assert page.locator('.indy-menu-close').evaluate('e => e === document.activeElement')
         assert page.locator('.indy-module-nav a').count() >= 5
+        def icon_geometry():
+            return page.locator('.indy-module-nav a').evaluate_all('''es=>es.map(e=>{
+              const i=e.querySelector('.indy-module-icon'),icon=i.firstElementChild,label=e.querySelector('.indy-module-label');
+              const r=i.getBoundingClientRect(),v=icon.getBoundingClientRect(),l=label.getBoundingClientRect(),a=e.getBoundingClientRect();
+              return {square:r.width===32&&r.height===32&&v.width>=24&&v.height>=24,
+                separate:r.bottom<=l.top,inside:l.left>=a.left&&l.right<=a.right&&l.bottom<=a.bottom,
+                label:label.scrollWidth<=label.clientWidth+1};
+            })''')
+        assert all(all(v.values()) for v in icon_geometry()), ('Squashed navigation icon', icon_geometry())
+        # Long custom/translated module names must wrap without shrinking icons.
+        label = page.locator('.indy-module-label').first
+        original_label = label.inner_text()
+        label.evaluate("e=>e.textContent='Personnalisation et administration des fonctionnalités supplémentaires'")
+        assert all(all(v.values()) for v in icon_geometry()), ('Long menu label damages icons', icon_geometry())
+        label.evaluate('(e,text)=>e.textContent=text', original_label)
         search = page.locator('.side-nav .select2-selection').first
         if search.count():
             search.tap()

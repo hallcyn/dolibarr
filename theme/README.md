@@ -12,7 +12,7 @@ Le Dockerfile installe les fichiers dans `/var/www/html/theme/indy` et copie les
 
 ## Portée
 
-Version **1.5.0**. Sur ordinateur à partir de 1100 px, le menu principal standard de Dolibarr est présenté dans une colonne crème et les sous-menus dans une colonne dédiée, organisée par groupes et défilante indépendamment du contenu. Sur téléphone et tablette, une barre compacte ouvre les liens de modules, la recherche et les sous-menus natifs dans un tiroir. Le contenu utilise toute la largeur. Cette disposition concerne aussi les grandes tablettes tactiles jusqu’à 1366 px.
+Version **1.5.1**. Sur ordinateur à partir de 1100 px, le menu principal standard de Dolibarr est présenté dans une colonne crème et les sous-menus dans une colonne dédiée, organisée par groupes et défilante indépendamment du contenu. Sur téléphone et tablette, une barre compacte ouvre les liens de modules, la recherche et les sous-menus natifs dans un tiroir. Le contenu utilise toute la largeur. Cette disposition concerne aussi les grandes tablettes tactiles jusqu’à 1366 px.
 
 Cartes et listes entièrement encadrées, avec un contour fixe pendant le défilement horizontal ; filtres dans un panneau fermé et titres de widgets pouvant revenir à la ligne. Les filtres utilisent une grille de champs libellés et conservent les contrôles natifs. Sur téléphone, leur panneau est replié au chargement pour laisser voir les résultats ; toucher « Filtres de la liste » pour l’ouvrir. Les formulaires empilent les libellés et les champs. Les options Select2 et leurs descriptions de stock gardent un contraste lisible.
 
@@ -41,3 +41,5 @@ Depuis la version 1.5, les listes compatibles deviennent des cartes sur téléph
 La CI ajoute une passe sur les inventaires de pages existants à 320, 390, 768, 844, 1024 et 1366 px dans des contextes tactiles. Elle vérifie la recherche, les filtres, le compte, la navigation, le tri, la sélection et une vraie soumission de ligne dans les données fictives. Six vues ordinateur sont comparées aux sources acceptées 1.4.1 à 1280, 1440 et 1920 px ; seuls les bitmaps animés des graphiques sont masqués. La restauration des éléments natifs après changement de format est aussi contrôlée. Les rapports distinguent les pages indisponibles ; il ne s’agit pas de tests sur Safari ou appareils physiques.
 
 La comparaison du bureau conserve les mêmes dimensions et tolère uniquement un très faible bruit d’anticrénelage de Chromium : au maximum 200 pixels, avec un écart de 2 niveaux sur 255 par canal. Les métriques sont enregistrées avec les captures ; les changements plus importants font échouer le test.
+
+Connexion mobile : champs et bouton en pleine largeur, icônes intégrées et commande de visibilité du mot de passe agrandie. Les tuiles du menu gardent une taille d’icône fixe et affichent les libellés dessous. Ces corrections restent limitées au responsive ; la connexion ordinateur rejoint les comparaisons visuelles de régression.

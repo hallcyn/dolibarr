@@ -1028,9 +1028,12 @@ body .ui-tooltip :is(.error, .warning) { color: #ad3555 !important; }
  body.indy-responsive .side-nav .select2-selection{height:auto!important;min-height:44px!important;border:1px solid #b8c9d6}
  body.indy-responsive .side-nav .select2-selection__rendered{line-height:42px!important;font-size:16px}
  body.indy-responsive .indy-module-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 0 20px;margin:0 0 18px;border-bottom:1px solid var(--indy-border)}
- body.indy-responsive .indy-module-nav a{display:flex;align-items:center;gap:10px;min-height:60px;box-sizing:border-box;padding:10px;border-radius:10px;background:#fafbfc;color:var(--indy-ink);font-size:13px;line-height:1.4}
+ body.indy-responsive .indy-module-nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:96px;text-align:center;box-sizing:border-box;padding:10px;border-radius:10px;background:#fafbfc;color:var(--indy-ink);font-size:13px;line-height:1.4}
  body.indy-responsive .indy-module-nav a.is-current{background:var(--indy-nav-active);font-weight:600}
- body.indy-responsive .indy-module-nav a>.fas{font-size:20px;color:var(--indy-link)!important}
+ body.indy-responsive .indy-module-icon{display:flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;min-width:32px;height:32px;box-sizing:border-box;color:var(--indy-link);line-height:1}
+ body.indy-responsive .indy-module-icon>:is(span,i){display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px!important;min-width:32px;height:32px;padding:0!important;margin:0!important;font-size:22px!important;line-height:1!important;color:inherit!important}
+ body.indy-responsive .indy-module-icon :is(img,svg){display:block;flex:none;width:24px!important;height:24px!important;max-width:100%;object-fit:contain}
+ body.indy-responsive .indy-module-label{display:block;flex:none;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.4}
  body.indy-responsive .side-nav :is(.menu_titre a,.menu_contenu a,.vmenu a.vmenu){display:flex;align-items:center;box-sizing:border-box;min-height:44px;max-width:100%;padding:10px 12px;font-size:14px;line-height:1.5;white-space:normal}
  body.indy-responsive .side-nav .menu_contenu{font-size:0;line-height:0}
  body.indy-responsive .side-nav .menu_contenu a{padding-left:24px}
@@ -1154,3 +1157,30 @@ body .ui-tooltip :is(.error, .warning) { color: #ad3555 !important; }
  body.indy-responsive #id-right .tableforfield>tbody>tr>td{font-size:14px}
 }
 @media print{.indy-r-only{display:none!important}}
+
+/* 1.5.1 · Full-width mobile login. Override Eldy's phone-only 180/240px
+ * limits and table cells; keep the native authentication form and handlers. */
+@media screen and (max-width:1099px), screen and (max-width:1366px) and (pointer:coarse) {
+ body.bodylogin{display:block;position:static;width:100%;height:auto;min-height:100svh;margin:0}
+ body.bodylogin .login_center{display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:100svh;width:100%;padding:max(24px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+ body.bodylogin .login_vertical_align{box-sizing:border-box;width:100%;max-width:440px;padding:0;margin:auto}
+ body.bodylogin form#login{width:100%;padding:0;margin:0;font-size:16px}
+ body.bodylogin .login_table_title{max-width:100%;padding:0;margin:0 0 16px;font-size:12px;line-height:1.5;color:var(--indy-muted)!important}
+ body.bodylogin .login_table{box-sizing:border-box;width:100%;max-width:none;margin:0;padding:clamp(20px,5vw,32px);border-radius:18px}
+ body.bodylogin #login_line1{display:grid;gap:24px}
+ body.bodylogin #login_line1>br,body.bodylogin #login_line2>br{display:none}
+ body.bodylogin .login_table :is(#login_left,#login_right){display:block;box-sizing:border-box;width:100%;min-width:0!important;max-width:100%!important;padding:0!important}
+ body.bodylogin .login_table #img_logo{display:block;width:auto;height:auto;max-width:min(180px,100%);max-height:64px;margin:auto;object-fit:contain}
+ body.bodylogin #login_right>.tagtable{display:flex;flex-direction:column;gap:16px;width:100%;min-width:0}
+ body.bodylogin .login_table .trinputlogin{display:block;width:100%;margin:0;font-size:16px}
+ body.bodylogin .login_table .tdinputlogin{display:block;position:relative;box-sizing:border-box;width:100%;min-width:0;padding:0}
+ body.bodylogin .login_table .tdinputlogin>.fa{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;padding:0;font-size:18px;line-height:1;color:var(--indy-muted);pointer-events:none}
+ body.bodylogin .login_table .tdinputlogin :is(input#username,input#password,input#securitycode){display:block;box-sizing:border-box;width:100%;min-width:0;max-width:none!important;min-height:52px;margin:0!important;padding:14px 14px 14px 44px!important;font-size:16px;line-height:1.4}
+ body.bodylogin .login_table #tdpasswordlogin input#password{padding-right:52px!important}
+ body.bodylogin .login_table #tdpasswordlogin #togglepassword{top:4px;right:4px;width:44px;height:44px;opacity:1;cursor:pointer;touch-action:manipulation}
+ body.bodylogin .login_table #togglepassword .fa{width:20px;padding:0;font-size:18px;line-height:1;color:var(--indy-muted)}
+ body.bodylogin #login_line2{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+ body.bodylogin #login-submit-wrapper input[type=submit]{display:block;box-sizing:border-box;width:100%;min-height:52px;margin:0;padding:14px;font-size:16px;line-height:1.4;border-radius:12px}
+ body.bodylogin #login_line2 .alogin{display:inline-flex;align-items:center;justify-content:center;min-height:44px;max-width:100%;font-size:13px;white-space:normal;color:var(--indy-muted)}
+ body.bodylogin :is(.login_main_home,.login_main_message){box-sizing:border-box;max-width:100%;overflow-wrap:anywhere}
+}
