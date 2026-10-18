@@ -1,10 +1,10 @@
 {
   "repository": "hallcyn/dolibarr-indy-theme",
-  "commit": "79a304b9a15fe123ce31561cd92ffdb07a703776",
+  "commit": "d82925b61254b536fe8f0b2fba0fc52cb8bfd72b",
   "version": "1.5.3",
   "sha256": {
     "tests/indy/browser.py": "dea6d4854188d168783c5ce4268bcb0d67537014b1bd14ef20b042f578a2faa2",
-    "tests/indy/profile.py": "05902fcff29c8db256fbd0df185b41f904867d1f4f755e5b0341b0455d179b7a",
+    "tests/indy/profile.py": "468bf203e5ae1814e078250805515aa09d404390b0b33f9b8c8d0e6cf468d091",
     "tests/indy/reference/desktop.json": "1ef187148f34749892c94d70edd2d5acd8ae247c2269a861aee580cd6b342d0f",
     "tests/indy/reference/indy-1.4.1.css": "5a7a052f5ae894c79f4bc857fd173c86e90b5cc724cbecfa5c04feaec055669f",
     "tests/indy/reference/indy-1.4.1.js": "b3b8729a3be20790ba098ad60fb50ef7cfe2a0855199e84e0f06f8f1303fc042",
@@ -15,7 +15,7 @@
     "theme/indy/fonts/OFL.txt": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
     "theme/indy/fonts/inter-latin.woff2": "4716c7c50942309fccfe663ff567c664cc82e4f6fa374705f8f329bc2f967d64",
     "theme/indy/indy.css": "81d75d9a7217bcafb301a99cb0c272992b2a1d1f584d9bb69d5b9e200a96ebc0",
-    "theme/indy/indy.js": "26eb48c98b907eb20dd9c00bc15223fb2c6ddc1c1da5a6c931b80a09820b7eac",
+    "theme/indy/indy.js": "b9325a95e51c3072fc9741665630a63441c880c138594a42fdf0e73dc03cc3f3",
     "theme/indy/style.css.php": "e95ee4594164c641df48671c425af1e9259ef4621279c9f6efcc4b9deb16bb3f",
     "theme/indy/theme_descriptor.php": "34c58f6266cceac3be289622003a3f396168cbdfd64a517cabada1e1f9044d0b",
     "theme/indy/theme_vars.inc.php": "a05d9a7db71186b3cb22ab4993bc4e4a935caf7b4772059a055494c374a5cfed",

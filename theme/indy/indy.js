@@ -216,12 +216,14 @@
           const restore=()=>trigger.focus({preventScroll:true});
           const decorate=()=>{
             const widget=window.jQuery(cardDialog).dialog('widget')[0];
-            if(widget.hasAttribute('data-indy-vcard-dialog'))return;
-            attr(widget,'data-indy-vcard-dialog','1');
-            const title=window.jQuery(cardDialog).dialog('option','title');
+            if(!widget.hasAttribute('data-indy-vcard-dialog')){
+              attr(widget,'data-indy-vcard-dialog','1');
+              const title=window.jQuery(cardDialog).dialog('option','title');
+              const close=widget.querySelector('.ui-dialog-titlebar-close');if(close)attr(close,'aria-label',fr?'Fermer la carte de visite':'Close business card');
+              undo.push(()=>window.jQuery(cardDialog).dialog('option','title',title));
+            }
+            // Native code reapplies its verbose title on every opening.
             window.jQuery(cardDialog).dialog('option','title',fr?'Ma carte de visite':'My business card');
-            const close=widget.querySelector('.ui-dialog-titlebar-close');if(close)attr(close,'aria-label',fr?'Fermer la carte de visite':'Close business card');
-            undo.push(()=>window.jQuery(cardDialog).dialog('option','title',title));
           };
           window.jQuery(cardDialog).on('dialogopen.indyAccount',decorate);
           undo.push(()=>window.jQuery(cardDialog).off('dialogopen.indyAccount',decorate));

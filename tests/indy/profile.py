@@ -96,6 +96,11 @@ with sync_playwright() as p:
         snap(page,name+'-virtual-card.png')
         dialog.locator('.ui-dialog-titlebar-close').tap()
         assert page.locator('#topmenu-login-dropdown>a').evaluate('e=>e===document.activeElement')
+        page.locator('#topmenu-login-dropdown>a').tap();page.locator('[data-indy-account-action=card]').tap()
+        dialog.wait_for(state='visible')
+        assert dialog.locator('.ui-dialog-title').inner_text()=='Ma carte de visite', 'Native reinitialization replaced the short title'
+        page.frame_locator('#iframedialogpublicvirtualcardmenu').locator('body.indy-profile-responsive').wait_for()
+        dialog.locator('.ui-dialog-titlebar-close').tap()
         assert not errors,errors
         assert not stale, 'A subpage requested stale theme JS'
         report.append({'profile':name,'status':'passed','asset_version':expected})
