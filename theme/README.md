@@ -12,7 +12,7 @@ Le Dockerfile installe les fichiers dans `/var/www/html/theme/indy` et copie les
 
 ## Portée
 
-Version **1.5.3**. Sur ordinateur à partir de 1100 px, le menu principal standard de Dolibarr est présenté dans une colonne crème et les sous-menus dans une colonne dédiée, organisée par groupes et défilante indépendamment du contenu. Sur téléphone et tablette, une barre compacte ouvre les liens de modules, la recherche et les sous-menus natifs dans un tiroir. Le contenu utilise toute la largeur. Cette disposition concerne aussi les grandes tablettes tactiles jusqu’à 1366 px.
+Version **1.5.4**. Sur ordinateur à partir de 1100 px, le menu principal standard de Dolibarr est présenté dans une colonne crème et les sous-menus dans une colonne dédiée, organisée par groupes et défilante indépendamment du contenu. Sur téléphone et tablette, une barre compacte ouvre les liens de modules, la recherche et les sous-menus natifs dans un tiroir. Le contenu utilise toute la largeur. Cette disposition concerne aussi les grandes tablettes tactiles jusqu’à 1366 px.
 
 Cartes et listes entièrement encadrées, avec un contour fixe pendant le défilement horizontal ; filtres dans un panneau fermé et titres de widgets pouvant revenir à la ligne. Les filtres utilisent une grille de champs libellés et conservent les contrôles natifs. Sur téléphone, leur panneau est replié au chargement pour laisser voir les résultats ; toucher « Filtres de la liste » pour l’ouvrir. Les formulaires empilent les libellés et les champs. Les options Select2 et leurs descriptions de stock gardent un contraste lisible.
 
@@ -47,3 +47,5 @@ Connexion mobile : champs et bouton en pleine largeur, icônes intégrées et co
 Compte mobile et tablette : bouton d’avatar centré, panneau lisible avec profil, carte de visite et déconnexion nommés, informations d’entreprise et de session repliables. Les actions et les dialogues natifs sont conservés ; le menu respecte la hauteur disponible et dispose d’une fermeture explicite.
 
 Le compagnon natif IndyUI est installé et activé au démarrage pour charger un JavaScript identifié par son empreinte, évitant l’association d’un nouveau CSS à un ancien script en cache. La fiche utilisateur dispose d’un sélecteur de rubriques sur petit écran. La carte virtuelle reçoit une fenêtre adaptée, une copie du lien, des options lisibles et un aperçu agrandi ; les formulaires et les choix de visibilité restent natifs.
+
+La version 1.5.4 affine la connexion sur ordinateur : carte compacte, champs et bouton pleine largeur, fond crème nuancé, contours et focus rose. Le logo et le formulaire natifs restent configurés par Dolibarr. Les dispositions mobiles et tablettes et les pages de gestion sont préservées.

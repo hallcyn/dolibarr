@@ -1312,3 +1312,41 @@ body .ui-tooltip :is(.error, .warning) { color: #ad3555 !important; }
  body.indy-profile-responsive [data-indy-vcard-preview]>.opacitymedium{opacity:1}
  body.indy-profile-responsive #virtualcard-iframe{pointer-events:none}
 }
+
+/* 1.5.4 · Desktop sign-in. The native form, company logo and authentication
+ * extensions stay in place. Match the complementary responsive breakpoint:
+ * large touch tablets retain their accepted 1.5.1 layout. */
+@media screen and (min-width:1100px) and (pointer:fine), screen and (min-width:1367px) {
+ body.bodylogin{display:block;position:static;box-sizing:border-box;width:100%;height:auto;min-height:100svh;margin:0;background-color:var(--indy-nav)}
+ body.bodylogin .login_center{display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:100%;min-height:100svh;padding:48px 32px;background-image:radial-gradient(ellipse at 12% 12%,#fbe4ec80,transparent 48%),radial-gradient(ellipse at 88% 90%,#efe1c766,transparent 44%)!important}
+ body.bodylogin .login_vertical_align{box-sizing:border-box;width:100%;max-width:480px;padding:0;margin:auto}
+ body.bodylogin form#login{width:100%;margin:0;padding:0;font-size:15px}
+ body.bodylogin .login_table_title{max-width:100%;margin:0 0 18px;padding:0;font-size:12px;font-weight:450;line-height:1.5;letter-spacing:.02em;color:var(--indy-muted)!important;text-shadow:none}
+ body.bodylogin .login_table{box-sizing:border-box;width:100%;max-width:none;margin:0;padding:44px;border:1px solid #e6dfd8;border-radius:24px;background:#fff;box-shadow:0 24px 64px #49362a0a,0 4px 12px #49362a04}
+ body.bodylogin #login_line1{display:grid;gap:32px}
+ body.bodylogin :is(#login_line1,#login_line2)>br{display:none}
+ body.bodylogin .login_table :is(#login_left,#login_right){display:block;box-sizing:border-box;width:100%;min-width:0!important;max-width:100%!important;padding:0!important}
+ body.bodylogin .login_table #img_logo{display:block;width:auto;height:auto;max-width:min(220px,100%);max-height:88px;margin:0 auto;object-fit:contain}
+ body.bodylogin #login_left::after{content:'';display:block;width:32px;height:4px;margin:24px auto 0;border-radius:4px;background:#efb2c7}
+ body.bodylogin #login_right>.tagtable{display:flex;flex-direction:column;gap:18px;width:100%;min-width:0}
+ body.bodylogin .login_table .trinputlogin{display:block;width:100%;margin:0;font-size:15px}
+ body.bodylogin .login_table .tdinputlogin{display:block;position:relative;box-sizing:border-box;width:100%;min-width:0;padding:0}
+ body.bodylogin .login_table .tdinputlogin>.fa{position:absolute;top:50%;left:17px;transform:translateY(-50%);width:20px;padding:0;font-size:16px;line-height:1;color:var(--indy-muted);pointer-events:none}
+ body.bodylogin .login_table .tdinputlogin :is(input#username,input#password,input#securitycode){display:block;box-sizing:border-box;width:100%;min-width:0;max-width:none!important;min-height:54px;margin:0!important;padding:15px 16px 15px 48px!important;border:1px solid #d4dde3;border-radius:12px;background:#fff;color:var(--indy-ink);font:400 15px/1.5 var(--indy-font);transition:border-color .15s,box-shadow .15s}
+ body.bodylogin .login_table .tdinputlogin input::placeholder{color:#657480;opacity:1}
+ body.bodylogin .login_table .tdinputlogin input:hover{border-color:#a9b7c2}
+ body.bodylogin .login_table .tdinputlogin input:focus{border-color:var(--indy-primary);box-shadow:0 0 0 4px #d82b6814;outline:none}
+ body.bodylogin .login_table #tdpasswordlogin input#password{padding-right:54px!important}
+ body.bodylogin .login_table #tdpasswordlogin #togglepassword{display:inline-flex;align-items:center;justify-content:center;top:5px;right:5px;width:44px;height:44px;padding:0;border-radius:8px;opacity:1;color:var(--indy-muted);cursor:pointer}
+ body.bodylogin .login_table #togglepassword .fa{width:20px;padding:0;font-size:17px;line-height:1;color:inherit}
+ body.bodylogin .login_table #togglepassword:hover{background:var(--indy-primary-soft);color:var(--indy-primary)}
+ body.bodylogin #login_line2{display:flex;flex-direction:column;gap:16px;margin-top:28px}
+ body.bodylogin #login-submit-wrapper input[type=submit]{display:block;box-sizing:border-box;width:100%;min-height:54px;margin:0;padding:15px 20px;border:1px solid var(--indy-primary);border-radius:12px;background:var(--indy-primary);color:#fff;font:600 15px/1.5 var(--indy-font);box-shadow:0 4px 10px #d82b6814;text-transform:none;letter-spacing:0;cursor:pointer;transition:background .15s,box-shadow .15s}
+ body.bodylogin #login-submit-wrapper input[type=submit]:hover{border-color:var(--indy-primary-hover);background:var(--indy-primary-hover);box-shadow:0 6px 14px #d82b6826}
+ body.bodylogin #login_line2>.center{margin-top:0!important}
+ body.bodylogin #login_line2 .alogin{display:inline-flex;align-items:center;justify-content:center;min-height:36px;max-width:100%;font-size:13px;line-height:1.5;white-space:normal;color:var(--indy-muted);text-decoration:none}
+ body.bodylogin #login_line2 .alogin:hover{color:var(--indy-primary);text-decoration:underline;text-underline-offset:3px}
+ body.bodylogin :is(#togglepassword,input[type=submit],.alogin):focus-visible{outline:2px solid var(--indy-primary);outline-offset:4px}
+ body.bodylogin :is(.login_main_home,.login_main_message){box-sizing:border-box;max-width:100%!important;overflow-wrap:anywhere;margin:24px auto 0;font-size:14px;line-height:1.6}
+}
+@media (prefers-reduced-motion:reduce){body.bodylogin .login_table :is(input,#togglepassword){transition:none!important}}

@@ -172,8 +172,25 @@ with sync_playwright() as p:
         desktop_login.add_script_tag(url=base + '/theme/indy/indy.js?indy_reference=current')
         second = screenshot(desktop_login, f'desktop-login-{width}-current.png')
         pixels = desktop_pixels(comparator, first, second)
-        assert pixels['same_size'] and pixels['changed'] <= 200 and pixels['max_channel_delta'] <= 2, ('login', width, pixels)
-        report.append({'kind': 'desktop-reference', 'route': 'login', 'width': width, 'status': 'passed'})
+        # Desktop login is intentionally redesigned in 1.5.4. All seven
+        # authenticated routes above still compare to the accepted pixels.
+        assert desktop_login.locator('.login_table').evaluate("e=>{const r=e.getBoundingClientRect();return r.width<=480&&r.width>=440&&r.x>=0&&r.right<=innerWidth}")
+        fields = desktop_login.locator('#username,#password,#login-submit-wrapper input[type=submit]')
+        widths = []
+        for field in fields.all():
+            box = field.bounding_box()
+            assert box['height'] >= 54
+            widths.append(box['width'])
+        assert max(widths) - min(widths) <= 1, ('Aligned desktop login', widths)
+        assert desktop_login.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        assert desktop_login.locator('#img_logo').is_visible()
+        desktop_login.locator('#password').fill('fictional-preview-password')
+        desktop_login.locator('#togglepassword').click()
+        assert desktop_login.locator('#password').get_attribute('type') == 'text'
+        desktop_login.locator('#togglepassword').click()
+        assert desktop_login.locator('#password').get_attribute('type') == 'password'
+        assert desktop_login.locator('a.aloginpasswordforgotten').is_visible()
+        report.append({'kind': 'desktop-login', 'route': 'login', 'width': width, 'status': 'passed'})
         unsigned_desktop.close()
         print('PASS accepted desktop pixels and resize restoration:', width, flush=True)
 
