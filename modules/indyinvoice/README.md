@@ -1,49 +1,67 @@
-# Factures Indy
+# Documents Indy
 
-Un modèle PDF natif pour Dolibarr 24.0.2, inspiré d’une facture à bandeau crème et tableau épuré. Le modèle s’appelle **indy** dans la liste des générateurs. Son style est indépendant du thème de l’interface web.
+Modèles PDF natifs et personnalisables pour **Dolibarr 24.0.2** : **indy** pour les factures et avoirs, **indyorder** pour les commandes. Leur présentation est indépendante du thème de l’interface web.
 
-[Voir un exemple PDF avec des données fictives](docs/exemple-facture-indy.pdf).
+![Exemple fictif de facture avec palette sauge](docs/exemple-facture-sauge.png)
 
-![Exemple de facture Indy avec données fictives](docs/exemple-facture-indy.png)
+[Facture crème](docs/exemple-facture-indy.pdf) · [Facture sauge](docs/exemple-facture-sauge.pdf) · [Facture avec bannière image](docs/exemple-facture-banniere.pdf) · [Bon de commande](docs/exemple-commande-indy.pdf). Ces exemples ne contiennent que des données fictives.
 
-## Installer et activer dans ce template
+## Installation et accès
 
-Le code et la police sont inclus dans l’image Docker. Le module est installé dans `htdocs/indyinvoice`, parmi les répertoires que Dolibarr détecte nativement. Son code suit la version de l’image et ses réglages restent dans MariaDB. Le dossier persistant des modules externes reste disponible pour les autres extensions.
+Le code et les polices sont livrés dans l’image Docker, dans `htdocs/indyinvoice`. Les réglages restent dans MariaDB ; la bannière est conservée dans `documents/indyinvoice/banner-<entité>.png`, sur le volume persistant du template.
 
-1. Déployer une image contenant ce module.
-2. Dans **Accueil → Configuration → Modules / Applications**, rechercher **Factures Indy** et activer le module.
-3. Ouvrir sa roue de configuration : **Présentation des factures Indy**.
-4. Choisir les couleurs, la hauteur du bandeau, la police, sa taille et le style du tableau.
-5. Cocher **Utiliser indy par défaut** puis enregistrer pour les prochaines générations. L’activation seule ajoute le modèle sans remplacer un choix existant.
+1. Déployer l’image puis activer **Documents Indy** dans **Configuration → Modules / Applications**. Le module conserve son identifiant technique `IndyInvoice`.
+2. Ouvrir sa roue de configuration : **Personnalisation des documents Indy**.
+3. Choisir une palette, modifier les couleurs, la police, la taille, la hauteur du logo et du bandeau, puis éventuellement ajouter une image PNG/JPEG.
+4. Cocher séparément le modèle par défaut des **factures** et celui des **commandes**, puis enregistrer. La case reflète la valeur réellement enregistrée après rechargement. La décocher restaure le modèle précédent, ou le modèle natif s’il n’existe plus.
+5. Enregistrer puis ouvrir un **spécimen PDF** pour contrôler le rendu complet. L’aperçu à droite utilise des données fictives.
 
-Sur une facture, dans **Documents**, choisir **indy** puis **Générer**. Cela utilise les informations actuelles de cette facture. Aucun document déjà généré n’est réécrit par l’activation ou le changement des couleurs. Le bouton de génération natif peut remplacer le PDF principal de cette facture : conserver une copie du fichier existant si nécessaire.
+Une mise à jour rend les nouveaux modèles disponibles et renouvelle le cache du thème, sans changer les modèles par défaut ni les documents métier existants.
 
-Le bouton **Aperçu** du modèle, dans les réglages natifs du module Factures, génère un spécimen sans créer ni valider de facture métier.
+![Réglages de personnalisation avec données fictives](docs/personnalisation.png)
 
-## Ce qui reste piloté par Dolibarr
+## Pourquoi une commande peut-elle encore produire un PDF classique ?
 
-| Élément | Réglage ou donnée utilisée |
+Un document généré depuis une **commande** est un bon de commande, pas une facture. Dolibarr utilise deux préférences distinctes :
+
+| Document | Modèle Indy | Modèle natif | Préférence Dolibarr |
+| --- | --- | --- | --- |
+| Facture / avoir | `indy` | `sponge` | `FACTURE_ADDON_PDF` |
+| Commande | `indyorder` | `eratosthene` | `COMMANDE_ADDON_PDF` |
+
+Le choix par défaut concerne les prochaines créations/générations qui utilisent ce défaut. Une fiche existante peut conserver son propre modèle et son ancien PDF.
+
+Sur un brouillon existant : dans **Fichiers joints / Documents → Modèle de document**, sélectionner **indyorder** pour une commande, ou **indy** pour une facture, puis **Générer**. Le bouton natif peut remplacer le PDF principal : conserver une copie si nécessaire. Le changement des couleurs ou l’activation du module ne réécrit aucun fichier déjà généré.
+
+Pour obtenir une facture à partir d’une commande, utiliser ensuite le parcours natif de facturation de Dolibarr. Le générateur de bon de commande ne convertit pas la commande en facture.
+
+## Personnalisation disponible
+
+- Cinq palettes de départ : crème, rose, sauge, terracotta et minimal ; toutes les couleurs restent modifiables.
+- Couleur et hauteur du bandeau, couleur de l’en-tête du tableau et accent des totaux. Le texte des cellules colorées choisit un contraste lisible.
+- Teinte claire des marges ; le contenu reste sur fond blanc. Les mises en page intégralement foncées de certaines références Indy ne sont pas reproduites par ces modèles natifs.
+- Inter, Helvetica, DejaVu Sans, Times et DejaVu Serif ; taille de base de 9 à 12 points ; logo de 8 à 24 mm.
+- Tableau épuré ou encadré natif. Le mode encadré conserve les totaux natifs sans recoloration.
+- Bannière panoramique facultative au-dessus de l’en-tête : PNG/JPEG, maximum 2 Mo et 6000 × 2000 px, recadrage au centre en 1680 × 160 px, réencodage PNG sans métadonnées. L’image est privée aux administrateurs dans les réglages et apparaît sur les PDF générés.
+
+Le logo conserve sa transparence d’origine. Un logo JPEG à fond blanc reste blanc : utiliser un PNG transparent dans les réglages société si souhaité.
+
+## Données contrôlées par Dolibarr
+
+| Élément | Source |
 | --- | --- |
 | Logo et coordonnées de l’émetteur | Configuration → Société / Organisation |
-| Client et contact de facturation | Fiche du tiers et contacts de la facture |
-| Numéro, dates, référence client | Facture et module de numérotation natif |
-| Produits, services, unités et descriptions | Lignes de facture ; les unités apparaissent si leur option native est activée |
-| Quantités, remises, TVA, totaux, avoirs et paiements | Calculs du générateur natif Sponge |
-| Échéance et mode de règlement | Facture et dictionnaires natifs |
-| Coordonnées bancaires | Compte bancaire lié à la facture ou réglage natif du module Factures |
-| Texte libre et mentions | Configuration du module Factures ; options PDF natives |
-| Marges, langue et informations légales | Réglages PDF et société natifs |
-| Bandeau, police et tableau Indy | Configuration du module Factures Indy |
+| Client et contact de facturation | Fiche du tiers et contacts du document |
+| Numéro, dates, références | Document et numérotation native |
+| Produits, unités et descriptions | Lignes du document ; activation native des unités |
+| Quantités, remises, TVA, totaux, avoirs et paiements | Générateurs natifs Sponge et Eratosthene |
+| Échéance, mode de règlement, banque | Document et réglages natifs du module concerné |
+| Mentions et texte libre | Réglages natifs Factures / Commandes et société |
+| Marges, langue et informations légales | Options PDF et société natives |
 
-Le modèle ne contient aucun nom, adresse, numéro fiscal, taux de TVA imposé, IBAN ou condition de règlement d’une entreprise réelle. Renseigner les informations de l’émetteur dans Dolibarr, ainsi que les mentions correspondant à sa situation. La présentation n’ajoute aucune certification ni fonction de facturation électronique.
+La catégorie d’opérations utilise l’emplacement natif sous les conditions de règlement pour éviter de recouvrir la note publique. Le module ne contient aucune adresse, information bancaire ou mention fiscale d’une entreprise réelle. Il ne modifie ni les montants ni le statut d’un document.
 
-## Présentation
-
-Par défaut : bandeau et en-tête du tableau **#FCEBD8**, police **Inter**, taille de base **11 points**, tableau sans grandes bordures verticales. Les totaux suivent les dernières lignes lorsque la place réservée par le générateur natif le permet. Le mode **Encadré** conserve la structure du tableau Sponge.
-
-Inter est embarquée pour les caractères latins et accents français. **DejaVu Sans** est proposée pour d’autres alphabets ; **Helvetica** est aussi disponible. Les polices Inter sont dérivées du fichier fourni avec le thème du dépôt, aux graisses 400 et 700, puis converties au format TCPDF. Licence : [SIL OFL](fonts/OFL.txt).
-
-Le modèle hérite de Sponge plutôt que de recopier ses calculs. Les surcharges de présentation sont temporaires pendant la génération : les préférences PDF des autres modèles ne sont pas modifiées. Les documents multidevises et bilingues utilisent le tableau natif pour conserver ses libellés et indications de change. Les modules tiers ou mises à jour majeures de Dolibarr doivent être vérifiés avant mise en production.
+Les préférences PDF temporaires sont restaurées après chaque génération. Les variantes multidevises et bilingues conservent le tableau natif. Les polices Inter couvrent le latin et les accents français, sous [SIL OFL](fonts/OFL.txt). Les modules tiers et évolutions majeures de Dolibarr doivent être vérifiés avec les documents concernés.
 
 ## Comprendre le fichier ODT fourni par Dolibarr
 
@@ -67,6 +85,8 @@ Références : [modèles ODT](https://wiki.dolibarr.org/index.php/Create_an_ODT_
 
 ## Tests et maintenance
 
-La CI génère six scénarios avec de seules données fictives : remises avec plusieurs taux de TVA, taux nul, avoir, facture longue de 48 lignes, tableau encadré et police Unicode. Elle contrôle les totaux natifs, les lignes, les polices embarquées, les en-têtes et pieds de page, les limites des pages, ainsi que l’enregistrement des préférences et la vue mobile. Les PDF et captures sont disponibles dans l’artefact de la CI.
+La CI génère douze scénarios fictifs : TVA multiples et remises, taux nul, avoir, 48 lignes, tableau encadré, polices Unicode et serif, palette sombre pour les titres, image de bannière, spécimen natif, commande et commande longue. Elle vérifie montants, lignes, en-têtes, pieds de page, polices, contraste, séparation note/catégorie et limites des pages.
 
-Le code du module est sous **GPL v3 ou ultérieure**, comme sa classe parente Dolibarr. Inter conserve sa licence SIL OFL. Le numéro technique `500987` est propre à ce projet et n’est pas une réservation DoliStore. Aucun service Indy ni logo propriétaire n’est intégré.
+Les tests navigateur vérifient les deux modèles par défaut après rechargement, leur retour au choix précédent, les palettes, le rejet d’une fausse image, le téléversement réel d’un PNG, les réglages à 320/390/768 px et la génération du PDF depuis une commande existante.
+
+Code sous **GPL v3 ou ultérieure** ; polices sous SIL OFL. Le numéro technique `500987` est propre au projet et n’est pas une réservation DoliStore. Aucun service ni logo propriétaire Indy n’est intégré.

@@ -18,9 +18,10 @@ mapping = {
     'scripts/install.sh': 'theme/install.sh',
     'LICENSE': 'theme/LICENSE',
     'tests/browser.py': 'tests/indy/browser.py',
+    'tests/usability.py': 'tests/indy/usability.py',
     'tests/seed.php': 'tests/indy/seed.php',
 }
-for name in ('indy.css', 'style.css.php', 'theme_descriptor.php', 'theme_vars.inc.php', 'thumb.png', 'version.json'):
+for name in ('indy.css', 'indy.js', 'style.css.php', 'theme_descriptor.php', 'theme_vars.inc.php', 'thumb.png', 'version.json'):
     mapping[f'theme/indy/{name}'] = f'theme/indy/{name}'
 for name in ('inter-latin.woff2', 'OFL.txt'):
     mapping[f'theme/indy/fonts/{name}'] = f'theme/indy/fonts/{name}'

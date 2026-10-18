@@ -48,6 +48,7 @@ jobs:
           settings = dict(line.split('=', 1) for line in Path('.env').read_text().splitlines() if line and not line.startswith('#'))
           subprocess.run(['python3', 'tests/invoices/browser.py'], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
           subprocess.run(['python3', 'tests/indy/browser.py'], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
+          subprocess.run(['python3', 'tests/indy/usability.py'], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
           PY
       - uses: actions/upload-artifact@v4
         if: always()

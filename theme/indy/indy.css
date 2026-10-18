@@ -826,3 +826,127 @@ body.bodylogin { background: var(--indy-nav); }
   div.tabBar, table.noborder, table.liste, .info-box { box-shadow: none; border-color: #ccc; }
   table.liste { border-spacing: 0; }
 }
+
+/* 1.4 · calm entry forms, labelled filters and reliable Select2 contrast. */
+.select2-results__option, .select2-results__option span,
+.select2-selection__rendered span { color: var(--indy-ink) !important; }
+.select2-container--default .select2-results__option--highlighted[aria-selected],
+body .select2-container--default .select2-results__option--highlighted[aria-selected] span,
+body .select2-container--default .select2-results__option--highlighted[aria-selected] * {
+  color: #63233c !important;
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected] { background: #fce6ee !important; }
+.select2-results__option { padding: 10px 12px; line-height: 1.6; }
+.select2-results__option .opacitymedium { opacity: 1; }
+body .select2-dropdown input.select2-search__field {
+  box-sizing: border-box; min-height: 42px; border: 1px solid #d4dde4 !important;
+  border-radius: 8px; background: #fff !important; color: #27333e !important;
+  -webkit-text-fill-color: #27333e; caret-color: #27333e; padding: 9px 11px;
+}
+body .select2-dropdown .select2-search { padding: 8px; }
+#id-right :is(input,select,textarea):focus, .select2-container--focus .select2-selection {
+  border-color: #c54172 !important; box-shadow: 0 0 0 3px #fce6ee;
+}
+#id-right .indy-form-grid { display: block; width: 100%; table-layout: auto; border: 0; }
+#id-right .indy-form-grid > tbody { display: block; width: 100%; }
+#id-right .indy-form-grid > tbody > tr.indy-entry-row {
+  display: grid; grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+  align-items: start; gap: 12px 28px; padding: 16px 4px; height: auto !important;
+  border-bottom: 1px solid #edf0f3;
+}
+#id-right .indy-form-grid > tbody > tr.indy-entry-row:last-child { border-bottom: 0; }
+#id-right .indy-form-grid > tbody > tr.indy-entry-row > td {
+  display: block; width: auto !important; min-width: 0; max-width: 100%;
+  height: auto !important; padding: 0 !important; border: 0; box-sizing: border-box;
+}
+#id-right .indy-entry-label { color: #596874; font-size: 13px; font-weight: 500; padding-top: 12px !important; }
+#id-right .indy-entry-value > :is(input[type="text"],input[type="email"],input[type="url"],input[type="tel"],textarea),
+#id-right .indy-entry-value > .select2-container {
+  width: min(100%, 540px) !important; min-width: 0 !important; max-width: calc(100% - 28px);
+}
+#id-right .indy-entry-value :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),select,textarea,.select2-selection) {
+  background-color: #fafbfc; border-color: #d4dde4; border-radius: 10px;
+}
+#id-right .indy-entry-value textarea { min-height: 100px; }
+#id-right .indy-filters {
+  box-sizing: border-box; width: 100%; margin: 0 0 18px; padding: 0;
+  border: 1px solid var(--indy-border); border-radius: 12px; background: #fafbfc;
+}
+#id-right .indy-filters summary { padding: 14px 18px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--indy-ink); }
+#id-right .indy-filter-grid {
+  display: grid; grid-template-columns: repeat(auto-fit,minmax(205px,1fr)); gap: 18px 20px;
+  padding: 4px 18px 18px;
+}
+#id-right .indy-filter-field { min-width: 0; }
+#id-right .indy-filter-label { margin-bottom: 7px; color: #596874; font-size: 12px; line-height: 1.5; font-weight: 600; }
+#id-right .indy-filter-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+#id-right .indy-filter-controls :is(input[type="text"],select,.select2-container) {
+  width: 100% !important; min-width: 0 !important; max-width: 100%; box-sizing: border-box;
+}
+#id-right .indy-filter-controls input.hasDatepicker { width: calc(100% - 32px) !important; }
+#id-right .indy-filter-controls .select2-selection { background: #fff; border: 1px solid #d4dde4; border-radius: 8px; }
+#id-right .indy-filter-controls .select2-container { flex: 1 1 100%; }
+#id-right .indy-filter-controls .select2-selection__rendered { white-space: normal; }
+#id-right .indy-filter-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 0 18px 16px; }
+body #id-right .indy-filter-actions button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: auto; min-height: 40px; padding: 9px 16px; border-radius: 8px; border: 1px solid #d4dde4;
+  font: 600 13px var(--indy-font); color: #354d61; background: #fff;
+}
+body #id-right .indy-filter-actions button[name="button_search_x"] { background: var(--indy-primary); color: #fff; border-color: transparent; }
+#id-right tr.liste_titre_filter[hidden] { display: none !important; }
+#id-right tr.nohoverpair.nodrag.nodrop :is(input[type="text"],input[type="number"],select) { min-height: 42px; min-width: 70px; }
+#id-right tr.nohoverpair.nodrag.nodrop textarea { min-height: 110px; border-radius: 10px; }
+#id-right tr.nohoverpair.nodrag.nodrop .select2-container { min-width: 220px; }
+@media(max-width: 800px) {
+  #id-right .indy-form-grid > tbody > tr.indy-entry-row { grid-template-columns: minmax(0,1fr); gap: 8px; padding-block: 14px; }
+  #id-right .indy-entry-label { padding-top: 0 !important; }
+  #id-right .indy-filter-grid { grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 14px; }
+}
+@media(max-width: 480px) {
+  #id-right .indy-filter-grid { grid-template-columns: minmax(0,1fr); }
+  #id-right .indy-filter-actions button { flex: 1 1 100%; }
+}
+@media print { #id-right .indy-filters { display: none !important; } }
+#id-right .indy-filter-controls :is(input[type="text"],select,.select2-container,.select2-selection) { max-width: 100% !important; }
+#id-right .indy-filter-controls .select2-selection { width: 100% !important; }
+#id-right .indy-filter-controls input[type="text"] { flex: 1 1 100%; }
+#id-right .indy-filter-controls input.hasDatepicker { flex: 1 1 calc(100% - 32px); }
+#id-right .indy-filters div.liste_titre_bydiv.indy-filter-extra {
+  display: flex; flex-wrap: wrap; gap: 14px; border: 0; background: transparent;
+  padding: 4px 18px 18px; margin: 0;
+}
+#id-right .indy-filter-extra .divsearchfield { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
+#id-right .indy-filter-extra .select2-container { width: 260px !important; max-width: 100%; }
+#id-right .indy-form-grid > tbody > tr.indy-entry-row-pairs {
+  grid-template-columns: minmax(160px,220px) minmax(0,1fr) 140px minmax(0,1fr);
+}
+#id-right .indy-entry-value :is(input,.select2-selection) { max-width: 100% !important; }
+#id-right .indy-entry-value .select2-selection { width: 100% !important; }
+#id-right .indy-form-grid > tbody > tr.indy-entry-row > td.indy-entry-label { padding-top: 10px !important; }
+@media(max-width:1100px) {
+  #id-right .indy-form-grid > tbody > tr.indy-entry-row-pairs { grid-template-columns: 180px minmax(0,1fr); }
+}
+@media(max-width:800px) {
+  #id-right .indy-form-grid > tbody > tr.indy-entry-row-pairs { grid-template-columns: minmax(0,1fr); }
+  #id-right .indy-form-grid > tbody > tr.indy-entry-row > td.indy-entry-label { padding-top: 0 !important; }
+}
+/* Statistics tables can be wider than their third-column panel. Keep the
+ * scroll viewport inside that panel rather than widening the mobile page. */
+#id-right :is(.fichethirdleft,.fichetwothirdright,.fichehalfleft,.fichehalfright) { min-width: 0; max-width: 100%; box-sizing: border-box; }
+#id-right :is(.div-table-responsive,.div-table-responsive-no-min) { min-width: 0; width: 100%; overflow-x: auto; }
+/* Dolibarr derives chart widths from a stored screen-size cookie. A page
+ * reached after resizing must also constrain the canvas in the current CSS viewport. */
+@media(max-width:600px) {
+  #id-right .dolgraphchart { width: 100% !important; max-width: calc(100vw - 48px) !important; }
+  #id-right .dolgraphchart canvas { width: 100% !important; max-width: calc(100vw - 48px) !important; height: auto !important; }
+}
+
+/* Leave room for the native phone/mail icons beside direct entry fields. */
+#id-right .indy-entry-value > :is(input[type="text"],input[type="email"],input[type="url"],input[type="tel"]) { max-width: calc(100% - 28px) !important; }
+
+#id-right .indy-filter-controls .nowrapfordate,
+#id-right .indy-filter-controls .divfordateinput { width: 100%; }
+#id-right .indy-filter-controls .divfordateinput { display: inline-flex; align-items: center; gap: 6px; }
+#id-right .indy-filter-controls .divfordateinput input { flex: 1 1 auto; }
+#id-right :is(input,select,textarea):focus { outline: none; }

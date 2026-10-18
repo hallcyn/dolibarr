@@ -19,6 +19,7 @@ foreach (array('modSociete', 'modFacture', 'modPropale', 'modBanque', 'modServic
     }
 }
 dolibarr_set_const($db, 'MAIN_THEME', 'indy', 'chaine', 0, '', 1);
+dolibarr_set_const($db, 'ALLOW_THEME_JS', '1', 'chaine', 0, '', 1);
 dolibarr_set_const($db, 'MAIN_LANG_DEFAULT', 'fr_FR', 'chaine', 0, '', 1);
 dolibarr_set_const($db, 'MAIN_INFO_SOCIETE_NOM', 'Atelier Hallcyn', 'chaine', 0, '', 1);
 dolibarr_set_const($db, 'MAIN_INFO_SOCIETE_COUNTRY', '1:FR:France', 'chaine', 0, '', 1);

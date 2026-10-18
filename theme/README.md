@@ -4,7 +4,7 @@ Cette image embarque le thème communautaire [Indy pour Dolibarr](https://github
 
 ## Activer
 
-Après déploiement d'une image contenant ce dossier : **Accueil → Configuration → Affichage → Thème → Modifier → indy → Enregistrer**. Recharger la page. Après une mise à jour du thème déjà sélectionné, réenregistrer `indy` au même endroit : cela renouvelle la révision CSS pour tous les utilisateurs. Sans cette étape, le CSS précédent peut rester en cache pendant trois heures. Le choix individuel d'un utilisateur, dans sa fiche onglet Affichage, est prioritaire sur ce choix global. Pour revenir au thème standard, sélectionner `eldy`.
+Après déploiement d'une image contenant ce dossier : **Accueil → Configuration → Affichage → Thème → Modifier → indy → Enregistrer**. Recharger la page. Le template active le JavaScript natif du thème et renouvelle automatiquement la révision CSS quand sa version change. Pour renouveler le cache manuellement, réenregistrer `indy` au même endroit. Le choix individuel d'un utilisateur, dans sa fiche onglet Affichage, est prioritaire sur ce choix global. Pour revenir au thème standard, sélectionner `eldy`.
 
 L'ajout du thème ne change pas automatiquement une préférence existante. Le réglage est stocké en base et persiste après redéploiement. Sur une instance déjà déployée, reconstruire/déployer la nouvelle version du dépôt avant de chercher `indy` dans les réglages.
 
@@ -12,13 +12,13 @@ Le Dockerfile installe les fichiers dans `/var/www/html/theme/indy` et copie les
 
 ## Portée
 
-Version **1.3.0**. Sur ordinateur à partir de 1100 px, le menu principal standard de Dolibarr est présenté dans une colonne crème et les sous-menus dans une colonne dédiée, organisée par groupes et défilante indépendamment du contenu. Les écrans plus petits utilisent la navigation native.
+Version **1.4.0**. Sur ordinateur à partir de 1100 px, le menu principal standard de Dolibarr est présenté dans une colonne crème et les sous-menus dans une colonne dédiée, organisée par groupes et défilante indépendamment du contenu. Les écrans plus petits utilisent la navigation native.
 
-Cartes et listes entièrement encadrées, avec un contour fixe pendant le défilement horizontal ; filtres dans un panneau fermé et titres de widgets pouvant revenir à la ligne. Sur téléphone, les formulaires facture et commande affichent les libellés au-dessus des champs.
+Cartes et listes entièrement encadrées, avec un contour fixe pendant le défilement horizontal ; filtres dans un panneau fermé et titres de widgets pouvant revenir à la ligne. Les filtres utilisent une grille de champs libellés et conservent les contrôles natifs. Sur téléphone, leur panneau est replié au chargement pour laisser voir les résultats ; toucher « Filtres de la liste » pour l’ouvrir. Les formulaires empilent les libellés et les champs. Les options Select2 et leurs descriptions de stock gardent un contraste lisible.
 
 Thème clair de l'interface web, prévu pour Dolibarr 24.0.2. Il conserve les fonctions, la navigation et les statuts de Dolibarr. Il ne modifie pas les modèles PDF des factures/devis et n'ajoute pas les services d'Indy. Des modules tiers peuvent nécessiter des ajustements CSS. Aucun logo, visuel propriétaire ni connexion au service Indy n'est inclus ; projet indépendant sans affiliation.
 
-Inter est embarquée et servie par Dolibarr, sous licence [SIL Open Font License](indy/fonts/OFL.txt). La [CI du template](https://github.com/hallcyn/dolibarr/actions/workflows/verify.yml) construit l'image Docker, vérifie l'installation avec MariaDB 11.4, la persistance et les vrais écrans du thème : 47 vues sur ordinateur, 12 cas sur tablette, 13 vues mobiles redimensionnées et 68 cas tactiles (iPhone/Android émulés dans Chromium, de 320 à 390 px et en paysage), filtres visibles, onglets compacts, compte utilisateur et tiroir mobile. Les captures sont dans l'artefact `indy-screenshots` des exécutions. Les [captures locales et résultats détaillés](https://github.com/hallcyn/dolibarr-indy-theme/blob/main/VALIDATION.md) sont aussi dans le dépôt source.
+Inter est embarquée et servie par Dolibarr, sous licence [SIL Open Font License](indy/fonts/OFL.txt). La [CI du template](https://github.com/hallcyn/dolibarr/actions/workflows/verify.yml) construit l'image Docker, vérifie l'installation avec MariaDB 11.4, la persistance et les vrais écrans du thème : 47 vues sur ordinateur, 12 cas sur tablette, 13 vues mobiles redimensionnées et 68 cas tactiles (iPhone/Android émulés dans Chromium, de 320 à 390 px et en paysage), filtres visibles, onglets compacts, compte utilisateur et tiroir mobile. Un audit complémentaire parcourt 30 vues à 1440/768/390 px et soumet réellement les recherches, dates et réinitialisations. Les captures sont dans l'artefact `indy-screenshots` des exécutions. Les [captures locales et résultats détaillés](https://github.com/hallcyn/dolibarr-indy-theme/blob/main/VALIDATION.md) sont aussi dans le dépôt source.
 
 ## Mettre à jour la copie
 

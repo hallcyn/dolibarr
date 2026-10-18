@@ -16,7 +16,7 @@ class modIndyInvoice extends DolibarrModules
         $this->description = 'IndyInvoiceDescription';
         $this->editor_name = 'Hallcyn';
         $this->editor_url = 'https://github.com/hallcyn/dolibarr';
-        $this->version = '1.0.0';
+        $this->version = '1.1.0';
         $this->const_name = 'MAIN_MODULE_INDYINVOICE';
         $this->picto = 'bill';
         $this->module_parts = array('models' => 1);
@@ -37,7 +37,9 @@ class modIndyInvoice extends DolibarrModules
         $entity = (int) $conf->entity;
         return $this->_init(array(
             "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom,type,entity) SELECT 'indy','invoice',".$entity.
-            " WHERE NOT EXISTS (SELECT 1 FROM ".MAIN_DB_PREFIX."document_model WHERE nom='indy' AND type='invoice' AND entity=".$entity.")"
+            " WHERE NOT EXISTS (SELECT 1 FROM ".MAIN_DB_PREFIX."document_model WHERE nom='indy' AND type='invoice' AND entity=".$entity.")",
+            "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom,type,entity) SELECT 'indyorder','order',".$entity.
+            " WHERE NOT EXISTS (SELECT 1 FROM ".MAIN_DB_PREFIX."document_model WHERE nom='indyorder' AND type='order' AND entity=".$entity.")"
         ), $options);
     }
 
@@ -53,8 +55,14 @@ class modIndyInvoice extends DolibarrModules
             }
             dolibarr_set_const($this->db, 'FACTURE_ADDON_PDF', $previous, 'chaine', 0, '', $conf->entity);
         }
+        if (getDolGlobalString('COMMANDE_ADDON_PDF') === 'indyorder') {
+            $previous = getDolGlobalString('INDYINVOICE_PREVIOUS_ORDER_MODEL', 'eratosthene');
+            $res = $this->db->query("SELECT nom FROM ".MAIN_DB_PREFIX."document_model WHERE type='order' AND nom='".$this->db->escape($previous)."' AND entity=".((int)$conf->entity));
+            if (!$res || !$this->db->num_rows($res)) $previous = 'eratosthene';
+            dolibarr_set_const($this->db, 'COMMANDE_ADDON_PDF', $previous, 'chaine', 0, '', $conf->entity);
+        }
         return $this->_remove(array(
-            "DELETE FROM ".MAIN_DB_PREFIX."document_model WHERE nom='indy' AND type='invoice' AND entity=".((int) $conf->entity)
+            "DELETE FROM ".MAIN_DB_PREFIX."document_model WHERE ((nom='indy' AND type='invoice') OR (nom='indyorder' AND type='order')) AND entity=".((int) $conf->entity)
         ), $options);
     }
 }

@@ -61,8 +61,23 @@ php('require "/var/www/html/conf/conf.php"; '
     'file_put_contents("/var/www/html/custom/railway-smoke.txt", "module"); '
     'file_put_contents("/data/sessions/railway-smoke.txt", "session");')
 
+# A restart must keep presentation revisions stable and leave native PDF
+# choices alone. A version bump is applied only once by the startup hook.
+presentation_probe = ('define("NOLOGIN", 1); define("NOREQUIREMENU", 1); '
+    'require "/var/www/html/main.inc.php"; '
+    'echo json_encode(["js" => getDolGlobalInt("ALLOW_THEME_JS"), '
+    '"version" => getDolGlobalString("INDY_UI_ASSET_VERSION"), '
+    '"revision" => getDolGlobalInt("MAIN_IHM_PARAMS_REV"), '
+    '"invoice" => getDolGlobalString("FACTURE_ADDON_PDF"), '
+    '"order" => getDolGlobalString("COMMANDE_ADDON_PDF")]);')
+presentation_before = json.loads(php(presentation_probe))
+assert presentation_before['js'] == 1
+assert presentation_before['version'] == json.loads((ROOT/'theme/indy/version.json').read_text())['version']
+assert presentation_before['revision'] > 0
+
 compose('up', '-d', '--force-recreate')
 healthy()
+assert json.loads(php(presentation_probe)) == presentation_before, 'Presentation hook changed defaults or revision on restart'
 php('foreach (["documents" => "document", "custom" => "module", "sessions" => "session"] as $dir => $value) '
     '{ if (file_get_contents("/data/$dir/railway-smoke.txt") !== $value) exit(1); } '
     '$db = new mysqli(getenv("DOLI_DB_HOST"), getenv("DOLI_DB_USER"), getenv("DOLI_DB_PASSWORD"), getenv("DOLI_DB_NAME")); '
