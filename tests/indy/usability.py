@@ -196,6 +196,9 @@ with sync_playwright() as p:
   page.evaluate('''()=>document.querySelector('#state_id').append(new Option('CÃƒÂ´tes-dâ€™Armor','indy-late-label'))''')
   page.wait_for_function("document.querySelector('#state_id option[value=indy-late-label]').textContent==='Côtes-d’Armor'")
   assert native.input_value()==value
+  page.evaluate('''()=>{const o=document.createElement('option');o.textContent='HÃ©rault';o.id='indy-implicit-value';document.querySelector('#state_id').append(o);}''')
+  page.wait_for_function("document.querySelector('#indy-implicit-value').textContent==='Hérault'")
+  assert page.locator('#indy-implicit-value').get_attribute('value')=='HÃ©rault', 'Implicit submitted value changed'
  print('PASS native department accents, Select2 search/selection, late options and unchanged values/business handlers.',flush=True)
  for width in (1280,1440,1920):
   page.set_viewport_size({'width':width,'height':900})

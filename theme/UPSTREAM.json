@@ -1,6 +1,6 @@
 {
   "repository": "hallcyn/dolibarr-indy-theme",
-  "commit": "e62bc54e4fc1cd45a04a75bd6872e00f6c980658",
+  "commit": "c719a6682184ea784d30255dd33d58e3117a1642",
   "version": "1.5.5",
   "sha256": {
     "tests/indy/browser.py": "dea6d4854188d168783c5ce4268bcb0d67537014b1bd14ef20b042f578a2faa2",
@@ -10,12 +10,12 @@
     "tests/indy/reference/indy-1.4.1.js": "b3b8729a3be20790ba098ad60fb50ef7cfe2a0855199e84e0f06f8f1303fc042",
     "tests/indy/responsive.py": "8685e20002b5ded8796222281ecfa39564406fb15a8aa89c457658b7f92c176d",
     "tests/indy/seed.php": "7ef54e82ee297a6c7a640e9341f4c1e4531b720659557091676cc5b2f5131287",
-    "tests/indy/usability.py": "b3a364e8a19516b6443812a0173cc6c980453910c3a377552f3c227819c28459",
+    "tests/indy/usability.py": "941c9803dac19b0474e76e5a7da1d8f914ca5287b8d6d8fd2e51cd7e60490e87",
     "theme/LICENSE": "e79e9c8a0c85d735ff98185918ec94ed7d175efc377012787aebcf3b80f0d90b",
     "theme/indy/fonts/OFL.txt": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
     "theme/indy/fonts/inter-latin.woff2": "4716c7c50942309fccfe663ff567c664cc82e4f6fa374705f8f329bc2f967d64",
     "theme/indy/indy.css": "1a6f694da7dfc45df199abe00eb8c615c3ef7375c762804582db05aeec2602ae",
-    "theme/indy/indy.js": "ddedc259bf10a5517bc7081840ef32e40147acc1928ba138086fe952d64765c3",
+    "theme/indy/indy.js": "0f4d1da448e73f261b2b4e2b8cb879c9c23819e5de23e49dfd2f258550a22f3b",
     "theme/indy/style.css.php": "e95ee4594164c641df48671c425af1e9259ef4621279c9f6efcc4b9deb16bb3f",
     "theme/indy/theme_descriptor.php": "6b180946533cb38c121292b626791b11dbb17a39e0d482f063f41b4987551e5b",
     "theme/indy/theme_vars.inc.php": "a05d9a7db71186b3cb22ab4993bc4e4a935caf7b4772059a055494c374a5cfed",

@@ -550,6 +550,9 @@
     for(const option of select.options){
       const old=option.textContent,fixed=repairLabel(old);
       if(old!==fixed){
+        // HTML options without a value attribute derive their submitted
+        // value from their text: pin that original value before relabelling.
+        if(!option.hasAttribute('value'))option.setAttribute('value',option.value);
         option.textContent=fixed;changed=true;
         // Select2 caches native option labels separately from the DOM.
         const cached=instance?.dataAdapter?.item(window.jQuery(option)) || window.jQuery?.(option).data('data');if(cached)cached.text=fixed;
