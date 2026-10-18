@@ -1,13 +1,13 @@
 {
   "repository": "hallcyn/dolibarr-indy-theme",
-  "commit": "0bf1d2fc9436f5748ed6d30d8cc2d4591199ffe0",
+  "commit": "611f22b2420810d7415770ecbc45827068308dc9",
   "version": "1.5.0",
   "sha256": {
     "tests/indy/browser.py": "dea6d4854188d168783c5ce4268bcb0d67537014b1bd14ef20b042f578a2faa2",
     "tests/indy/reference/desktop.json": "1ef187148f34749892c94d70edd2d5acd8ae247c2269a861aee580cd6b342d0f",
     "tests/indy/reference/indy-1.4.1.css": "5a7a052f5ae894c79f4bc857fd173c86e90b5cc724cbecfa5c04feaec055669f",
     "tests/indy/reference/indy-1.4.1.js": "b3b8729a3be20790ba098ad60fb50ef7cfe2a0855199e84e0f06f8f1303fc042",
-    "tests/indy/responsive.py": "7fa9815db9521070c084dadb50525e8cbdd23847354f43e92f0c89392d569988",
+    "tests/indy/responsive.py": "1afac65b2ed54f776266adf85f0b3cb66ed7b9f3b18a1b0509666e162690ba2f",
     "tests/indy/seed.php": "5b8bc073cdd3304ce7b77dd26a6eebf285e3fdf37841f492a1c986c32c5b2884",
     "tests/indy/usability.py": "70c325760c6b9196e3bcbc0c69ca5c1a8084722fd05419a0d0880d252a7a10e4",
     "theme/LICENSE": "e79e9c8a0c85d735ff98185918ec94ed7d175efc377012787aebcf3b80f0d90b",

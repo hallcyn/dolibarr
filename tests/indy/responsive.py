@@ -5,6 +5,7 @@ Both renders use the same running fixture, browser, fonts and fictional data.
 No production credentials or production data are used.
 """
 import ast
+import base64
 import hashlib
 import json
 import os
@@ -75,8 +76,28 @@ def desktop_structure(page):
     })''')
 
 
+def desktop_pixels(comparator, first, second):
+    if first == second:
+        return {'same_size': True, 'changed': 0, 'max_channel_delta': 0}
+    # CSS reload can change a few anti-aliased icon edge pixels by 1–2/255
+    # in Chromium. Compare decoded pixels, allowing only this tiny raster
+    # noise, never a size change, a shifted control or a changed surface.
+    return comparator.evaluate('''async sources=>{
+      const images=await Promise.all(sources.map(async s=>createImageBitmap(await (await fetch('data:image/png;base64,'+s)).blob())));
+      const [a,b]=images;
+      if(a.width!==b.width||a.height!==b.height){images.forEach(i=>i.close());return {same_size:false,changed:0,max_channel_delta:0};}
+      const canvas=new OffscreenCanvas(a.width,a.height),ctx=canvas.getContext('2d',{willReadFrequently:true});
+      ctx.drawImage(a,0,0);const before=ctx.getImageData(0,0,a.width,a.height).data;
+      ctx.clearRect(0,0,a.width,a.height);ctx.drawImage(b,0,0);const after=ctx.getImageData(0,0,b.width,b.height).data;
+      let changed=0,max=0;
+      for(let i=0;i<before.length;i+=4){let delta=0;for(let c=0;c<4;c++)delta=Math.max(delta,Math.abs(before[i+c]-after[i+c]));if(delta){changed++;max=Math.max(max,delta);}}
+      images.forEach(i=>i.close());return {same_size:true,changed,max_channel_delta:max};
+    }''', [base64.b64encode(v).decode() for v in (first, second)])
+
+
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path=os.environ.get('PLAYWRIGHT_CHROMIUM_EXECUTABLE'))
+    comparator = browser.new_page()
     auth = browser.new_context(viewport={'width': 1440, 'height': 1000}, locale='fr-FR')
     assert auth.request.get(base + '/theme/indy/indy.css').text().startswith(old_css), 'Accepted desktop CSS was modified'
     assert auth.request.get(base + '/theme/indy/indy.js').text().startswith(old_js), 'Accepted desktop JS was modified'
@@ -113,7 +134,9 @@ with sync_playwright() as p:
             a.add_script_tag(url=base + '/theme/indy/indy.js?indy_reference=current')
             a.wait_for_function("!document.body.classList.contains('indy-responsive')")
             second = screenshot(a, f'desktop-{name}-{width}-current.png')
-            assert first == second, (name, width, 'Accepted desktop pixels changed')
+            pixels = desktop_pixels(comparator, first, second)
+            (out / f'desktop-{name}-{width}-pixels.json').write_text(json.dumps(pixels, indent=2))
+            assert pixels['same_size'] and pixels['changed'] <= 200 and pixels['max_channel_delta'] <= 2, (name, width, 'Accepted desktop pixels changed', pixels)
             if width == 1440:
                 structure = desktop_structure(a)
                 a.set_viewport_size({'width': 390, 'height': 844})
