@@ -16,7 +16,7 @@ class modIndyInvoice extends DolibarrModules
         $this->description = 'IndyInvoiceDescription';
         $this->editor_name = 'Hallcyn';
         $this->editor_url = 'https://github.com/hallcyn/dolibarr';
-        $this->version = '1.1.0';
+        $this->version = '1.2.0';
         $this->const_name = 'MAIN_MODULE_INDYINVOICE';
         $this->picto = 'bill';
         $this->module_parts = array('models' => 1);

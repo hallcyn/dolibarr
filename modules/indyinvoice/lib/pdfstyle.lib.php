@@ -1,8 +1,15 @@
 <?php
 /* Hallcyn. SPDX-License-Identifier: GPL-3.0-or-later */
 require_once __DIR__.'/totalscanvas.lib.php';
+require_once __DIR__.'/textcanvas.lib.php';
 trait IndyDocumentStyle
 {
+    private function textColor($zone, $background)
+    {
+        return getDolGlobalInt('INDYINVOICE_'.$zone.'_TEXT_AUTO', 1)
+            ? $this->contrast($this->rgb($background, 'FCEBD8'))
+            : $this->rgb('INDYINVOICE_'.$zone.'_TEXT_COLOR', '27333E');
+    }
     private function contrast($rgb)
     {
         return IndyTotalsCanvas::contrast($rgb);
@@ -39,15 +46,44 @@ trait IndyDocumentStyle
             'INVOICE_CATEGORY_OF_OPERATION' => getDolGlobalInt('INVOICE_CATEGORY_OF_OPERATION') === 1 ? 2 : getDolGlobalInt('INVOICE_CATEGORY_OF_OPERATION'),
             'MAIN_PDF_NO_RECIPENT_FRAME' => 1,
             'MAIN_PDF_TITLE_BACKGROUND_COLOR' => implode(',', $this->rgb('INDYINVOICE_TABLE_COLOR', 'FCEBD8')),
+            'PDF_FOOTER_TEXT_COLOR' => implode(',', $this->rgb('INDYINVOICE_FOOTER_TEXT_COLOR', '5B6770')),
+            'MAIN_USE_AUTOWRAP_ON_FREETEXT' => 1,
+            'MAIN_PDF_FREETEXT_HEIGHT' => getDolGlobalInt('MAIN_PDF_FREETEXT_HEIGHT', 5),
         );
+        $freeTextKey = $this->name === 'indyorder' ? 'ORDER_FREE_TEXT' : 'INVOICE_FREE_TEXT';
+        if ($freeTextKey === 'ORDER_FREE_TEXT' && !getDolGlobalString($freeTextKey)
+            && getDolGlobalInt('INDYINVOICE_USE_INVOICE_TEXT_FOR_ORDERS')) {
+            $settings[$freeTextKey] = getDolGlobalString('INVOICE_FREE_TEXT');
+        }
         $saved = array();
         foreach ($settings as $key => $value) {
             $saved[$key] = array(property_exists($conf->global, $key), $conf->global->$key ?? null);
             $conf->global->$key = $value;
         }
+        $note = $object->note_public;
         try {
+            // Measure the native footer at the real page width before the
+            // native paginator decides where to place lines and totals.
+            $probe = pdf_getInstance($this->format);
+            $probe->SetMargins($this->marge_gauche, $this->marge_haute, $this->marge_droite);
+            $probe->SetFont(pdf_getPDFFont($outputlangs), '', pdf_getPDFFontSize($outputlangs));
+            $probe->AddPage();
+            $footer = $this->_pagefoot($probe, $object, $outputlangs);
+            $base = $this->marge_basse + (getDolGlobalInt('MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS') ? 22 : 12);
+            $extra = 0;
+            $account = $this->indyBankAccount($object);
+            if ($account && ($this->indyExtraBank($object) || empty($object->mode_reglement_code) || $object->mode_reglement_code === 'VIR')) {
+                $canvas = new IndyTextCanvas($probe, $this->rgb('INDYINVOICE_TEXT_COLOR', '27333E'));
+                $bankHeight = pdf_bank($canvas, $outputlangs, $this->marge_gauche, 0, $account, 0, pdf_getPDFFontSize($outputlangs));
+                $extra = max(0, $bankHeight + 30 - 50);
+            }
+            $conf->global->MAIN_PDF_FREETEXT_HEIGHT = max($settings['MAIN_PDF_FREETEXT_HEIGHT'], ceil($footer - $base + 5)) + ceil($extra);
+            if ($note !== '') {
+                $object->note_public = '<span style="color:#'.implode('', array_map(function ($v) { return sprintf('%02X', $v); }, $this->rgb('INDYINVOICE_TEXT_COLOR', '27333E'))).'">'.$note.'</span>';
+            }
             return parent::write_file($object, $outputlangs, $srctemplatepath, $hidedetails, $hidedesc, $hideref);
         } finally {
+            $object->note_public = $note;
             foreach ($saved as $key => $state) {
                 if ($state[0]) {
                     $conf->global->$key = $state[1];
@@ -79,7 +115,13 @@ trait IndyDocumentStyle
         $margin = $this->marge_haute;
         $this->marge_haute += $strip;
         try {
-            $result = $native($pdf, $object, $showaddress, $outputlangs, $outputlangsbis);
+            $canvas = new IndyTextCanvas($pdf, $this->rgb('INDYINVOICE_TEXT_COLOR', '27333E'), array(
+                'top' => $strip, 'bottom' => $strip + $height,
+                'color' => $this->textColor('HEADER', 'INDYINVOICE_BANNER_COLOR'),
+                'background' => $height > 0 ? $this->rgb('INDYINVOICE_BANNER_COLOR', 'FCEBD8') : null,
+                'width' => $this->page_largeur,
+            ));
+            $result = $native($canvas, $object, $showaddress, $outputlangs, $outputlangsbis);
         } finally {
             $this->marge_haute = $margin;
         }
@@ -108,7 +150,7 @@ trait IndyDocumentStyle
 
     public function pdfTabTitles(&$pdf, $tab_top, $tab_height, $outputlangs, $hidetop = 0)
     {
-        if (!$hidetop) $pdf->SetTextColor(...$this->contrast($this->rgb('INDYINVOICE_TABLE_COLOR', 'FCEBD8')));
+        if (!$hidetop) $pdf->SetTextColor(...$this->textColor('TABLE', 'INDYINVOICE_TABLE_COLOR'));
         $result = parent::pdfTabTitles($pdf, $tab_top, $tab_height, $outputlangs, $hidetop);
         $pdf->SetTextColor(0, 0, 0);
         return $result;
@@ -138,7 +180,7 @@ trait IndyDocumentStyle
             $pdf->Cell($width, 3, $outputlangs->transnoentities('AmountInCurrency', $outputlangs->transnoentities('Currency'.$currency)), 0, 0, 'R');
             $pdf->SetFont('', 'B', $size - 1);
         }
-        $pdf->SetTextColor(...$this->contrast($this->rgb('INDYINVOICE_TABLE_COLOR', 'FCEBD8')));
+        $pdf->SetTextColor(...$this->textColor('TABLE', 'INDYINVOICE_TABLE_COLOR'));
         $this->pdfTabTitles($pdf, $tab_top, $tab_height, $outputlangs, $hidetop);
         if (!$hidetop) {
             $pdf->Line($this->marge_gauche, $tab_top + $this->tabTitleHeight, $this->page_largeur - $this->marge_droite, $tab_top + $this->tabTitleHeight);
@@ -168,9 +210,55 @@ trait IndyDocumentStyle
         $pdf->Line($left, $posy - 2, $this->page_largeur - $this->marge_droite, $posy - 2);
         $pdf->SetLineWidth(0.2);
         if (getDolGlobalString('INDYINVOICE_TABLE_STYLE', 'light') === 'light') {
-            $canvas = new IndyTotalsCanvas($pdf, $this->rgb('INDYINVOICE_ACCENT_COLOR', 'D82B68'));
+            $canvas = new IndyTotalsCanvas($pdf, $this->rgb('INDYINVOICE_ACCENT_COLOR', 'D82B68'), $this->rgb('INDYINVOICE_TEXT_COLOR', '27333E'),
+                getDolGlobalInt('INDYINVOICE_TOTAL_TEXT_AUTO', 1) ? null : $this->rgb('INDYINVOICE_TOTAL_TEXT_COLOR', 'FFFFFF'));
             return parent::drawTotalTable($canvas, $object, $deja_regle, $posy, $outputlangs, $outputlangsbis);
         }
-        return parent::drawTotalTable($pdf, $object, $deja_regle, $posy, $outputlangs, $outputlangsbis);
+        $canvas = new IndyTextCanvas($pdf, $this->rgb('INDYINVOICE_TEXT_COLOR', '27333E'));
+        return parent::drawTotalTable($canvas, $object, $deja_regle, $posy, $outputlangs, $outputlangsbis);
+    }
+
+    public function printStdColumnContent($pdf, &$curY, $colKey, $columnText = '')
+    {
+        $canvas = new IndyTextCanvas($pdf, $this->rgb('INDYINVOICE_TEXT_COLOR', '27333E'));
+        return parent::printStdColumnContent($canvas, $curY, $colKey, $columnText);
+    }
+
+    public function printColDescContent($pdf, &$curY, $colKey, $object, $i, $outputlangs, $hideref = 0, $hidedesc = 0, $issupplierline = 0)
+    {
+        $canvas = new IndyTextCanvas($pdf, $this->rgb('INDYINVOICE_TEXT_COLOR', '27333E'));
+        return parent::printColDescContent($canvas, $curY, $colKey, $object, $i, $outputlangs, $hideref, $hidedesc, $issupplierline);
+    }
+
+    protected function _pagefoot(&$pdf, $object, $outputlangs, $hidefreetext = 0, $heightforqrinvoice = 0)
+    {
+        $canvas = new IndyTextCanvas($pdf, null, null, true);
+        if ($this->name === 'indyorder') return parent::_pagefoot($canvas, $object, $outputlangs, $hidefreetext);
+        return parent::_pagefoot($canvas, $object, $outputlangs, $hidefreetext, $heightforqrinvoice);
+    }
+
+    private function indyBankAccount($object)
+    {
+        if ($this->name === 'indy' && (int) $object->type === 2) return null;
+        $id = ($object->fk_bank ?? 0) > 0 ? $object->fk_bank : (($object->fk_account ?? 0) > 0 ? $object->fk_account : getDolGlobalInt('FACTURE_RIB_NUMBER'));
+        if ($id <= 0) return null;
+        require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
+        $account = new Account($this->db);
+        return $account->fetch((int) $id) > 0 ? $account : null;
+    }
+
+    private function indyExtraBank($object)
+    {
+        return getDolGlobalInt('INDYINVOICE_SHOW_BANK_DETAILS') && !empty($object->mode_reglement_code) && $object->mode_reglement_code !== 'VIR';
+    }
+
+    protected function indyInfoTable(&$pdf, $object, $posy, $outputlangs, $native)
+    {
+        $canvas = new IndyTextCanvas($pdf, $this->rgb('INDYINVOICE_TEXT_COLOR', '27333E'));
+        $end = $native($canvas, $object, $this->totalsPosition($pdf, $posy), $outputlangs);
+        if ($this->indyExtraBank($object) && ($account = $this->indyBankAccount($object))) {
+            $end = pdf_bank($canvas, $outputlangs, $this->marge_gauche, $end + 3, $account, 0, pdf_getPDFFontSize($outputlangs)) + 2;
+        }
+        return $end;
     }
 }

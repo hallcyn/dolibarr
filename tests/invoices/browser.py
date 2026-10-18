@@ -1,5 +1,6 @@
 """Check actual native defaults, persistence, palettes, uploads and mobile UI."""
 import os
+import json
 import fitz
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -45,6 +46,52 @@ with sync_playwright() as p:
     pixel=pdf[0].get_pixmap(clip=fitz.Rect(3,3,9,9),alpha=False).pixel(2,2)
     assert pixel[1]>pixel[0], 'Draft order used the classic PDF instead of the saved sage style'
     page.goto(base+'/indyinvoice/admin/setup.php',wait_until='networkidle')
+    # Every text color and bank/order option survives an actual form POST.
+    page.locator('[data-palette=cream]').click()
+    custom={'TEXT':'#452060','HEADER_TEXT':'#fff4db','TABLE_TEXT':'#354080','TOTAL_TEXT':'#fff4db','FOOTER_TEXT':'#354080','BANNER':'#452060','ACCENT':'#452060'}
+    for key,value in custom.items():
+        page.locator('#INDYINVOICE_'+key+'_COLOR').evaluate('(e,value)=>{e.value=value;e.dispatchEvent(new Event("input",{bubbles:true}));}',value)
+    for zone in ('HEADER','TABLE','TOTAL'): page.locator('[name=INDYINVOICE_'+zone+'_TEXT_AUTO]').uncheck()
+    page.locator('[name=INDYINVOICE_SHOW_BANK_DETAILS]').check()
+    page.locator('[name=INDYINVOICE_USE_INVOICE_TEXT_FOR_ORDERS]').check()
+    page.locator('input[type=submit]').click();page.wait_for_load_state('networkidle');page.reload(wait_until='networkidle')
+    assert 'saved=1' in page.url
+    for key,value in custom.items(): assert page.locator('#INDYINVOICE_'+key+'_COLOR').input_value()==value
+    assert page.locator('[name=INDYINVOICE_SHOW_BANK_DETAILS]').is_checked()
+    assert page.locator('[name=INDYINVOICE_USE_INVOICE_TEXT_FOR_ORDERS]').is_checked()
+    assert not page.locator('[name=INDYINVOICE_HEADER_TEXT_AUTO]').is_checked()
+    # Insufficient contrast is rejected without modifying saved preferences.
+    page.locator('#INDYINVOICE_TEXT_COLOR').evaluate('e=>e.value="#ffffff"')
+    page.locator('input[type=submit]').click();page.wait_for_load_state('networkidle')
+    assert 'contraste du texte insuffisant' in page.locator('body').inner_text()
+    page.goto(base+'/indyinvoice/admin/setup.php',wait_until='networkidle')
+    assert page.locator('#INDYINVOICE_TEXT_COLOR').input_value()=='#452060'
+    # Native invoice settings, the same controls shown in the user's screenshot.
+    page.goto(base+'/admin/invoice.php',wait_until='networkidle')
+    mention='Données fictives — MENTION ENREGISTRÉE DEPUIS DOLIBARR. '+('Conditions de conservation et de livraison de démonstration. '*18)+'FIN MENTION NAVIGATEUR.'
+    page.locator('[name=INVOICE_FREE_TEXT]').fill(mention)
+    mention_row=page.locator('tr').filter(has=page.locator('[name=INVOICE_FREE_TEXT]'))
+    mention_row.locator('input[type=submit]').click();page.wait_for_load_state('networkidle');page.reload(wait_until='networkidle')
+    assert page.locator('[name=INVOICE_FREE_TEXT]').input_value()==mention
+    bankform=page.locator('form').filter(has=page.locator('[name=action][value=setribchq]'))
+    bankform.locator('[name=rib]').select_option(label='DEMONSTRATION A')
+    bankform.locator('input[type=submit]').click();page.wait_for_load_state('networkidle')
+    fixtures=json.loads((artifacts/'manifest.json').read_text())
+    page.goto(base+'/compta/facture/card.php?facid='+str(fixtures['bank-card-shown']['id']),wait_until='networkidle')
+    form=page.locator('form').filter(has=page.locator('input[name=action][value=builddoc]'))
+    form.locator('select[name=model]').select_option('indy')
+    form.locator('input[type=submit]').click();page.wait_for_load_state('networkidle')
+    link=page.locator('a[href*="document.php?modulepart=facture"]').first
+    with page.expect_download() as pending: link.click()
+    pending.value.save_as(str(artifacts/'invoice-from-ui.pdf'))
+    pdf=fitz.open(artifacts/'invoice-from-ui.pdf')
+    text=' '.join(p.get_text() for p in pdf)
+    assert 'MENTION ENREGISTRÉE DEPUIS DOLIBARR.' in text and 'FIN MENTION NAVIGATEUR.' in text
+    assert max(r.y1 for r in pdf[-1].search_for('FIN MENTION NAVIGATEUR.')) < pdf[-1].search_for('1 / 1')[0].y0, 'Free text overlaps pagination with Unicode font'
+    assert 'TITULAIRE FICTIF A' in text and 'DEMOFRPPXXX' in text and text.count('IBAN')==1
+    spans=[s for b in pdf[0].get_text('dict')['blocks'] if 'lines' in b for l in b['lines'] for s in l['spans']]
+    assert any('Accompagnement' in s['text'] and s['color']==0x452060 for s in spans)
+    page.goto(base+'/indyinvoice/admin/setup.php',wait_until='networkidle')
     # Unchecking is an actual reversible preference, not a one-shot action.
     page.locator('[name=make_default]').uncheck();page.locator('[name=make_default_order]').uncheck()
     page.locator('input[type=submit]').click();page.wait_for_load_state('networkidle');page.reload(wait_until='networkidle')
@@ -72,4 +119,4 @@ with sync_playwright() as p:
             raise AssertionError(('Settings overflow',width))
     page.screenshot(path=str(artifacts/'settings-mobile.png'),full_page=True)
     browser.close()
-print('PASS: native invoice/order defaults, checked-state persistence after reload, reversal, palettes, upload validation and mobile settings.')
+print('PASS: native invoice/order defaults, saved text colors and payment switches, contrast rejection, native bank/free-text settings regenerated from UI, reversal, uploads and mobile settings.')

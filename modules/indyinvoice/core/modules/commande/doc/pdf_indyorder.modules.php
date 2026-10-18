@@ -10,7 +10,7 @@ class pdf_indyorder extends pdf_eratosthene
         parent::__construct($db);
         $this->name = 'indyorder';
         $this->description = 'Indy — commande personnalisable';
-        $this->version = '1.1.0';
+        $this->version = '1.2.0';
         $this->corner_radius = 1.6;
     }
     protected function _pagehead(&$pdf, $object, $showaddress, $outputlangs, $outputlangsbis = null, $titlekey = 'PdfOrderTitle')
@@ -20,6 +20,7 @@ class pdf_indyorder extends pdf_eratosthene
     }
     protected function drawInfoTable(&$pdf, $object, $posy, $outputlangs)
     {
-        return parent::drawInfoTable($pdf, $object, $this->totalsPosition($pdf, $posy), $outputlangs);
+        return $this->indyInfoTable($pdf, $object, $posy, $outputlangs,
+            function (&$canvas, $object, $y, $langs) { return parent::drawInfoTable($canvas, $object, $y, $langs); });
     }
 }

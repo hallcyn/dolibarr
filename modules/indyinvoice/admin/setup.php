@@ -11,6 +11,7 @@ foreach (array($_SERVER['CONTEXT_DOCUMENT_ROOT'] ?? '', $_SERVER['DOCUMENT_ROOT'
 if (!$loaded) { http_response_code(500); exit('Dolibarr bootstrap unavailable'); }
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+require_once __DIR__.'/../lib/totalscanvas.lib.php';
 if (!$user->admin || !isModEnabled('indyinvoice')) accessforbidden();
 $langs->loadLangs(array('admin', 'bills', 'orders', 'indyinvoice@indyinvoice'));
 $fields = array(
@@ -18,12 +19,19 @@ $fields = array(
     'INDYINVOICE_TABLE_COLOR' => array('color', 'FCEBD8'),
     'INDYINVOICE_ACCENT_COLOR' => array('color', 'D82B68'),
     'INDYINVOICE_PAPER_COLOR' => array('color', 'FFFFFF'),
+    'INDYINVOICE_TEXT_COLOR' => array('color', '27333E'),
+    'INDYINVOICE_HEADER_TEXT_COLOR' => array('color', '27333E'),
+    'INDYINVOICE_TABLE_TEXT_COLOR' => array('color', '27333E'),
+    'INDYINVOICE_TOTAL_TEXT_COLOR' => array('color', 'FFFFFF'),
+    'INDYINVOICE_FOOTER_TEXT_COLOR' => array('color', '5B6770'),
     'INDYINVOICE_BANNER_HEIGHT' => array('height', '32'),
     'INDYINVOICE_FONT' => array('font', 'indyinter'),
     'INDYINVOICE_FONT_SIZE' => array('size', '11'),
     'INDYINVOICE_LOGO_HEIGHT' => array('logo', '18'),
     'INDYINVOICE_TABLE_STYLE' => array('style', 'light'),
 );
+$switches = array('INDYINVOICE_HEADER_TEXT_AUTO' => 1, 'INDYINVOICE_TABLE_TEXT_AUTO' => 1, 'INDYINVOICE_TOTAL_TEXT_AUTO' => 1,
+    'INDYINVOICE_SHOW_BANK_DETAILS' => 0, 'INDYINVOICE_USE_INVOICE_TEXT_FOR_ORDERS' => 0);
 $defaults = array(
     'make_default' => array('FACTURE_ADDON_PDF', 'indy', 'sponge', 'INDYINVOICE_PREVIOUS_MODEL', 'invoice'),
     'make_default_order' => array('COMMANDE_ADDON_PDF', 'indyorder', 'eratosthene', 'INDYINVOICE_PREVIOUS_ORDER_MODEL', 'order'),
@@ -33,6 +41,7 @@ $fontOptions = array('indyinter' => 'Inter (latin)', 'helvetica' => 'Helvetica',
 $styleOptions = array('light' => $langs->trans('IndyTableLight'), 'grid' => $langs->trans('IndyTableGrid'));
 $values = array();
 foreach ($fields as $key => $definition) $values[$key] = getDolGlobalString($key, $definition[1]);
+foreach ($switches as $key => $fallback) $values[$key] = getDolGlobalInt($key, $fallback);
 $banner = DOL_DATA_ROOT.'/indyinvoice/banner-'.((int) $conf->entity).'.png';
 $useBanner = getDolGlobalInt('INDYINVOICE_USE_BANNER_IMAGE') && is_readable($banner);
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && GETPOST('action', 'aZ09') === 'save') {
@@ -43,8 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && GETPOST('action', 'aZ09') === 'save
         if ($type === 'color') {
             $value = strtoupper(ltrim($value, '#'));
             $ok = preg_match('/^[A-F0-9]{6}$/', $value);
-            if ($ok && in_array($key, array('INDYINVOICE_BANNER_COLOR', 'INDYINVOICE_PAPER_COLOR'), true)) {
-                // Native address/reference text uses dark ink. Keep its contrast.
+            if ($ok && $key === 'INDYINVOICE_PAPER_COLOR') {
+                // The margin tint remains light; banner text has its own color.
                 $lightness = (hexdec(substr($value, 0, 2))*0.2126 + hexdec(substr($value, 2, 2))*0.7152 + hexdec(substr($value, 4, 2))*0.0722)/255;
                 $ok = $lightness >= 0.72;
             }
@@ -57,6 +66,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && GETPOST('action', 'aZ09') === 'save
         $valid = $valid && $ok;
         $values[$key] = $value;
     }
+    foreach ($switches as $key => $fallback) $values[$key] = GETPOSTINT($key) === 1 ? 1 : 0;
+    $rgb = function ($hex) { return array(hexdec(substr($hex,0,2)), hexdec(substr($hex,2,2)), hexdec(substr($hex,4,2))); };
+    $pairs = array('TEXT' => 'FFFFFF', 'FOOTER_TEXT' => 'FFFFFF');
+    foreach (array('HEADER' => ((int)$values['INDYINVOICE_BANNER_HEIGHT'] > 0 ? 'BANNER_COLOR' : null), 'TABLE' => 'TABLE_COLOR', 'TOTAL' => 'ACCENT_COLOR') as $zone => $background) {
+        if ($zone === 'HEADER' && $background === null) continue;
+        if (!$values['INDYINVOICE_'.$zone.'_TEXT_AUTO']) $pairs[$zone.'_TEXT'] = $background ? $values['INDYINVOICE_'.$background] : 'FFFFFF';
+    }
+    $contrastValid = true;
+    foreach ($pairs as $text => $background) {
+        $key = $text === 'TEXT' ? 'INDYINVOICE_TEXT_COLOR' : 'INDYINVOICE_'.$text.'_COLOR';
+        if (IndyTotalsCanvas::ratio($rgb($values[$key]), $rgb($background)) < 4.5) $contrastValid = false;
+    }
+    $valid = $valid && $contrastValid;
     $imageBytes = null;
     $upload = $_FILES['banner_image'] ?? array('error' => UPLOAD_ERR_NO_FILE);
     if ($upload['error'] !== UPLOAD_ERR_NO_FILE) {
@@ -79,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && GETPOST('action', 'aZ09') === 'save
         $valid = $valid && $ok;
     }
     $useBanner = ($imageBytes !== null || (GETPOSTINT('use_banner') === 1 && is_readable($banner)));
-    if (!$valid) setEventMessages($langs->trans('IndyInvalidSettings'), null, 'errors');
+    if (!$valid) setEventMessages($langs->trans($contrastValid ? 'IndyInvalidSettings' : 'IndyContrastError'), null, 'errors');
     else {
         $db->begin(); $ok = true;
         foreach ($values as $key => $value) $ok = dolibarr_set_const($db,$key,$value,'chaine',0,'',$conf->entity) > 0 && $ok;
@@ -110,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && GETPOST('action', 'aZ09') === 'save
     }
 }
 llxHeader('', $langs->trans('IndyInvoiceSettings'));
-print '<link rel="stylesheet" href="'.dol_buildpath('/indyinvoice/css/settings.css',1).'?v=110">';
+print '<link rel="stylesheet" href="'.dol_buildpath('/indyinvoice/css/settings.css',1).'?v=120">';
 print load_fiche_titre($langs->trans('IndyInvoiceSettings'), '', 'bill');
 if (GETPOSTINT('saved') === 1) print '<div class="ok">'.$langs->trans('SetupSaved').'</div>';
 print '<p>'.$langs->trans('IndyInvoiceScope').'</p>';
@@ -133,9 +155,20 @@ foreach ($fields as $key => $definition) {
         $ranges=array('height'=>array(0,35),'size'=>array(9,12),'logo'=>array(8,24));
         print '<input type="number" min="'.$ranges[$definition[0]][0].'" max="'.$ranges[$definition[0]][1].'" name="'.$key.'" id="'.$key.'" value="'.$value.'">';
     }
+    if (preg_match('/^INDYINVOICE_(HEADER|TABLE|TOTAL)_TEXT_COLOR$/', $key, $match)) {
+        $auto = 'INDYINVOICE_'.$match[1].'_TEXT_AUTO';
+        print '<label class="indy-auto-color"><input type="checkbox" name="'.$auto.'" value="1"'.($values[$auto] ? ' checked' : '').'> '.$langs->trans('IndyAutomaticTextColor').'</label>';
+    }
     print '</div>';
 }
 print '</div><p class="opacitymedium">'.$langs->trans('IndyLightBackgroundHelp').'</p>';
+print '<p class="opacitymedium">'.$langs->trans('IndyTextColorHelp').'</p>';
+print '<h2>'.$langs->trans('IndyPaymentAndMentions').'</h2><p>'.$langs->trans('IndyNativeBankHelp').'</p>';
+print '<p><a href="'.DOL_URL_ROOT.'/compta/bank/list.php">'.$langs->trans('IndyBankAccounts').'</a> · <a href="'.DOL_URL_ROOT.'/admin/invoice.php">'.$langs->trans('IndyInvoiceNativeSettings').'</a> · <a href="'.DOL_URL_ROOT.'/admin/order.php">'.$langs->trans('IndyOrderNativeSettings').'</a></p>';
+foreach (array('INDYINVOICE_SHOW_BANK_DETAILS', 'INDYINVOICE_USE_INVOICE_TEXT_FOR_ORDERS') as $key) {
+    print '<p><label><input type="checkbox" name="'.$key.'" value="1"'.($values[$key] ? ' checked' : '').'> '.$langs->trans($key).'</label></p>';
+}
+print '<p class="opacitymedium">'.$langs->trans('IndyNativeMentionsHelp').'</p>';
 print '<h2>'.$langs->trans('IndyBannerImage').'</h2><label for="banner_image">'.$langs->trans('IndyBannerUploadHelp').'</label><p><input type="file" id="banner_image" name="banner_image" accept="image/png,image/jpeg"></p>';
 print '<p><label><input type="checkbox" name="use_banner" value="1"'.($useBanner?' checked':'').'> '.$langs->trans('IndyUseBanner').'</label></p>';
 print '<h2>'.$langs->trans('IndyDefaultModels').'</h2>';
@@ -145,9 +178,9 @@ foreach ($defaults as $checkbox=>$model) {
     print '<p class="opacitymedium">'.$langs->trans('IndyCurrentModel').' : <strong>'.dol_escape_htmltag(getDolGlobalString($model[0],$model[2])).'</strong></p>';
 }
 print '<p>'.$langs->trans('IndyInvoiceExistingPDF').'</p><input type="submit" class="button" value="'.$langs->trans('Save').'"></div></div>';
-print '<aside class="indy-document-preview"><h2>'.$langs->trans('IndyStylePreview').'</h2><div class="indy-paper"><img class="indy-preview-photo" alt=""'.($useBanner?' src="'.dol_buildpath('/indyinvoice/admin/banner.php',1).'"':' hidden').'><div class="indy-preview-header"><b>SOCIÉTÉ</b><strong>Facture EXEMPLE</strong></div><div class="indy-preview-body"><div class="indy-preview-addresses"><p>Société de démonstration<br>Coordonnées Dolibarr</p><p>Client de démonstration<br>Adresse de facturation</p></div><div class="indy-preview-table"><b>Désignation</b><b>Qté</b><b>Total HT</b><span>Prestation de démonstration</span><span>1</span><span>120,00 €</span><span>Autre prestation</span><span>2</span><span>80,00 €</span></div><div class="indy-preview-totals">Total HT <b>200,00 €</b><br>TVA <b>40,00 €</b><hr>Total TTC <b>240,00 €</b></div><p class="indy-preview-footer">Conditions et mentions issues de Dolibarr</p></div></div><p class="opacitymedium">'.$langs->trans('IndyPreviewHelp').'</p>';
+print '<aside class="indy-document-preview"><h2>'.$langs->trans('IndyStylePreview').'</h2><div class="indy-paper"><img class="indy-preview-photo" alt=""'.($useBanner?' src="'.dol_buildpath('/indyinvoice/admin/banner.php',1).'"':' hidden').'><div class="indy-preview-header"><b>SOCIÉTÉ</b><strong>Facture EXEMPLE</strong></div><div class="indy-preview-body"><div class="indy-preview-addresses"><p>Société de démonstration<br>Coordonnées Dolibarr</p><p>Client de démonstration<br>Adresse de facturation</p></div><div class="indy-preview-table"><b>Désignation</b><b>Qté</b><b>Total HT</b><span>Prestation de démonstration</span><span>1</span><span>120,00 €</span><span>Autre prestation</span><span>2</span><span>80,00 €</span></div><div class="indy-preview-totals">Total HT <b>200,00 €</b><br>TVA <b>40,00 €</b><div class="indy-preview-grand-total">Total TTC <b>240,00 €</b></div></div><p class="indy-preview-footer">Conditions et mentions issues de Dolibarr</p></div></div><p class="opacitymedium">'.$langs->trans('IndyPreviewHelp').'</p>';
 print '<p><a class="butAction" href="'.DOL_URL_ROOT.'/admin/invoice.php?action=specimen&module=indy&token='.newToken().'">'.$langs->trans('IndyInvoicePreview').'</a></p>';
 if (isModEnabled('commande')) print '<p><a class="butAction" href="'.DOL_URL_ROOT.'/admin/order.php?action=specimen&module=indyorder&token='.newToken().'">'.$langs->trans('IndyOrderPreview').'</a></p>';
 print '</aside></div></form><p>'.$langs->trans('IndyFontHelp').'</p>';
-print '<script nonce="'.getNonce().'" src="'.dol_buildpath('/indyinvoice/js/settings.js',1).'?v=110"></script>';
+print '<script nonce="'.getNonce().'" src="'.dol_buildpath('/indyinvoice/js/settings.js',1).'?v=120"></script>';
 llxFooter(); $db->close();
