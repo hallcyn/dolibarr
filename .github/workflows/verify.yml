@@ -35,9 +35,9 @@ jobs:
           python3 -m pip install playwright==1.58.0
           python3 -m playwright install --with-deps chromium
           docker compose cp tests/indy/seed.php dolibarr:/tmp/indy-seed.php
-          docker compose exec -T dolibarr php /tmp/indy-seed.php
+          docker compose exec --user www-data -T dolibarr php /tmp/indy-seed.php
           docker compose cp tests/invoices/generate.php dolibarr:/tmp/indy-invoices.php
-          docker compose exec -T dolibarr php /tmp/indy-invoices.php /tmp/indy-invoice-fixtures
+          docker compose exec --user www-data -T dolibarr php /tmp/indy-invoices.php /tmp/indy-invoice-fixtures
           mkdir -p artifacts/invoices
           docker compose cp dolibarr:/tmp/indy-invoice-fixtures/. artifacts/invoices/
           python3 -m pip install PyMuPDF==1.26.6
