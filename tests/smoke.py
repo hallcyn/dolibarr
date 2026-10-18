@@ -75,6 +75,23 @@ assert presentation_before['js'] == 1
 assert presentation_before['version'] == json.loads((ROOT/'theme/indy/version.json').read_text())['version']
 assert presentation_before['revision'] > 0
 
+# Railway uses an HTTPS root while Compose is HTTP. A CLI hook must finish
+# even when native HTTPS enforcement is enabled. Never print conf.php.
+https_probe = php(r'''$path="/var/www/html/conf/conf.php";
+$original=file_get_contents($path);
+$mode=fileperms($path) & 0777;
+try {
+    if (!chmod($path, $mode | 0200)) throw new RuntimeException("HTTPS fixture permissions failed");
+    $forced=preg_replace('/\$dolibarr_main_force_https\s*=\s*[^;]*;/', '$dolibarr_main_force_https = 1;', $original, 1, $count);
+    if ($count !== 1 || file_put_contents($path, $forced) === false) throw new RuntimeException("HTTPS fixture setup failed");
+    exec(escapeshellarg(PHP_BINARY)." /opt/railway/presentation.php 2>&1", $lines, $status);
+    $output=implode("\n", $lines);
+    if ($status !== 0 || strpos($output, "Presentation assets and document models ready.") === false || strpos($output, "Warning:") !== false) throw new RuntimeException("CLI HTTPS hook did not complete: ".$output);
+} finally { file_put_contents($path, $original); chmod($path, $mode); }
+echo "https-probe-ok";''')
+assert https_probe == 'https-probe-ok'
+assert json.loads(php(presentation_probe)) == presentation_before
+
 compose('up', '-d', '--force-recreate')
 healthy()
 assert json.loads(php(presentation_probe)) == presentation_before, 'Presentation hook changed defaults or revision on restart'

@@ -4,6 +4,8 @@
 if (PHP_SAPI !== 'cli') exit(1);
 define('NOLOGIN', 1);
 define('NOCSRFCHECK', 1);
+// Native web redirects do not apply to this CLI-only startup hook.
+define('NOHTTPSREDIRECT', 1);
 define('NOREQUIREMENU', 1);
 require '/var/www/html/main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
