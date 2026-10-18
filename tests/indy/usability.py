@@ -203,7 +203,10 @@ with sync_playwright() as p:
  for width in (1280,1440,1920):
   page.set_viewport_size({'width':width,'height':900})
   page.goto(base+'/',wait_until='networkidle')
-  trigger=page.locator('#topmenu-login-dropdown>a');trigger.click()
+  trigger=page.locator('#topmenu-login-dropdown>a')
+  assert trigger.evaluate('e=>{const r=e.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=108}')
+  assert page.locator('.login_block_other .aversion').evaluate('e=>{const r=e.getBoundingClientRect();return Math.abs((r.left+r.right)/2-54)<8}')
+  trigger.click()
   panel=page.locator('#topmenu-login-dropdown .dropdown-menu');assert panel.is_visible()
   assert panel.evaluate('e=>{const r=e.getBoundingClientRect();return r.left>=108&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight}')
   actions=panel.locator('.user-footer a.button-top-menu-dropdown')

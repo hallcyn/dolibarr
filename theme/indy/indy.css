@@ -1355,11 +1355,13 @@ body .ui-tooltip :is(.error, .warning) { color: #ad3555 !important; }
  * touch-tablet controls continue to use their existing responsive layout. */
 @media screen and (min-width:1100px) and (pointer:fine), screen and (min-width:1367px) {
  #id-top .login_block{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:12px 8px;font-size:12px}
- #id-top .login_block :is(.login_block_tools,.login_block_other,.login_block_user){display:block;box-sizing:border-box;width:100%;padding:0;margin:0;min-width:0}
+ #id-top .login_block :is(.login_block_tools,.login_block_other,.login_block_user){display:block;box-sizing:border-box;width:100%;height:auto;line-height:1.4;padding:0;margin:0;min-width:0}
  #id-top .login_block_tools:has(>.inline-block:empty){display:none}
  #id-top .login_block_tools>.inline-block{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px;white-space:normal}
  #id-top .login_block_other{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px}
- #id-top .login_block_other>.login_block_elem{display:flex;align-items:center;justify-content:center;float:none;box-sizing:border-box;margin:0;padding:0;min-width:36px;min-height:36px}
+ #id-top .login_block_other>.inline-block{display:flex;align-items:center;justify-content:center;min-width:0}
+ #id-top .login_block_other .login_block_elem{display:flex;align-items:center;justify-content:center;float:none;box-sizing:border-box;height:auto;line-height:1.4;margin:0;padding:0!important;min-width:0;min-height:0}
+ #id-top .login_block_other>.inline-block:has(.aversion){flex:0 0 100%;min-height:22px}
  #id-top .login_block_other .login_block_elem:has(.aversion){flex-basis:100%;min-height:22px;font-size:11px}
  #id-top .login_block_other .aversion{display:block;line-height:22px;opacity:1;color:var(--indy-muted)}
  #id-top .login_block_other .aversion .small{font-size:11px}
