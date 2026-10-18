@@ -52,6 +52,13 @@ for name, expected in manifest.items():
             zone = fitz.Rect(column['start'] * 72 / 25.4, 0, column['end'] * 72 / 25.4, document[0].rect.height)
             numbers = [float(n.replace(',', '.')) for n in re.findall(r'(?<![\w])\d+(?:[.,]\d+)?', document[0].get_text(clip=zone))]
             for value in column['values']:
+                if value == 0:
+                    # Dolibarr's native double renderer leaves zero values empty.
+                    free_row = document[0].search_for('Ligne libre sans produit')[0]
+                    row_zone = fitz.Rect(zone.x0, free_row.y0 - 1, zone.x1, free_row.y1 + 1)
+                    cell = document[0].get_text(clip=row_zone).strip()
+                    assert not cell or float(cell.replace(',', '.')) == 0, (name, key, 'Non-zero free line', cell)
+                    continue
                 assert any(abs(value - n) < 0.001 for n in numbers), (name, key, value, numbers, 'Computed value outside its column')
     if name == 'vat-discounts':
         assert '10%' in compact and 'TotalTVA20%' in compact and 'TotalTVA5,5%' in compact

@@ -28,7 +28,7 @@ Le modèle de facture `indy` hérite de Sponge et conserve ses colonnes natives 
 
 Pour une seconde colonne **Contenance (L)**, créer `contenance_l`, de même type, position `50`, avec l’affichage PDF `1` et retirer `* $objectoffield->qty` de la formule.
 
-`12 × 0,75 L = 9 L`. Une ligne libre sans produit associé retourne `0`. L’affichage numérique peut supprimer les zéros finaux : `9` et `9,00` représentent la même quantité.
+`12 × 0,75 L = 9 L`. Une ligne libre sans produit associé retourne `0` ; le rendu PDF natif peut laisser cette cellule vide. L’affichage numérique peut supprimer les zéros finaux : `9` et `9,00` représentent la même quantité.
 
 ## Génération et réglages PDF
 
