@@ -18,6 +18,9 @@ done
 cp -R "$source_dir/." "$root/theme/indy/"
 module_dir="$script_dir/../module/indyui"
 [[ -d "$script_dir/module/indyui" ]] && module_dir="$script_dir/module/indyui"
-mkdir -p "$root/custom/indyui"
-cp -R "$module_dir/." "$root/custom/indyui/"
+module_target="$root/custom/indyui"
+# The Railway image registers its immutable application root for bundled modules.
+[[ -f "$script_dir/indy/style.css.php" ]] && module_target="$root/indyui"
+mkdir -p "$module_target"
+cp -R "$module_dir/." "$module_target/"
 echo 'Indy installed. Select indy in Setup > Display > Theme, then save. Enable the IndyUI companion module for versioned assets.'

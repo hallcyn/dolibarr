@@ -66,12 +66,15 @@ php('require "/var/www/html/conf/conf.php"; '
 presentation_probe = ('define("NOLOGIN", 1); define("NOREQUIREMENU", 1); '
     'require "/var/www/html/main.inc.php"; '
     'echo json_encode(["js" => getDolGlobalInt("ALLOW_THEME_JS"), '
+    '"loader" => getDolGlobalInt("MAIN_MODULE_INDYUI"), '
+    '"loaderfile" => is_file("/var/www/html/indyui/class/actions_indyui.class.php"), '
     '"version" => getDolGlobalString("INDY_UI_ASSET_VERSION"), '
     '"revision" => getDolGlobalInt("MAIN_IHM_PARAMS_REV"), '
     '"invoice" => getDolGlobalString("FACTURE_ADDON_PDF"), '
     '"order" => getDolGlobalString("COMMANDE_ADDON_PDF")]);')
 presentation_before = json.loads(php(presentation_probe))
 assert presentation_before['js'] == 1
+assert presentation_before['loader'] == 1 and presentation_before['loaderfile'], 'IndyUI must be discoverable and active before UI seeding'
 assert presentation_before['version'] == json.loads((ROOT/'theme/indy/version.json').read_text())['version']
 assert presentation_before['revision'] > 0
 

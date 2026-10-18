@@ -9,6 +9,9 @@ define('NOHTTPSREDIRECT', 1);
 define('NOREQUIREMENU', 1);
 require '/var/www/html/main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+if (!is_file(DOL_DOCUMENT_ROOT.'/indyui/core/modules/modIndyUI.class.php') || !is_file(DOL_DOCUMENT_ROOT.'/indyui/class/actions_indyui.class.php')) {
+    fwrite(STDERR, 'IndyUI companion is missing from the registered application root.'.PHP_EOL); exit(1);
+}
 if (!isModEnabled('indyui')) {
     $result = activateModule('modIndyUI');
     if (!empty($result['errors'])) { fwrite(STDERR, 'Unable to enable IndyUI presentation companion.'.PHP_EOL); exit(1); }

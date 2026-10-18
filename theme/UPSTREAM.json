@@ -1,6 +1,6 @@
 {
   "repository": "hallcyn/dolibarr-indy-theme",
-  "commit": "9b4c1ae41fc0bd7e89866028ee031a72a787b30c",
+  "commit": "79a304b9a15fe123ce31561cd92ffdb07a703776",
   "version": "1.5.3",
   "sha256": {
     "tests/indy/browser.py": "dea6d4854188d168783c5ce4268bcb0d67537014b1bd14ef20b042f578a2faa2",
@@ -21,7 +21,7 @@
     "theme/indy/theme_vars.inc.php": "a05d9a7db71186b3cb22ab4993bc4e4a935caf7b4772059a055494c374a5cfed",
     "theme/indy/thumb.png": "c2971ddd17de0fd019bac1dc98667e2745ac2d54e8339a7769356cb399f0f830",
     "theme/indy/version.json": "d1b4b890f4dca26ccf6545a568d41f4344bae9c4052888bff996ff4b8564d7fe",
-    "theme/install.sh": "3485c79bf90f8ca18493fe93cfa3583924de501580626ef5bdf12591ee2314cf",
+    "theme/install.sh": "7a19e06fe1645ceab55f77e84f00c16e9ac7c5b710a56089542c80d5168a0c67",
     "theme/module/indyui/class/actions_indyui.class.php": "3e6698ef74493d94f4cdf4367c64b9e432537c34ffe169074bd143835da93ec3",
     "theme/module/indyui/core/modules/modIndyUI.class.php": "27a4471b3b82a621a410c7d6db71907034a0e3ddaac0135c984c1340188a8f7c"
   }
