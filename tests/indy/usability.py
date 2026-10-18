@@ -1,8 +1,10 @@
 """Broader, disposable-only regression audit: forms, filters, menus and line entry."""
 import json,os
 from pathlib import Path
+from urllib.parse import urlsplit
 from playwright.sync_api import sync_playwright
 base=os.environ.get('DOLIBARR_TEST_URL','http://127.0.0.1:8080')
+assert urlsplit(base).hostname in ('127.0.0.1','localhost'), 'This audit requires a disposable local fixture'
 out=Path(os.environ.get('INDY_ARTIFACTS','artifacts'))/'usability';out.mkdir(parents=True,exist_ok=True)
 routes={
  'client-prices':'/societe/price.php?socid=1',
@@ -52,6 +54,11 @@ with sync_playwright() as p:
   'create-product': '/product/card.php?action=create&type=0',
   'edit-product': '/product/card.php?id=1&action=edit',
  }
+ # Use the native mapping endpoint to prepare a valid summary; session only.
+ page.goto(base+action_routes['import-summary'],wait_until='networkidle')
+ token=page.locator('#id-right form input[name=token]').first.input_value()
+ mapping=page.request.post(base+'/imports/import.php',form={'token':token,'datatoimport':'societe_1','action':'saveselectorder','selectorder':',s.nom'})
+ assert mapping.status==200 and mapping.json()=={}, 'Native disposable import mapping failed'
  action_selector = '#id-right input:is([type=submit],[type=button],[type=reset]), #id-right button, #id-right a:is(.button,.butAction,.butActionDelete,.butActionRefused)'
  contrast = r'''e=>{
   const rgba=s=>{const n=s.match(/[\d.]+/g).map(Number);return [n[0],n[1],n[2],n.length>3?n[3]:1]};
@@ -72,6 +79,7 @@ with sync_playwright() as p:
    assert response.status==200 and page.locator('#id-right').is_visible(),(name,width,'Native form missing')
    text=page.locator('body').inner_text()
    assert 'Fatal error' not in text and 'Warning: ' not in text and 'Accès refusé' not in text,(name,width,'Native fixture error')
+   if name=='import-summary':assert 'llx_societe' in text and 's.nom' in text,(width,'Import mapping missing')
    checked=[]
    for control in page.locator(action_selector).all():
     if not control.is_visible():continue
