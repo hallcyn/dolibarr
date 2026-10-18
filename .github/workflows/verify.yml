@@ -36,6 +36,15 @@ jobs:
           python3 -m playwright install --with-deps chromium
           docker compose cp tests/indy/seed.php dolibarr:/tmp/indy-seed.php
           docker compose exec --user www-data -T dolibarr php /tmp/indy-seed.php
+          # Audit the small UI dataset before PDF scenarios add ten invoices
+          # and a long order; keep list pagination fixtures independent.
+          python3 - <<'PY'
+          import os, subprocess
+          from pathlib import Path
+          settings = dict(line.split('=', 1) for line in Path('.env').read_text().splitlines() if line and not line.startswith('#'))
+          for script in ('tests/indy/browser.py', 'tests/indy/usability.py'):
+              subprocess.run(['python3', script], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
+          PY
           docker compose cp tests/invoices/generate.php dolibarr:/tmp/indy-invoices.php
           docker compose exec --user www-data -T dolibarr php /tmp/indy-invoices.php /tmp/indy-invoice-fixtures
           mkdir -p artifacts/invoices
@@ -47,8 +56,6 @@ jobs:
           from pathlib import Path
           settings = dict(line.split('=', 1) for line in Path('.env').read_text().splitlines() if line and not line.startswith('#'))
           subprocess.run(['python3', 'tests/invoices/browser.py'], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
-          subprocess.run(['python3', 'tests/indy/browser.py'], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
-          subprocess.run(['python3', 'tests/indy/usability.py'], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
           PY
       - uses: actions/upload-artifact@v4
         if: always()
