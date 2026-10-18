@@ -19,6 +19,10 @@ mapping = {
     'LICENSE': 'theme/LICENSE',
     'tests/browser.py': 'tests/indy/browser.py',
     'tests/usability.py': 'tests/indy/usability.py',
+    'tests/responsive.py': 'tests/indy/responsive.py',
+    'tests/reference/desktop.json': 'tests/indy/reference/desktop.json',
+    'tests/reference/indy-1.4.1.css': 'tests/indy/reference/indy-1.4.1.css',
+    'tests/reference/indy-1.4.1.js': 'tests/indy/reference/indy-1.4.1.js',
     'tests/seed.php': 'tests/indy/seed.php',
 }
 for name in ('indy.css', 'indy.js', 'style.css.php', 'theme_descriptor.php', 'theme_vars.inc.php', 'thumb.png', 'version.json'):

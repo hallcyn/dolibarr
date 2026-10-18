@@ -25,7 +25,7 @@ routes={
  'invoice-documents':'/compta/facture/document.php?facid=1',
  'invoice-notes':'/compta/facture/note.php?facid=1',
  'invoice-contacts':'/compta/facture/contact.php?facid=1',
- 'invoice-agenda':'/compta/facture/agenda.php?facid=1',
+ 'invoice-agenda':'/compta/facture/agenda.php?id=1',
  'invoice-statistics':'/compta/facture/stats/index.php',
  'pdf-settings':'/admin/pdf.php',
  'pdf-options':'/admin/pdf_other.php',
@@ -51,6 +51,7 @@ with sync_playwright() as p:
    if response.status==404 or 'Accès refusé' in text:
     report.append({'route':name,'width':width,'status':'unavailable','http':response.status});continue
    assert response.status<400,(name,response.status)
+   assert page.locator('#id-right').is_visible(),(name,'Empty native page; verify the route parameters')
    assert 'Fatal error' not in text and 'Warning: ' not in text,(name,'PHP output')
    try: page.wait_for_function('document.documentElement.scrollWidth <= innerWidth',timeout=3000)
    except Exception:

@@ -12,7 +12,7 @@ Le Dockerfile installe les fichiers dans `/var/www/html/theme/indy` et copie les
 
 ## Portée
 
-Version **1.4.0**. Sur ordinateur à partir de 1100 px, le menu principal standard de Dolibarr est présenté dans une colonne crème et les sous-menus dans une colonne dédiée, organisée par groupes et défilante indépendamment du contenu. Les écrans plus petits utilisent la navigation native.
+Version **1.5.0**. Sur ordinateur à partir de 1100 px, le menu principal standard de Dolibarr est présenté dans une colonne crème et les sous-menus dans une colonne dédiée, organisée par groupes et défilante indépendamment du contenu. Sur téléphone et tablette, une barre compacte ouvre les liens de modules, la recherche et les sous-menus natifs dans un tiroir. Le contenu utilise toute la largeur. Cette disposition concerne aussi les grandes tablettes tactiles jusqu’à 1366 px.
 
 Cartes et listes entièrement encadrées, avec un contour fixe pendant le défilement horizontal ; filtres dans un panneau fermé et titres de widgets pouvant revenir à la ligne. Les filtres utilisent une grille de champs libellés et conservent les contrôles natifs. Sur téléphone, leur panneau est replié au chargement pour laisser voir les résultats ; toucher « Filtres de la liste » pour l’ouvrir. Les formulaires empilent les libellés et les champs. Les options Select2 et leurs descriptions de stock gardent un contraste lisible.
 
@@ -34,3 +34,8 @@ Le script ne change que les fichiers du thème, son installateur, sa licence et 
 Prérequis : Git et Python 3. Le dépôt source étant privé, Git doit déjà disposer d'un accès de lecture à celui-ci. Les déploiements du template utilisent uniquement la copie embarquée et ne demandent aucun accès à ce dépôt privé.
 
 Les infobulles natives, leurs tableaux et leurs liens utilisent une surface claire lisible depuis la version 1.4.1. Leur largeur est contrôlée à 320/390 px ; l’aide ouverte au toucher reste native.
+
+
+Depuis la version 1.5, les listes compatibles deviennent des cartes sur téléphone, avec tri, sélection et champs complémentaires dépliables. Le choix des colonnes reste accessible. Les champs tactiles font au moins 44 px, avec une police de 16 px ; l’ajout de lignes est séparé du tableau horizontal sur téléphone, tout en conservant le formulaire et les calculs natifs. Les tableaux techniques conservent un défilement interne indiqué à l’écran.
+
+La CI ajoute une passe sur les inventaires de pages existants à 320, 390, 768, 844, 1024 et 1366 px dans des contextes tactiles. Elle vérifie la recherche, les filtres, le compte, la navigation, le tri, la sélection et une vraie soumission de ligne dans les données fictives. Six vues ordinateur sont comparées aux sources acceptées 1.4.1 à 1280, 1440 et 1920 px ; seuls les bitmaps animés des graphiques sont masqués. La restauration des éléments natifs après changement de format est aussi contrôlée. Les rapports distinguent les pages indisponibles ; il ne s’agit pas de tests sur Safari ou appareils physiques.

@@ -17,6 +17,10 @@ card_frames = ('#id-right .box.divboxtable:has(> table.boxtable), '
 def check_card_frames(page, name):
     for frame in page.locator(card_frames).all():
         if frame.is_visible():
+            if page.viewport_size['width'] <= 600 and frame.locator(':scope > table.indy-card-list').count():
+                for row in frame.locator('tr.oddeven').all():
+                    assert row.evaluate("e=>{const s=getComputedStyle(e),r=e.getBoundingClientRect();return s.borderTopWidth==='1px'&&s.borderBottomWidth==='1px'&&r.right<=innerWidth&&r.left>=0}")
+                continue
             assert frame.evaluate('''e => {
                 const s = getComputedStyle(e), r = e.getBoundingClientRect();
                 return ['Top','Right','Bottom','Left'].every(side => s['border'+side+'Width'] === '1px'
@@ -208,7 +212,7 @@ with sync_playwright() as p:
             assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth'), f'{name}: overflow at {width}px'
         page.screenshot(path=str(artifacts / f'configuration-tablet-{width}.png'), full_page=True)
 
-    # Retain native mobile navigation and test horizontal list scrolling.
+    # Responsive navigation retains native destinations and context links.
     page.set_viewport_size({'width': 390, 'height': 844})
     for name in ('dashboard', 'invoices', 'new-client', 'new-product', 'products', 'product-card', 'product-stock', 'new-order', 'new-invoice', 'new-contact', 'new-bank', 'stock-movements', 'configuration'):
         page.goto(base + routes[name], wait_until='networkidle')
@@ -226,12 +230,12 @@ with sync_playwright() as p:
             country = page.locator('#select2-selectcountry_id-container')
             assert country.is_visible() and country.bounding_box()['width'] > 200, 'Mobile country field is too narrow'
         page.screenshot(path=str(artifacts / f'{name}-mobile.png'), full_page=True)
-    toggle = page.locator('#mainmenutd_menu a').first
-    assert toggle.is_visible(), 'Native mobile menu toggle is missing'
+    toggle = page.locator('.indy-menu-toggle')
+    assert toggle.is_visible(), 'Mobile menu toggle is missing'
     toggle.click()
-    assert page.locator('.side-nav').is_visible(), 'Native mobile drawer did not open'
+    assert page.locator('.side-nav').is_visible(), 'Mobile drawer did not open'
     page.screenshot(path=str(artifacts / 'navigation-mobile.png'), full_page=True)
-    toggle.click()
+    page.locator('.indy-menu-close').click()
 
     # Real touch contexts and mobile user agents also exercise Dolibarr's
     # server-side mobile markup, beyond resizing a desktop browser window.
@@ -261,20 +265,24 @@ with sync_playwright() as p:
                 assert cells.nth(1).bounding_box()['width'] > width * .7, (profile, name, 'Field column is cramped')
             if name == 'clients':
                 scroller = touch_page.locator('.div-table-responsive:has(> table.liste)').first
-                assert scroller.evaluate('e => e.scrollWidth > e.clientWidth'), (profile, 'Expected horizontal table scrolling')
-                scroller.evaluate('e => e.scrollLeft = e.scrollWidth')
-                assert scroller.evaluate('e => e.scrollLeft > 0'), (profile, 'Cannot scroll to the final list columns')
-                check_card_frames(touch_page, (profile, 'scrolled-list'))
-                scroller.evaluate('e => e.scrollLeft = 0')
+                if width <= 600:
+                    assert scroller.locator('table.indy-card-list').count() == 1
+                    assert scroller.evaluate('e => e.scrollWidth <= e.clientWidth + 1'), (profile, 'Phone cards still scroll horizontally')
+                else:
+                    assert scroller.evaluate('e => e.scrollWidth > e.clientWidth'), (profile, 'Expected horizontal table scrolling')
+                    scroller.evaluate('e => e.scrollLeft = e.scrollWidth')
+                    assert scroller.evaluate('e => e.scrollLeft > 0'), (profile, 'Cannot scroll to the final list columns')
+                    check_card_frames(touch_page, (profile, 'scrolled-list'))
+                    scroller.evaluate('e => e.scrollLeft = 0')
             if name in ('thirdparty-space', 'clients', 'new-invoice', 'new-order'):
                 touch_page.screenshot(path=str(artifacts / f'{name}-{profile}.png'), full_page=True)
             print(f'PASS touch: {profile} {name}', flush=True)
         touch_page.goto(base + routes['configuration'], wait_until='networkidle')
-        drawer_toggle = touch_page.locator('#mainmenutd_menu a').first
+        drawer_toggle = touch_page.locator('.indy-menu-toggle')
         if drawer_toggle.is_visible():
             drawer_toggle.tap()
             assert touch_page.locator('.side-nav').is_visible(), (profile, 'Touch drawer did not open')
-            drawer_toggle.tap()
+            touch_page.locator('.indy-menu-close').tap()
         touch_context.close()
     page.emulate_media(reduced_motion='reduce')
     assert page.locator('body').evaluate('e => getComputedStyle(e).transitionDuration') in ('1e-05s', '0.00001s')

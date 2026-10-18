@@ -12,7 +12,7 @@ concurrency:
 jobs:
   integration:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Validate repository and documentation
@@ -42,7 +42,7 @@ jobs:
           import os, subprocess
           from pathlib import Path
           settings = dict(line.split('=', 1) for line in Path('.env').read_text().splitlines() if line and not line.startswith('#'))
-          for script in ('tests/indy/browser.py', 'tests/indy/usability.py'):
+          for script in ('tests/indy/browser.py', 'tests/indy/usability.py', 'tests/indy/responsive.py'):
               subprocess.run(['python3', script], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
           PY
           docker compose cp tests/invoices/generate.php dolibarr:/tmp/indy-invoices.php

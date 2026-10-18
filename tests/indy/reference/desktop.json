@@ -1,0 +1,10 @@
+{
+  "repository": "hallcyn/dolibarr-indy-theme",
+  "commit": "6c1e5d17d0da900dc2b3e9432aef03882b6ecfa1",
+  "version": "1.4.1",
+  "purpose": "Accepted desktop CSS/JS reference, retained for responsive-only regression comparisons.",
+  "sha256": {
+    "indy-1.4.1.js": "b3b8729a3be20790ba098ad60fb50ef7cfe2a0855199e84e0f06f8f1303fc042",
+    "indy-1.4.1.css": "5a7a052f5ae894c79f4bc857fd173c86e90b5cc724cbecfa5c04feaec055669f"
+  }
+}
