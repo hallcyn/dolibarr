@@ -45,6 +45,14 @@ for name, expected in manifest.items():
         assert len(document) >= 3
         for number in range(1, 49):
             assert re.search(r'Ligne\s*' + str(number) + r'\s*[—-]', text), ('Missing invoice line', number)
+    if name.startswith('line-extrafields'):
+        assert 'Contenance' in text and 'Litres vendus' in re.sub(r'\s+', ' ', text), (name, 'Computed headers missing')
+        assert 'LITRES NON IMPRIMABLES' not in text
+        for key, column in expected['extra_columns'].items():
+            zone = fitz.Rect(column['start'] * 72 / 25.4, 0, column['end'] * 72 / 25.4, document[0].rect.height)
+            numbers = [float(n.replace(',', '.')) for n in re.findall(r'(?<![\w])\d+(?:[.,]\d+)?', document[0].get_text(clip=zone))]
+            for value in column['values']:
+                assert any(abs(value - n) < 0.001 for n in numbers), (name, key, value, numbers, 'Computed value outside its column')
     if name == 'vat-discounts':
         assert '10%' in compact and 'TotalTVA20%' in compact and 'TotalTVA5,5%' in compact
     if name == 'credit-note':

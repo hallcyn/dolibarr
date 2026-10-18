@@ -118,3 +118,7 @@ La CI génère 25 scénarios fictifs : TVA multiples et remises, taux nul, avoir
 Les tests navigateur enregistrent les mentions et le compte bancaire dans les formulaires natifs puis téléchargent une facture régénérée pour contrôler leur présence. Ils vérifient aussi les couleurs manuelles, le rejet d’un contraste insuffisant, les options RIB/mention partagée et les deux modèles par défaut après rechargement, leur retour au choix précédent, les palettes, le rejet d’une fausse image, le téléversement réel d’un PNG, les réglages à 320/390/768 px et la génération du PDF depuis une commande existante.
 
 Code sous **GPL v3 ou ultérieure** ; polices sous SIL OFL. Le numéro technique `500987` est propre au projet et n’est pas une réservation DoliStore. Aucun service ni logo propriétaire Indy n’est intégré.
+
+## Colonnes calculées sur les lignes de facture
+
+Indy conserve les attributs supplémentaires imprimables des lignes de Sponge. Pour afficher la contenance d’une bouteille ou les litres vendus (`volume × quantité`), suivre le [guide de configuration des champs calculés](docs/champs-calcules-litres.md). Choisir l’affichage PDF `1` pour obtenir une colonne, puis régénérer la facture avec le modèle `indy`. Les montants et la TVA restent inchangés.

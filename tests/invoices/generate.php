@@ -192,5 +192,52 @@ foreach (array('order', 'order-shared', 'order-own', 'order-bank', 'long-order')
     if ($conf->global->ORDER_FREE_TEXT !== $originalOrderText) throw new RuntimeException('Native order free text was changed');
     $manifest[$case]=array('ht'=>$totals[0],'vat'=>$totals[1],'ttc'=>$totals[2],'lines'=>count($order->lines));
 }
+// Native computed line extrafields: no production schema or generator patch.
+require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+$extrafields = new ExtraFields($db);
+$unitFormula = '(($objectoffield->fk_product > 0) && ($reloadedobj = new Product($db)) && ($reloadedobj->fetchNoCompute($objectoffield->fk_product) > 0)) ? round($reloadedobj->volume, 2) : 0';
+$litresFormula = '(($objectoffield->fk_product > 0) && ($reloadedobj = new Product($db)) && ($reloadedobj->fetchNoCompute($objectoffield->fk_product) > 0)) ? round($reloadedobj->volume * $objectoffield->qty, 2) : 0';
+foreach (array('contenance_l' => array('Contenance (L)', 50, $unitFormula, 1), 'litres_vendus' => array('Litres vendus', 52, $litresFormula, 1), 'litres_interne' => array('LITRES NON IMPRIMABLES', 54, $litresFormula, 0)) as $code => $field) {
+    if ($extrafields->addExtraField($code, $field[0], 'double', $field[1], '24,8', 'facturedet', 0, 0, '', '', 0, '', '1', '', $field[2], (string) $conf->entity, '', '1', 0, $field[3]) <= 0) throw new RuntimeException('Computed extrafield creation failed: '.$extrafields->error);
+}
+$extrafields->fetch_name_optionals_label('facturedet', true);
+$product = new Product($db); $product->ref = 'INDY-LITRES-TEST'; $product->label = 'Bouteille de test';
+$product->type = 0; $product->status = 1; $product->status_buy = 1; $product->volume = 0.75; $product->volume_units = -3;
+if ($product->create($user) <= 0 || $product->update($product->id, $user) <= 0) throw new RuntimeException($product->error);
+$invoice = new Facture($db); $invoice->socid = 1; $invoice->date = dol_now(); $invoice->cond_reglement_id = 1;
+$invoice->mode_reglement_id = $mode->id; $invoice->note_public = 'Projet de démonstration. Calcul de litres natif.';
+if ($invoice->create($user) <= 0 || $invoice->addline('Bouteilles de test', 25, 12, 20, 0, 0, $product->id) <= 0 || $invoice->addline('Ligne libre sans produit', 10, 2, 20) <= 0) throw new RuntimeException('Litres invoice creation failed: '.$invoice->error);
+$conf->global->INDYINVOICE_PAPER_COLOR = 'FFFFFF'; $conf->global->INVOICE_FREE_TEXT = 'Données fictives — test des champs calculés.';
+$conf->global->INVOICE_CATEGORY_OF_OPERATION = 1;
+foreach (array('line-extrafields', 'line-extrafields-grid', 'line-extrafields-dynamic') as $case) {
+    if ($case === 'line-extrafields-dynamic') {
+        $product->volume = 1.0;
+        if ($product->update($product->id, $user) <= 0) throw new RuntimeException($product->error);
+    }
+    $invoice->fetch($invoice->id); $invoice->fetch_thirdparty(); $invoice->fetch_lines(); $invoice->specimen = 1;
+    $unit = $case === 'line-extrafields-dynamic' ? 1.0 : 0.75;
+    foreach (array('contenance_l' => $unit, 'litres_vendus' => $unit * 12) as $key => $expected) {
+        if (abs((float) $invoice->lines[0]->array_options['options_'.$key] - $expected) > 0.00001 || (float) $invoice->lines[1]->array_options['options_'.$key] !== 0.0) throw new RuntimeException('Native calculated value failed: '.$key);
+    }
+    $conf->global->INDYINVOICE_TABLE_STYLE = $case === 'line-extrafields-grid' ? 'grid' : 'light';
+    $model = new pdf_indy($db); $totals = array_map('floatval', array($invoice->total_ht, $invoice->total_tva, $invoice->total_ttc));
+    if ($model->write_file($invoice, $langs) <= 0) throw new RuntimeException($model->error);
+    if ($totals !== array_map('floatval', array($invoice->total_ht, $invoice->total_tva, $invoice->total_ttc))) throw new RuntimeException('Computed fields changed monetary totals');
+    $columns = array();
+    foreach (array('contenance_l' => $unit, 'litres_vendus' => $unit * 12) as $key => $expected) {
+        $col = $model->cols['options_'.$key] ?? array();
+        if (empty($col['status']) || empty($col['width'])) throw new RuntimeException('Computed PDF column missing: '.$key);
+        $columns[$key] = array('start' => $col['xStartPos'], 'end' => $col['xEndPos'], 'values' => array($expected, 0));
+    }
+    if (!empty($model->cols['options_litres_interne']['status'])) throw new RuntimeException('Non-printable column became visible');
+    if (!copy($conf->facture->multidir_output[$conf->entity].'/SPECIMEN.pdf', $out.'/'.$case.'.pdf')) throw new RuntimeException('Extrafields PDF missing');
+    $manifest[$case] = array('id' => $invoice->id, 'ht' => $totals[0], 'vat' => $totals[1], 'ttc' => $totals[2], 'lines' => count($invoice->lines), 'extra_columns' => $columns);
+}
+// Restore the disposable fixture before the following native UI tests.
+foreach (array('contenance_l', 'litres_vendus', 'litres_interne') as $code) {
+    if ($extrafields->delete($code, 'facturedet') < 0) throw new RuntimeException('Fixture extrafield cleanup failed');
+}
+echo "PASS: native calculated invoice-line volumes, 12 x 0.75 L = 9 L, free lines, light/grid PDF columns, printable flag and dynamic regeneration.\n";
 file_put_contents($out.'/manifest.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 echo "PASS: ".count($manifest)." native invoice/order PDF scenarios, totals and global PDF settings preserved.\n";
