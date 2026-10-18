@@ -20,10 +20,13 @@ mapping = {
     'tests/browser.py': 'tests/indy/browser.py',
     'tests/usability.py': 'tests/indy/usability.py',
     'tests/responsive.py': 'tests/indy/responsive.py',
+    'tests/profile.py': 'tests/indy/profile.py',
     'tests/reference/desktop.json': 'tests/indy/reference/desktop.json',
     'tests/reference/indy-1.4.1.css': 'tests/indy/reference/indy-1.4.1.css',
     'tests/reference/indy-1.4.1.js': 'tests/indy/reference/indy-1.4.1.js',
     'tests/seed.php': 'tests/indy/seed.php',
+    'module/indyui/core/modules/modIndyUI.class.php': 'theme/module/indyui/core/modules/modIndyUI.class.php',
+    'module/indyui/class/actions_indyui.class.php': 'theme/module/indyui/class/actions_indyui.class.php',
 }
 for name in ('indy.css', 'indy.js', 'style.css.php', 'theme_descriptor.php', 'theme_vars.inc.php', 'thumb.png', 'version.json'):
     mapping[f'theme/indy/{name}'] = f'theme/indy/{name}'

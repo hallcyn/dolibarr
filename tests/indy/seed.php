@@ -12,7 +12,7 @@ require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
 require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
 
 $user->fetch(0, 'admin');
-foreach (array('modSociete', 'modFacture', 'modPropale', 'modBanque', 'modService', 'modProduct', 'modStock', 'modCommande', 'modExpedition') as $module) {
+foreach (array('modIndyUI', 'modSociete', 'modFacture', 'modPropale', 'modBanque', 'modService', 'modProduct', 'modStock', 'modCommande', 'modExpedition') as $module) {
     $result = activateModule($module);
     if (!empty($result['errors'])) {
         throw new RuntimeException(json_encode($result['errors']));

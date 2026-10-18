@@ -25,7 +25,7 @@ jobs:
         run: docker compose build --pull
       - name: PHP and Apache syntax
         run: |
-          docker compose run --rm --no-deps --entrypoint bash dolibarr -c 'find /opt/railway /var/www/html/indyinvoice /var/www/html/theme/indy -name "*.php" -print0 | xargs -0 -n1 php -l; apache2ctl configtest'
+          docker compose run --rm --no-deps --entrypoint bash dolibarr -c 'find /opt/railway /var/www/html/indyinvoice /var/www/html/theme/indy /var/www/html/custom/indyui -name "*.php" -print0 | xargs -0 -n1 php -l; apache2ctl configtest'
       - name: Start services
         run: docker compose up -d
       - name: Check installation and durable state
@@ -42,7 +42,7 @@ jobs:
           import os, subprocess
           from pathlib import Path
           settings = dict(line.split('=', 1) for line in Path('.env').read_text().splitlines() if line and not line.startswith('#'))
-          for script in ('tests/indy/browser.py', 'tests/indy/usability.py', 'tests/indy/responsive.py'):
+          for script in ('tests/indy/browser.py', 'tests/indy/usability.py', 'tests/indy/responsive.py', 'tests/indy/profile.py'):
               subprocess.run(['python3', script], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
           PY
           docker compose cp tests/invoices/generate.php dolibarr:/tmp/indy-invoices.php

@@ -1199,7 +1199,7 @@ body .ui-tooltip :is(.error, .warning) { color: #ad3555 !important; }
  body.indy-responsive #topmenu-login-dropdown .indy-account-toolbar{display:flex;position:sticky;top:0;align-items:center;justify-content:space-between;gap:12px;box-sizing:border-box;min-height:64px;padding:8px 12px 8px 20px;border-bottom:1px solid var(--indy-border);background:#fff;z-index:1;font-size:16px}
  body.indy-responsive #topmenu-login-dropdown .indy-account-close{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:0;background:transparent;font-size:24px;line-height:1}
  body.indy-responsive #topmenu-login-dropdown .user-header{box-sizing:border-box;min-height:0;height:auto!important;margin:0;padding:20px;background:#fff;text-align:left;border-radius:0}
- body.indy-responsive #topmenu-login-dropdown .user-header>:is(p,.dropdown-user-image){display:none}
+ body.indy-responsive #topmenu-login-dropdown .user-header:has(.indy-account-person)>:is(p,.dropdown-user-image){display:none}
  body.indy-responsive #topmenu-login-dropdown .indy-account-person{display:flex;align-items:center;gap:12px;min-width:0}
  body.indy-responsive #topmenu-login-dropdown .indy-account-avatar{display:flex;align-items:center;justify-content:center;flex:0 0 48px;width:48px;height:48px;box-sizing:border-box;border:1px solid var(--indy-nav-border);border-radius:14px;background:var(--indy-nav);font-size:18px;font-weight:650;color:var(--indy-link);overflow:hidden}
  body.indy-responsive #topmenu-login-dropdown .indy-account-avatar img{display:block;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;object-fit:cover}
@@ -1226,4 +1226,89 @@ body .ui-tooltip :is(.error, .warning) { color: #ad3555 !important; }
  body.indy-responsive #topmenu-login-dropdown [aria-expanded=true]:is(#topmenulogincompanyinfo-btn,#topmenuloginmoreinfo-btn)::after{transform:rotate(180deg)}
  body.indy-responsive #topmenu-login-dropdown :is(#topmenulogincompanyinfo,#topmenuloginmoreinfo){box-sizing:border-box;max-width:100%;padding:0 12px 12px;font-size:13px;line-height:1.7;color:var(--indy-muted);overflow-wrap:anywhere}
  body.indy-responsive #topmenu-login-dropdown :is(#topmenulogincompanyinfo,#topmenuloginmoreinfo) b{color:var(--indy-ink)}
+}
+
+/* 1.5.3 · Profile and virtual-card controls, with menu-less iframe support. */
+@media screen and (max-width:1099px), screen and (max-width:1366px) and (pointer:coarse) {
+ body.indy-profile-responsive [data-indy-profile-tabs]{display:none!important}
+ body.indy-profile-responsive .indy-profile-sections{margin:0 0 20px;padding:16px;border:1px solid var(--indy-border);border-radius:14px;background:#fafbfc}
+ body.indy-profile-responsive .indy-profile-sections label{display:block;font-size:12px;font-weight:600;color:var(--indy-muted)}
+ body.indy-profile-responsive .indy-profile-sections select{display:block;box-sizing:border-box;width:100%;min-width:0;max-width:100%;min-height:48px;margin-top:8px;padding:12px;font:500 16px var(--indy-font);border:1px solid #b8c9d6;border-radius:10px;background:#fff;color:var(--indy-ink)}
+ body.indy-profile-responsive .tabsAction{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+ body.indy-profile-responsive .tabsAction>:is(a,span){display:flex;align-items:center;justify-content:center;box-sizing:border-box;flex:1 1 140px;min-height:48px;margin:0!important;padding:12px;white-space:normal;text-align:center;font-size:14px;border-radius:10px}
+ body.indy-profile-responsive .arearef .photoref{width:64px;height:64px;object-fit:cover;border-radius:14px;border:1px solid var(--indy-border);box-shadow:none}
+ body.indy-profile-responsive .arearef :is(a.refid,a[class*=publicvirtualcard],a[href*="/user/vcard.php"]){display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;box-sizing:border-box;font-size:18px;vertical-align:middle}
+ body.indy-profile-responsive .arearef .refid{white-space:normal;overflow-wrap:anywhere}
+ body.indy-profile-responsive.page-virtualcard{box-sizing:border-box;min-width:0;margin:0;padding:0;font-size:15px;line-height:1.5;background:#fafbfc}
+ body.indy-profile-responsive.page-virtualcard:not(.indy-responsive)>.fiche{box-sizing:border-box;width:100%;min-width:0;max-width:100%;padding:16px!important;margin:0!important}
+ body.indy-profile-responsive.page-virtualcard .fichecenter{max-width:100%;min-width:0}
+ body.indy-profile-responsive.page-virtualcard .fichecenter>:is(br),body.indy-profile-responsive.page-virtualcard .fichecenter>form>:is(br,span){display:none}
+ body.indy-profile-responsive :is(.indy-vcard-enable,.indy-vcard-share,[data-indy-vcard-preview]){box-sizing:border-box;width:100%;min-width:0;margin:0 0 16px;padding:20px;border:1px solid var(--indy-border);border-radius:14px;background:#fff}
+ body.indy-profile-responsive .indy-vcard-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:550;color:var(--indy-ink)}
+ body.indy-profile-responsive .indy-vcard-toggle>div{flex:1;min-width:0;overflow-wrap:anywhere}
+ body.indy-profile-responsive .indy-vcard-toggle>a{display:flex;align-items:center;justify-content:center;flex:0 0 48px;width:48px;min-height:48px;margin:0;line-height:1}
+ body.indy-profile-responsive .indy-vcard-toggle>a :is(.fa,.fas){font-size:28px;line-height:1}
+ body.indy-profile-responsive .indy-vcard-description{margin-top:12px;font-size:13px;line-height:1.6;color:var(--indy-muted);text-align:left}
+ body.indy-profile-responsive .indy-vcard-description>br{display:none}
+ body.indy-profile-responsive .indy-vcard-description .justify{text-align:left}
+ body.indy-profile-responsive .indy-vcard-share h2{margin:0 0 12px;font-size:14px;line-height:1.5;font-weight:600;color:var(--indy-ink)}
+ body.indy-profile-responsive .indy-vcard-share .urllink{height:auto!important;min-height:0!important;display:block;box-sizing:border-box;width:100%;min-width:0;margin:0;padding:0;background:transparent;white-space:normal}
+ body.indy-profile-responsive #publicurluser{display:block;box-sizing:border-box;width:100%!important;min-width:0!important;max-width:100%!important;min-height:48px;margin:0;padding:12px;font-size:16px;border:1px solid #b8c9d6;border-radius:10px;background:#fafbfc;color:var(--indy-ink)}
+ body.indy-profile-responsive .indy-vcard-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+ body.indy-profile-responsive .indy-vcard-actions>:is(a,button){display:block;box-sizing:border-box;min-width:0;min-height:48px;margin:0;padding:12px 8px;border:1px solid var(--indy-border);border-radius:10px;background:#fff;text-align:center;white-space:normal;color:var(--indy-ink);font:500 13px/1.4 var(--indy-font);cursor:pointer}
+ body.indy-profile-responsive .indy-vcard-actions>a{background:var(--indy-primary-soft);border-color:#f3d3dd;color:var(--indy-primary);font-size:0}
+ body.indy-profile-responsive .indy-vcard-actions>a>:is(.fas,.fa){display:none}
+ body.indy-profile-responsive .indy-vcard-open-label{font-size:13px}
+ body.indy-profile-responsive .indy-vcard-share [role=status]{display:block;font-size:12px;color:var(--indy-muted);overflow-wrap:anywhere}
+ body.indy-profile-responsive .indy-vcard-share [role=status]:not(:empty){margin-top:10px}
+ body.indy-profile-responsive [data-indy-vcard-toggle]{margin:0 0 16px}
+ body.indy-profile-responsive [data-indy-vcard-toggle]>.fas{display:none}
+ body.indy-profile-responsive #lnk{display:flex;align-items:center;justify-content:space-between;gap:12px;box-sizing:border-box;width:100%;min-height:52px;padding:14px 16px;border:1px solid var(--indy-border);border-radius:12px;background:#fff;font-size:14px;line-height:1.5;color:var(--indy-ink);white-space:normal;text-decoration:none}
+ body.indy-profile-responsive #lnk::after{content:'⌄';flex:none;font-size:18px}
+ body.indy-profile-responsive #lnk[aria-expanded=true]::after{transform:rotate(180deg)}
+ body.indy-profile-responsive #div_container_sub_exportoptions{box-sizing:border-box;max-width:100%;margin:0 0 16px;padding:12px 16px;border:1px solid var(--indy-border);border-radius:14px;background:#fff}
+ body.indy-profile-responsive #div_container_sub_exportoptions .div-table-responsive-no-min{overflow:visible;min-width:0}
+ body.indy-profile-responsive #div_container_sub_exportoptions table{display:block;width:100%;min-width:0!important;border:0}
+ body.indy-profile-responsive #div_container_sub_exportoptions tbody{display:block}
+ body.indy-profile-responsive #div_container_sub_exportoptions tr{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;border-bottom:1px solid var(--indy-border);padding:12px 0}
+ body.indy-profile-responsive #div_container_sub_exportoptions tr.liste_titre{display:block;padding:12px 0;background:transparent;font-size:14px;font-weight:600}
+ body.indy-profile-responsive #div_container_sub_exportoptions td{display:block;box-sizing:border-box;width:auto!important;min-width:0!important;padding:0!important;border:0!important;background:transparent;font-size:13px;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+ body.indy-profile-responsive #div_container_sub_exportoptions tr:has(textarea){grid-template-columns:minmax(0,1fr)}
+ body.indy-profile-responsive #div_container_sub_exportoptions :is(textarea,input[type=text]){box-sizing:border-box;width:100%!important;min-width:0!important;max-width:100%!important;min-height:100px;padding:12px;font-size:16px}
+ body.indy-profile-responsive #div_container_sub_exportoptions+.center :is(input,button){box-sizing:border-box;min-height:48px;font-size:14px;max-width:100%}
+ body.indy-profile-responsive [data-indy-vcard-preview]>.opacitymedium{display:block;margin:0 0 12px;font-size:14px;font-weight:600;color:var(--indy-ink)}
+ body.indy-profile-responsive .virtualcard-div{box-sizing:border-box;width:100%;max-width:360px;height:auto!important;margin:0 auto;border:1px solid var(--indy-border);border-radius:12px;overflow:hidden;background:#fff}
+ body.indy-profile-responsive .virtualcard-div>a{display:block;width:100%}
+ body.indy-profile-responsive #virtualcard-iframe{display:block;box-sizing:border-box;width:100%!important;max-width:100%;height:420px!important;margin:0;border:0}
+ body.indy-responsive .ui-dialog[data-indy-vcard-dialog]{position:fixed!important;left:50%!important;top:calc(12px + env(safe-area-inset-top))!important;transform:translateX(-50%);box-sizing:border-box;width:min(640px,calc(100vw - 24px))!important;min-width:0!important;height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;max-height:calc(100dvh - 24px);padding:0;border-radius:18px;overflow:hidden}
+ body.indy-responsive .ui-dialog[data-indy-vcard-dialog]>.ui-dialog-titlebar{display:flex;align-items:center;box-sizing:border-box;min-height:64px;padding:12px 64px 12px 20px!important;margin:0;border:0;border-bottom:1px solid var(--indy-border);border-radius:18px 18px 0 0;background:var(--indy-nav)}
+ body.indy-responsive .ui-dialog[data-indy-vcard-dialog] .ui-dialog-title{float:none;width:100%;margin:0;font-size:16px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;color:var(--indy-ink)}
+ body.indy-responsive .ui-dialog[data-indy-vcard-dialog] .ui-dialog-titlebar-close{right:10px;width:44px;height:44px;margin-top:-22px;border:1px solid var(--indy-nav-border);border-radius:12px;background:#fff;box-shadow:none}
+ body.indy-responsive .ui-dialog[data-indy-vcard-dialog]>.ui-dialog-content{box-sizing:border-box;width:100%!important;height:calc(100% - 64px)!important;max-height:none!important;margin:0;padding:0!important;overflow:hidden}
+ body.indy-responsive .ui-dialog[data-indy-vcard-dialog] iframe.iframedialog{display:block;width:100%;height:100%!important;border:0}
+}
+@media screen and (max-width:600px) {
+ body.indy-profile-responsive.page-card #id-right table.tableforfield,body.indy-profile-responsive.page-card #id-right table.tableforfield>tbody{display:block;width:100%;min-width:0}
+ body.indy-profile-responsive.page-card #id-right table.tableforfield>tbody>tr{height:auto!important;display:grid;grid-template-columns:minmax(0,1fr);gap:4px;margin:0;padding:12px 0;border-bottom:1px solid var(--indy-border)}
+ body.indy-profile-responsive.page-card #id-right table.tableforfield>tbody>tr>td{height:auto!important;display:block;box-sizing:border-box;width:auto!important;min-width:0!important;padding:0!important;border:0;background:transparent;font-size:15px;line-height:1.5;white-space:normal}
+ body.indy-profile-responsive.page-card #id-right table.tableforfield>tbody>tr>td:first-child{font-size:12px;font-weight:500;color:var(--indy-muted)}
+ body.indy-profile-responsive.page-card #id-right table.tableforfield>tbody>tr>td:empty{display:none}
+}
+
+@media screen and (max-width:1099px), screen and (max-width:1366px) and (pointer:coarse) {
+ body.indy-vcard-preview-responsive{zoom:1!important;box-sizing:border-box;min-width:0!important;width:100%;max-width:100%;margin:0;padding:12px}
+ body.indy-vcard-preview-responsive .tablepublicpayment{box-sizing:border-box;width:100%!important;min-width:0!important;max-width:100%}
+ body.indy-responsive #topmenu-login-dropdown .user-footer a.button-top-menu-dropdown:not([data-indy-account-action]){display:flex;align-items:center;gap:10px;box-sizing:border-box;width:100%;min-height:48px;margin:0!important;padding:12px;border:1px solid var(--indy-border);border-radius:10px;background:#fff;color:var(--indy-ink);font-size:14px;line-height:1.4;white-space:normal;text-align:left}
+ body.indy-responsive #topmenu-login-dropdown .user-footer a:not([data-indy-account-action])[accesskey=l]{color:var(--indy-danger);background:#fff5f7;border-color:#f3d3dd}
+ body.indy-responsive #topmenu-login-dropdown .user-footer a:not([data-indy-account-action])[accesskey=l] .hideonsmartphone{display:inline!important}
+ body.indy-responsive #topmenu-login-dropdown .user-footer a:not([data-indy-account-action])[accesskey=v]::after{content:'Business card'}
+ html:lang(fr) body.indy-responsive #topmenu-login-dropdown .user-footer a:not([data-indy-account-action])[accesskey=v]::after{content:'Carte de visite'}
+}
+
+@media screen and (max-width:1099px), screen and (max-width:1366px) and (pointer:coarse) {
+ body.indy-profile-responsive .indy-vcard-toggle>div{font-size:0}
+ body.indy-profile-responsive .indy-vcard-public-label{font-size:14px}
+ body.indy-profile-responsive [data-indy-vcard-preview]{text-align:left}
+ body.indy-profile-responsive [data-indy-vcard-preview]>.opacitymedium{opacity:1}
+ body.indy-profile-responsive #virtualcard-iframe{pointer-events:none}
 }

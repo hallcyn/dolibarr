@@ -9,6 +9,10 @@ define('NOHTTPSREDIRECT', 1);
 define('NOREQUIREMENU', 1);
 require '/var/www/html/main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+if (!isModEnabled('indyui')) {
+    $result = activateModule('modIndyUI');
+    if (!empty($result['errors'])) { fwrite(STDERR, 'Unable to enable IndyUI presentation companion.'.PHP_EOL); exit(1); }
+}
 if (!getDolGlobalInt('ALLOW_THEME_JS')) {
     if (dolibarr_set_const($db, 'ALLOW_THEME_JS', '1', 'chaine', 0, '', $conf->entity) <= 0) exit(1);
 }

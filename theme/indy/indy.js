@@ -205,7 +205,7 @@
         }
         const observer=new MutationObserver(()=>{
           const isOpen=account.classList.contains('open');trigger.setAttribute('aria-expanded',String(isOpen));
-          if(isOpen)dismiss.focus({preventScroll:true});
+          if(isOpen){panel.scrollTop=0;dismiss.focus({preventScroll:true});}
         });observer.observe(account,{attributes:true,attributeFilter:['class']});
         const accountKey=e=>{if(e.key==='Escape'&&account.classList.contains('open')){e.preventDefault();closeAccount(true);}else if(e.target===trigger&&e.key===' '){e.preventDefault();trigger.click();}};
         let accountActive=true;
@@ -214,6 +214,17 @@
         const cardDialog=account.querySelector('#idfordialogpublicvirtualcardmenu');
         if(cardDialog&&window.jQuery){
           const restore=()=>trigger.focus({preventScroll:true});
+          const decorate=()=>{
+            const widget=window.jQuery(cardDialog).dialog('widget')[0];
+            if(widget.hasAttribute('data-indy-vcard-dialog'))return;
+            attr(widget,'data-indy-vcard-dialog','1');
+            const title=window.jQuery(cardDialog).dialog('option','title');
+            window.jQuery(cardDialog).dialog('option','title',fr?'Ma carte de visite':'My business card');
+            const close=widget.querySelector('.ui-dialog-titlebar-close');if(close)attr(close,'aria-label',fr?'Fermer la carte de visite':'Close business card');
+            undo.push(()=>window.jQuery(cardDialog).dialog('option','title',title));
+          };
+          window.jQuery(cardDialog).on('dialogopen.indyAccount',decorate);
+          undo.push(()=>window.jQuery(cardDialog).off('dialogopen.indyAccount',decorate));
           window.jQuery(cardDialog).on('dialogclose.indyAccount',restore);
           undo.push(()=>window.jQuery(cardDialog).off('dialogclose.indyAccount',restore));
         }
@@ -402,5 +413,90 @@
   }
   function sync(){if(media.matches&&!cleanup)cleanup=mount();else if(!media.matches&&cleanup){cleanup();cleanup=null;}}
   function start(){sync();media.addEventListener('change',sync);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,0));else setTimeout(start,0);
+})();
+
+/* 1.5.3 · Native user sections, including the menu-less virtual-card iframe. */
+(() => {
+  'use strict';
+  let view=window;try{while(view.frameElement)view=view.parent;}catch{}
+  const media=view.matchMedia('(max-width:1099px), (max-width:1366px) and (pointer:coarse)');
+  const fr=document.documentElement.lang.startsWith('fr');let cleanup=null;
+  function mount(){
+    if(document.body.matches('.virtualcardpreview')&&window.frameElement?.id==='virtualcard-iframe'){
+      document.body.classList.add('indy-vcard-preview-responsive');
+      const frame=window.frameElement,form=document.querySelector('#dolpaymentform');
+      const previous=frame.style.getPropertyValue('height'),priority=frame.style.getPropertyPriority('height');
+      const fit=()=>{if(form)frame.style.setProperty('height',Math.max(240,Math.ceil(form.getBoundingClientRect().bottom+scrollY+12))+'px','important');};
+      const observer=new ResizeObserver(fit);if(form)observer.observe(form);document.fonts.ready.then(fit);
+      return()=>{observer.disconnect();document.body.classList.remove('indy-vcard-preview-responsive');if(previous)frame.style.setProperty('height',previous,priority);else frame.style.removeProperty('height');};
+    }
+    if(!document.body.matches('.mod-user'))return null;
+    const owned=[],undo=[];
+    const add=n=>(owned.push(n),n);
+    const attr=(e,k,v)=>{const old=e.getAttribute(k);undo.push(()=>old===null?e.removeAttribute(k):e.setAttribute(k,old));e.setAttribute(k,v);};
+    const move=(e,p,before=null)=>{const marker=document.createComment('indy profile position');e.before(marker);p.insertBefore(e,before);undo.push(()=>marker.replaceWith(e));};
+    document.body.classList.add('indy-profile-responsive');
+    const tabs=document.querySelector('.fiche .tabs');
+    if(tabs){
+      const links=[...tabs.querySelectorAll('a.tab[href]')].filter(a=>a.getAttribute('href')!=='#');
+      const unique=[...new Map(links.map(a=>[a.href,a])).values()];
+      if(unique.length){
+        const nav=add(document.createElement('nav'));nav.className='indy-profile-sections';nav.setAttribute('aria-label',fr?'Rubriques du profil':'Profile sections');
+        const label=document.createElement('label');label.textContent=fr?'Rubriques du profil':'Profile sections';
+        const select=document.createElement('select');label.append(select);nav.append(label);tabs.before(nav);
+        unique.forEach(link=>{const option=document.createElement('option');option.value=link.href;option.textContent=link.textContent.trim();option.selected=!!link.closest('.tabactive');select.append(option);});
+        select.addEventListener('change',()=>location.assign(select.value));attr(tabs,'data-indy-profile-tabs','1');
+      }
+    }
+    if(document.body.matches('.page-virtualcard')){
+      const embedded=!!window.frameElement||document.body.classList.contains('dol_openinpopup');
+      if(embedded){
+        document.querySelectorAll('.fichecenter>form').forEach(form=>{
+          for(const [name,value] of [['dol_hide_topmenu','1'],['dol_hide_leftmenu','1'],['dol_openinpopup',new URL(location.href).searchParams.get('dol_openinpopup')||'publicvirtualcardmenu']]){
+            if(!form.querySelector('input[name="'+name+'"]')){const input=add(document.createElement('input'));input.type='hidden';input.name=name;input.value=value;form.append(input);}
+          }
+        });
+      }
+      const enabled=document.querySelector('#USER_ENABLE_PUBLIC'),toggle=document.querySelector('a[href*="action=setUSER_ENABLE_PUBLIC"]');
+      if(enabled&&toggle){
+        if(embedded){const target=new URL(toggle.href);target.searchParams.set('dol_hide_topmenu','1');target.searchParams.set('dol_hide_leftmenu','1');attr(toggle,'href',target.href);}
+        const parent=enabled.parentElement,nodes=[...parent.childNodes].slice(0,[...parent.childNodes].indexOf(enabled));
+        const card=add(document.createElement('section'));card.className='indy-vcard-enable';parent.insertBefore(card,nodes[0]||enabled);
+        const row=document.createElement('div');row.className='indy-vcard-toggle';const label=document.createElement('div');row.append(label);card.append(row);
+        const description=document.createElement('div');description.className='indy-vcard-description';card.append(description);
+        nodes.forEach(n=>{if(n===toggle)move(n,row);else if(n.nodeType===Node.TEXT_NODE)move(n,label);else move(n,description);});
+        const caption=document.createElement('span');caption.className='indy-vcard-public-label';caption.textContent=fr?'Carte de visite publique':'Public business card';label.append(caption);label.setAttribute('aria-hidden','true');
+        if(!description.textContent.trim())description.hidden=true;
+        attr(toggle,'role','switch');attr(toggle,'aria-checked',String(enabled.value==='1'));attr(toggle,'aria-label',fr?'Carte de visite publique':'Public business card');
+      }
+      const url=document.querySelector('#publicurluser');
+      if(url){
+        const box=url.closest('.urllink'),link=box?.querySelector('a[href]');
+        if(box&&link){
+          const section=add(document.createElement('section'));section.className='indy-vcard-share';box.before(section);
+          const title=document.createElement('h2');title.textContent=fr?'Lien public':'Public link';section.append(title);move(box,section);
+          attr(url,'readonly','readonly');attr(url,'aria-label',fr?'Lien public de la carte de visite':'Public business card link');
+          const actions=add(document.createElement('div'));actions.className='indy-vcard-actions';box.append(actions);move(link,actions);
+          attr(link,'aria-label',fr?'Ouvrir ma carte de visite':'Open my business card');
+          const caption=add(document.createElement('span'));caption.className='indy-vcard-open-label';caption.textContent=fr?'Ouvrir':'Open';link.append(caption);
+          const copy=document.createElement('button');copy.type='button';copy.textContent=fr?'Copier le lien':'Copy link';actions.prepend(copy);
+          const status=document.createElement('small');status.setAttribute('role','status');box.append(status);
+          copy.addEventListener('click',async()=>{let done=false;try{await navigator.clipboard.writeText(url.value);done=true;}catch{url.focus();url.select();try{done=document.execCommand('copy');}catch{}}
+            status.textContent=done?(fr?'Lien copié':'Link copied'):(fr?'Sélectionnez le lien pour le copier':'Select the link to copy it');});
+        }
+      }
+      const advanced=document.querySelector('#lnk'),options=document.querySelector('#div_container_sub_exportoptions');
+      if(advanced&&options){
+        attr(advanced,'role','button');attr(advanced,'aria-controls',options.id);attr(advanced,'aria-expanded',String(options.style.display!=='none'));attr(advanced.parentElement,'data-indy-vcard-toggle','1');
+        const observer=new MutationObserver(()=>advanced.setAttribute('aria-expanded',String(options.style.display!=='none')));observer.observe(options,{attributes:true,attributeFilter:['style']});
+        const key=e=>{if(e.key===' '){e.preventDefault();advanced.click();}};advanced.addEventListener('keydown',key);undo.push(()=>{observer.disconnect();advanced.removeEventListener('keydown',key);});
+      }
+      const preview=document.querySelector('.virtualcard-div');if(preview)attr(preview.parentElement,'data-indy-vcard-preview','1');
+    }
+    return()=>{undo.reverse().forEach(f=>f());owned.forEach(n=>n.remove());document.body.classList.remove('indy-profile-responsive');};
+  }
+  function sync(){if(media.matches&&!cleanup)cleanup=mount();else if(!media.matches&&cleanup){cleanup();cleanup=null;}}
+  const start=()=>{sync();media.addEventListener('change',sync);};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,0));else setTimeout(start,0);
 })();

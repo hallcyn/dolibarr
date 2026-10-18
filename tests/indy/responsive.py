@@ -30,7 +30,7 @@ def routes_from(name):
 
 routes = {**routes_from('browser.py'), **routes_from('usability.py'),
           'indy-settings': '/indyinvoice/admin/setup.php'}
-desktop_routes = ('dashboard', 'clients', 'invoices', 'new-client', 'order-card', 'product-card')
+desktop_routes = ('dashboard', 'clients', 'invoices', 'new-client', 'order-card', 'product-card', 'user-card')
 reference = json.loads((root / 'reference/desktop.json').read_text())
 for name, digest in reference['sha256'].items():
     assert hashlib.sha256((root / 'reference' / name).read_bytes()).hexdigest() == digest
@@ -152,6 +152,8 @@ with sync_playwright() as p:
                 assert a.locator('.indy-r-only').count() == 0
                 assert a.locator('.indy-account-toolbar,.indy-account-person,.indy-account-action-label,.indy-account-disclosure-label,.indy-account-legacy-label').count() == 0
                 assert a.locator('#topmenu-login-dropdown .user-body + .user-footer').count() == 1
+                assert a.locator('.indy-profile-sections,.indy-vcard-share,.indy-vcard-enable').count() == 0
+                assert not a.locator('body').evaluate("e=>e.classList.contains('indy-profile-responsive')")
                 screenshot(a, f'desktop-{name}-{width}-restored.png')
             report.append({'kind': 'desktop-reference', 'route': name, 'width': width, 'status': 'passed'})
         before.close()

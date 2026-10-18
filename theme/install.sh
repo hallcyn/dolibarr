@@ -16,4 +16,8 @@ for resource in img ckeditor tinymce; do
     cp -R "$root/theme/eldy/$resource" "$root/theme/indy/"
 done
 cp -R "$source_dir/." "$root/theme/indy/"
-echo 'Indy installed. Select indy in Setup > Display > Theme, then save.'
+module_dir="$script_dir/../module/indyui"
+[[ -d "$script_dir/module/indyui" ]] && module_dir="$script_dir/module/indyui"
+mkdir -p "$root/custom/indyui"
+cp -R "$module_dir/." "$root/custom/indyui/"
+echo 'Indy installed. Select indy in Setup > Display > Theme, then save. Enable the IndyUI companion module for versioned assets.'
