@@ -18,16 +18,10 @@ Le modèle de facture `indy` hérite de Sponge et conserve ses colonnes natives 
 | Visibilité | `1` |
 | Affichage sur PDF | **`1`** pour une colonne native |
 | Obligatoire | Non |
-| Champ calculé | Formule ci-dessous, sans balises PHP |
+| Champ calculé | Formule ci-dessous, sur une seule ligne, sans balises PHP |
 
 ```php
-(
-    ($objectoffield->fk_product > 0)
-    && ($varProduct = new Product($db))
-    && ($varProduct->fetchNoCompute($objectoffield->fk_product) > 0)
-)
-? round($varProduct->volume * $objectoffield->qty, 2)
-: 0
+(($objectoffield->fk_product > 0) && ($varProduct = new Product($db)) && ($varProduct->fetchNoCompute($objectoffield->fk_product) > 0)) ? round($varProduct->volume * $objectoffield->qty, 2) : 0
 ```
 
 **Important pour Dolibarr 24 :** les variables temporaires doivent commencer par `$var`. La variante utilisant `$reloadedobj` est refusée par le filtre natif ; utiliser `$varProduct` comme ci-dessus.
