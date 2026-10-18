@@ -1055,7 +1055,8 @@ body .ui-tooltip :is(.error, .warning) { color: #ad3555 !important; }
  body.indy-responsive #id-right .table-fiche-title{margin-bottom:18px}
  body.indy-responsive #id-right .table-fiche-title[data-indy-empty-title]{display:none!important}
  body.indy-responsive #id-right .table-fiche-title .col-picto{display:none}
- body.indy-responsive #id-right .table-fiche-title :is(.col-title,.col-right){display:flow-root;width:100%;padding:0}
+ body.indy-responsive #id-right .table-fiche-title :is(.col-title,.col-center,.col-right){display:flow-root;box-sizing:border-box;width:100%;min-width:0;max-width:100%;padding:0}
+ body.indy-responsive #id-right .table-fiche-title .col-center .select2-container{width:100%!important;max-width:100%!important}
  body.indy-responsive #id-right .table-fiche-title .col-right{padding-top:12px}
  body.indy-responsive .table-fiche-title :is(.pagination,.paginationafterarrows){display:flex;flex-wrap:wrap;align-items:center;gap:6px;max-width:100%;white-space:normal}
  body.indy-responsive .table-fiche-title div.pagination{float:none;width:100%}

@@ -263,7 +263,8 @@
       const placeholder=document.createElement('option');placeholder.textContent=fr?'Trier la liste':'Sort list';placeholder.value='';sorting.append(placeholder);
       headers.forEach((h,i)=>{const link=h.querySelector('a[href*="sortfield="]');if(!link||!labels[i])return;for(const direction of ['ASC','DESC']){const option=document.createElement('option');const url=new URL(link.href);url.searchParams.set('sortorder',direction);option.value=url.href;option.textContent=labels[i]+' '+(direction==='ASC'?'↑':'↓');sorting.append(option);}});
       if(sorting.options.length>1){tools.append(sorting);sorting.addEventListener('change',()=>{if(sorting.value)location.assign(sorting.value);});}
-      const wrapper=table.closest('.div-table-responsive,.div-table-responsive-no-min');(wrapper||table).before(tools);
+      const wrapper=table.closest('.div-table-responsive,.div-table-responsive-no-min'),form=table.closest('form');
+      (wrapper&&wrapper.closest('form')===form?wrapper:table).before(tools);
       table.classList.add('indy-card-list');undo.push(()=>table.classList.remove('indy-card-list'));
       rows.forEach(row=>{
         const cells=[...row.children];if(cells.length!==headers.length||cells.some(c=>c.colSpan>1))return;
