@@ -502,3 +502,87 @@
   const start=()=>{sync();media.addEventListener('change',sync);};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,0));else setTimeout(start,0);
 })();
+
+/* 1.5.5 · Repair UTF-8 bytes misread as Latin-1/Windows-1252 in choice
+ * labels only. Never rewrite values, IDs, HTML, database records or inputs. */
+(() => {
+  'use strict';
+  const decoder = new TextDecoder('utf-8', {fatal:true});
+  const windows1252 = '€\u0081‚ƒ„…†‡ˆ‰Š‹Œ\u008dŽ\u008f\u0090‘’“”•–—˜™š›œ\u009džŸ';
+  const byte = character => {
+    const code=character.charCodeAt(0),mapped=windows1252.indexOf(character);
+    return mapped>=0 ? mapped+128 : code<=255 ? code : -1;
+  };
+  function repairLabel(text) {
+    // A complete, valid UTF-8 byte sequence is required. Correct accents,
+    // isolated Ã/Â, Asian text and real Unicode emoji remain unchanged.
+    for(let pass=0;pass<2;pass++){
+      let output='';
+      for(let i=0;i<text.length;){
+        const first=byte(text[i]),length=first>=194&&first<=223?2:first>=224&&first<=239?3:first>=240&&first<=244?4:0;
+        let decoded='';
+        if(length&&i+length<=text.length){
+          const bytes=Array.from(text.slice(i,i+length),byte);
+          if(bytes.slice(1).every(n=>n>=128&&n<=191)){
+            try{decoded=decoder.decode(new Uint8Array(bytes));}catch(_){/* Keep ambiguous/invalid text verbatim. */}
+          }
+        }
+        if(decoded){output+=decoded;i+=length;}else{output+=text[i++];}
+      }
+      if(output===text)break;
+      text=output;
+    }
+    return text;
+  }
+  const labelSelector='.select2-selection__rendered,.select2-results__option';
+  function repairText(element){
+    const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT);
+    let node;while((node=walker.nextNode())){
+      const fixed=repairLabel(node.nodeValue);if(fixed!==node.nodeValue)node.nodeValue=fixed;
+    }
+    if(element.hasAttribute('title')){
+      const old=element.getAttribute('title'),fixed=repairLabel(old);if(old!==fixed)element.setAttribute('title',fixed);
+    }
+  }
+  function repairSelect(select){
+    let changed=false;
+    const instance=window.jQuery?.(select).data('select2');
+    for(const option of select.options){
+      const old=option.textContent,fixed=repairLabel(old);
+      if(old!==fixed){
+        option.textContent=fixed;changed=true;
+        // Select2 caches native option labels separately from the DOM.
+        const cached=instance?.dataAdapter?.item(window.jQuery(option)) || window.jQuery?.(option).data('data');if(cached)cached.text=fixed;
+      }
+      if(option.hasAttribute('label')){
+        const oldLabel=option.getAttribute('label'),fixedLabel=repairLabel(oldLabel);
+        if(oldLabel!==fixedLabel){option.setAttribute('label',fixedLabel);changed=true;}
+      }
+    }
+    // Refresh presentation only, without firing the business change handlers
+    // (country AJAX, prices, stock, etc.) or changing the selected value.
+    if(changed&&window.jQuery?.(select).data('select2'))window.jQuery(select).trigger('change.select2');
+  }
+  function start(){
+    if(document.documentElement.dataset.indyChoiceLabels)return;
+    document.documentElement.dataset.indyChoiceLabels='1';
+    const process=node=>{
+      const element=node.nodeType===Node.ELEMENT_NODE?node:node.parentElement;if(!element)return;
+      const select=element.closest('select');if(select)repairSelect(select);
+      element.querySelectorAll('select').forEach(repairSelect);
+      const label=element.closest(labelSelector);if(label)repairText(label);
+      element.querySelectorAll(labelSelector).forEach(repairText);
+    };
+    process(document.body);
+    // Native country/departments AJAX and Select2 results can arrive later.
+    new MutationObserver(records=>{
+      const roots=new Set();
+      for(const record of records){
+        if(record.type==='characterData')roots.add(record.target);
+        else for(const node of record.addedNodes)roots.add(node);
+      }
+      for(const node of roots)if(node.isConnected)process(node);
+    }).observe(document.body,{childList:true,subtree:true,characterData:true});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,0));else setTimeout(start,0);
+})();

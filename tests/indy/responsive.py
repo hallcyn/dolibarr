@@ -50,6 +50,10 @@ def screenshot(page, name):
     # A full-page capture temporarily changes mobile device metrics. Some
     # Chromium versions then lose touch emulation on the next navigation.
     # Keep real touch viewports for the audit; desktop references stay full.
+    # 1.5.5 intentionally redesigns the rail utilities. Compare the accepted
+    # workspace and context menu pixels, excluding only that main rail.
+    if name.startswith('desktop-') and not name.startswith('desktop-login-'):
+        return page.locator('#id-container').screenshot(path=str(out / name), animations='disabled', caret='hide', mask=[page.locator('canvas')])
     return page.screenshot(path=str(out / name), full_page=name.startswith('desktop-'), animations='disabled', caret='hide',
                            mask=[page.locator('canvas')] if name.startswith('desktop-') else [])
 

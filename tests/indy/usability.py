@@ -165,6 +165,56 @@ with sync_playwright() as p:
  assert tip.locator('a').evaluate('e=>getComputedStyle(e).color')=='rgb(53, 77, 97)'
  page.mouse.move(0,0);page.keyboard.press('Escape')
  print('PASS: six native information tooltips at desktop/390/320px and rich jQuery content, text/link contrast and viewport bounds.',flush=True)
+ # 1.5.5: native department values and business handlers must not change
+ # while repairing the reported Latin-1/Windows-1252 presentation error.
+ for width in (1440,390):
+  page.set_viewport_size({'width':width,'height':1000})
+  page.goto(base+'/product/card.php?action=create&type=0',wait_until='networkidle')
+  native=page.locator('#state_id');assert native.count()==1
+  original=native.locator('option').evaluate_all('es=>es.map(e=>e.value)')
+  selected=native.input_value()
+  value=page.evaluate('''()=>{
+   const select=document.querySelector('#state_id');
+   const option=[...select.options].find(o=>o.textContent.includes('Hérault'));
+   if(!option)throw Error('French native department missing');
+   window.indyBusinessChanges=0;select.addEventListener('change',()=>window.indyBusinessChanges++);
+   option.textContent='HÃ©rault';return option.value;
+  }''')
+  page.wait_for_function("v=>[...document.querySelector('#state_id').options].find(o=>o.value===v).textContent==='Hérault'",arg=value)
+  assert native.input_value()==selected and page.evaluate('window.indyBusinessChanges')==0
+  assert native.locator('option').evaluate_all('es=>es.map(e=>e.value)')==original
+  native.select_option(value)
+  widget=page.locator('#select2-state_id-container')
+  if widget.count():
+   assert widget.inner_text()=='Hérault';widget.click()
+   page.locator('.select2-container--open .select2-search__field').fill('Hérault')
+   result=page.locator('.select2-results__option[aria-selected]').filter(has_text='Hérault')
+   result.first.wait_for(state='visible');assert result.count()>=1
+   page.screenshot(path=str(out/f'departments-{width}.png'),full_page=False)
+   page.keyboard.press('Escape')
+  # Native AJAX can replace/add options after page initialization.
+  page.evaluate('''()=>document.querySelector('#state_id').append(new Option('CÃƒÂ´tes-dâ€™Armor','indy-late-label'))''')
+  page.wait_for_function("document.querySelector('#state_id option[value=indy-late-label]').textContent==='Côtes-d’Armor'")
+  assert native.input_value()==value
+ print('PASS native department accents, Select2 search/selection, late options and unchanged values/business handlers.',flush=True)
+ for width in (1280,1440,1920):
+  page.set_viewport_size({'width':width,'height':900})
+  page.goto(base+'/',wait_until='networkidle')
+  trigger=page.locator('#topmenu-login-dropdown>a');trigger.click()
+  panel=page.locator('#topmenu-login-dropdown .dropdown-menu');assert panel.is_visible()
+  assert panel.evaluate('e=>{const r=e.getBoundingClientRect();return r.left>=108&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight}')
+  actions=panel.locator('.user-footer a.button-top-menu-dropdown')
+  assert actions.count()==3
+  rects=[a.bounding_box() for a in actions.all()]
+  assert all(r['height']>=44 and abs(r['width']-rects[0]['width'])<1 for r in rects)
+  assert all(rects[i]['y']+rects[i]['height']<=rects[i+1]['y'] for i in range(2))
+  assert page.locator('.login_block_other .aversion').is_visible()
+  for a in page.locator('.login_block_other a:has(.fa-print),.login_block_other a.help').all():
+   box=a.bounding_box();assert box['width']>=36 and box['height']>=36
+  page.screenshot(path=str(out/f'desktop-account-{width}.png'),full_page=False)
+  panel.locator('a[accesskey=u]').click();page.wait_for_load_state('networkidle')
+  assert '/user/card.php' in page.url
+ print('PASS desktop rail print/help/version/account alignment and three native account actions.',flush=True)
  # Touch devices use Dolibarr's native click-to-open information dialog.
  touch=b.new_page(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,user_agent='Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36')
  touch.goto(base+'/');touch.locator('#username').fill('admin');touch.locator('#password').fill(os.environ['DOLIBARR_TEST_PASSWORD']);touch.locator('input[type=submit]').first.tap();touch.wait_for_load_state('networkidle')

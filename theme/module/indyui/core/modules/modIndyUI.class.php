@@ -12,7 +12,7 @@ class modIndyUI extends DolibarrModules
         $this->family = 'interface';
         $this->name = 'IndyUI';
         $this->description = 'Indy theme: versioned UI assets';
-        $this->version = '1.5.4';
+        $this->version = '1.5.5';
         $this->const_name = 'MAIN_MODULE_INDYUI';
         $this->picto = 'paint-brush';
         $this->module_parts = array('hooks' => array('main'));
