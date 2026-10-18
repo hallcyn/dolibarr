@@ -1,19 +1,19 @@
 {
   "repository": "hallcyn/dolibarr-indy-theme",
-  "commit": "da354624876e2522282929a01d1183e327c4fd95",
-  "version": "1.2.1",
+  "commit": "2de25d522ab3d08644b8e266d5fa41e9d0efd064",
+  "version": "1.3.0",
   "sha256": {
-    "tests/indy/browser.py": "f1cac2f47d1a946225430dee256b122f6cbd2ef05d1af923d96e7212bbd33de3",
+    "tests/indy/browser.py": "b7de572151c0bcc3032013944ca9617165e2879815ce5a135c0e97521f052046",
     "tests/indy/seed.php": "e69689a2ef1cee00d34a4eaeea9e1b0b56a05d608e933083587eb7e04b5a1e3f",
     "theme/LICENSE": "e79e9c8a0c85d735ff98185918ec94ed7d175efc377012787aebcf3b80f0d90b",
     "theme/indy/fonts/OFL.txt": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
     "theme/indy/fonts/inter-latin.woff2": "4716c7c50942309fccfe663ff567c664cc82e4f6fa374705f8f329bc2f967d64",
-    "theme/indy/indy.css": "09a70360cd154d883638b9ef18406fd875dc813b2c9b2c2d36e6664f3f8b486c",
+    "theme/indy/indy.css": "f3794aa1196cf70f81fca567170f1e9684b60c0cecc4292ea15ab5912dc89fbd",
     "theme/indy/style.css.php": "e95ee4594164c641df48671c425af1e9259ef4621279c9f6efcc4b9deb16bb3f",
-    "theme/indy/theme_descriptor.php": "23fe2e2603a2a06e26415a92c43b0bfff8c0e971fc477d4d609d2c8e2fd8c5e8",
+    "theme/indy/theme_descriptor.php": "54aa281c702503c910aab9010246dc7c5a9077c341b0b49f21d8eea337550da4",
     "theme/indy/theme_vars.inc.php": "a05d9a7db71186b3cb22ab4993bc4e4a935caf7b4772059a055494c374a5cfed",
-    "theme/indy/thumb.png": "af941e09033abda12f944a053468825ae82e5297d56b25bb3e05a9e1528be3a5",
-    "theme/indy/version.json": "cfbe0349be145aaa3eb86af73d9e9011d90ea7fe59cf1010418e5d61e5729934",
+    "theme/indy/thumb.png": "c2971ddd17de0fd019bac1dc98667e2745ac2d54e8339a7769356cb399f0f830",
+    "theme/indy/version.json": "79042310b6ce657fca545e1671ceac36cba010af794eb5a74211e030ccd56318",
     "theme/install.sh": "f3b237b7e1de7e9c8006ba1a426a0ea5df334c55a7cb542cf7a46e21d5cdd37e"
   }
 }

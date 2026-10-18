@@ -26,7 +26,7 @@
   --indy-nav-border: #eadfcf;
   --indy-success: #00a995;
   --indy-danger: #ad3555;
-  --indy-radius: 10px;
+  --indy-radius: 12px;
   --indy-shadow: none;
   --indy-rail-width: 108px;
   --indy-context-width: 224px;
@@ -358,6 +358,61 @@ table.noborder:not(.nobordernopadding), table.liste {
   border-spacing: 0;
   box-shadow: none;
 }
+/* Eldy draws the sides on the table and the bottom on its last cells.
+ * Removing only the top border leaves open cards. Give each surface one
+ * continuous outline, inside the scroll area, without clipping menus. */
+#id-right table.noborder:not(.nobordernopadding, .paymenttable, .margintable, .tableforcontact, .cal_month),
+#id-right table.liste {
+  border: 1px solid var(--indy-border) !important;
+  border-radius: var(--indy-radius);
+  border-spacing: 0;
+  background: var(--indy-surface);
+  background-clip: padding-box;
+}
+#id-right table.noborder:not(.nobordernopadding, .paymenttable, .margintable, .tableforcontact, .cal_month) > tbody > tr:last-child > :is(td, th),
+#id-right table.liste > tbody > tr:last-child > :is(td, th) { border-bottom: 0; }
+#id-right table.noborder > tbody > tr:first-child > :first-child,
+#id-right table.liste > tbody > tr:first-child > :first-child { border-start-start-radius: 11px; }
+#id-right table.noborder > tbody > tr:first-child > :last-child,
+#id-right table.liste > tbody > tr:first-child > :last-child { border-start-end-radius: 11px; }
+#id-right table.noborder > tbody > tr:last-child > :first-child,
+#id-right table.liste > tbody > tr:last-child > :first-child { border-end-start-radius: 11px; }
+#id-right table.noborder > tbody > tr:last-child > :last-child,
+#id-right table.liste > tbody > tr:last-child > :last-child { border-end-end-radius: 11px; }
+/* Wide tables scroll inside their card. The outline belongs to the visible
+ * wrapper, so its right edge never disappears beyond the scroll viewport. */
+#id-right :is(.div-table-responsive, .div-table-responsive-no-min):has(> table:is(.liste, .noborder):not(.nobordernopadding, .paymenttable, .margintable, .tableforcontact, .cal_month)) {
+  box-sizing: border-box;
+  border: 1px solid var(--indy-border);
+  border-radius: var(--indy-radius);
+  margin-bottom: 20px;
+  background: var(--indy-surface);
+}
+#id-right :is(.div-table-responsive, .div-table-responsive-no-min) > table:is(.liste, .noborder):not(.nobordernopadding, .paymenttable, .margintable, .tableforcontact, .cal_month) {
+  border: 0 !important;
+  margin-bottom: 0;
+}
+#id-right .box.divboxtable:has(> table.boxtable) {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--indy-border);
+  border-radius: var(--indy-radius);
+  background: var(--indy-surface);
+}
+#id-right .box.divboxtable > table.boxtable { border: 0 !important; margin-bottom: 0; }
+/* Additional filters are a separate, fully enclosed panel. Native Select2
+ * popovers stay outside it; overflow:hidden would cut off their options. */
+#id-right div.liste_titre_bydiv {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border: 1px solid var(--indy-border);
+  border-radius: var(--indy-radius);
+  background: #fafbfc;
+}
+#id-right div.liste_titre_bydiv .divsearchfield { max-width: 100%; }
 tr.liste_titre, tr.liste_titre th, tr.liste_titre td, .liste_titre {
   background: #fff;
   background-image: none;
@@ -380,16 +435,16 @@ tr.oddeven td, table.border td, table.border th { border-color: var(--indy-borde
 table.tableforfield { table-layout: fixed; }
 table.tableforfield td { overflow-wrap: break-word; }
 table.tableforfield td[class*="titlefield"] { width: 44%; min-width: 0; white-space: normal; }
-table.liste { border-collapse: separate; border-spacing: 0 8px; }
+table.liste { border-collapse: separate; border-spacing: 0; }
 table.liste > tbody > tr.oddeven > td {
   background: #fff;
   padding-block: 12px;
-  border-top: 1px solid var(--indy-border);
+  border-top: 0;
   border-bottom: 1px solid var(--indy-border);
   font-size: 14px;
 }
-table.liste > tbody > tr.oddeven > td:first-child { border-inline-start: 1px solid var(--indy-border); border-start-start-radius: 9px; border-end-start-radius: 9px; }
-table.liste > tbody > tr.oddeven > td:last-child { border-inline-end: 1px solid var(--indy-border); border-start-end-radius: 9px; border-end-end-radius: 9px; }
+table.liste > tbody > tr.oddeven > td:first-child { border-inline-start: 0; }
+table.liste > tbody > tr.oddeven > td:last-child { border-inline-end: 0; }
 table.liste > tbody > tr.oddeven:hover > td { background: #fffcf8; }
 table.noborder > tbody > tr.oddeven > td { padding-block: 12px; }
 tr.liste_total, tr.liste_total td { background: #fff; color: var(--indy-ink); font-weight: 650; }
@@ -407,7 +462,19 @@ td.amount, td.amountneg, td.amountpayment, .amount, .amountneg { font-variant-nu
 .info-box-number { font-family: Georgia, serif; font-size: 32px; font-weight: 600; letter-spacing: -1px; }
 .info-box-text, .boxstatstext { color: var(--indy-muted); font-size: 12px; font-weight: 400; }
 .boxheader, .boxheader td { background: #fff; color: var(--indy-ink); font-weight: 600; border-color: var(--indy-border); }
-.boxheader { padding-block: 14px; border-radius: 9px 9px 0 0; }
+.boxheader { padding-block: 14px; border-radius: 11px 11px 0 0; }
+/* Let widget titles wrap while their native filter, move and close controls
+ * keep their own space. A table cell cannot itself become a flex container. */
+#id-right .box_titre > th { position: relative; padding: 14px 72px 14px 14px; white-space: normal; }
+#id-right .box_titre > th > .tdoverflowmax400 {
+  float: none;
+  max-width: 100%;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+#id-right .box_titre > th > .boxclose { position: absolute; top: 14px; right: 10px; }
 /* Native statuses keep their semantic colors and labels. */
 .badge, [class*="badge-status"] { border-radius: 5px; font-size: 11px; font-weight: 600; }
 .badge { padding: 4px 8px; }
@@ -642,9 +709,10 @@ body.bodylogin { background: var(--indy-nav); }
   body:has(#id-top .tmenudiv) #id-container > .side-nav { top: 50px; height: calc(100dvh - 50px); max-height: calc(100dvh - 50px); }
   #id-right .fichehalfleft, #id-right .fichehalfright { float: none; box-sizing: border-box; width: 100%; padding-inline: 0; }
   #id-right .table-fiche-title, #id-right .table-fiche-title > tbody,
-  #id-right .table-fiche-title > tbody > tr { display: block; width: 100%; }
+  #id-right .table-fiche-title > tbody > tr { display: block; width: 100%; height: auto !important; }
   #id-right .table-fiche-title .col-picto { display: none; }
-  #id-right .table-fiche-title .col-title, #id-right .table-fiche-title .col-right { display: block; width: auto; }
+  #id-right .table-fiche-title .col-title { display: block; width: auto; }
+  #id-right .table-fiche-title .col-right { display: flow-root; width: auto; }
   #id-right .table-fiche-title .col-right { padding-top: 14px; }
 }
 @media screen and (max-width: 1099px) {
@@ -700,9 +768,10 @@ body.bodylogin { background: var(--indy-nav); }
   div.fiche { margin-inline: 10px; max-width: calc(100vw - 20px); box-sizing: border-box; }
   div.titre { font-size: 22px !important; white-space: normal !important; }
   .fiche table.table-fiche-title, .fiche table.table-fiche-title > tbody,
-  .fiche table.table-fiche-title > tbody > tr { display: block; width: 100%; }
+  .fiche table.table-fiche-title > tbody > tr { display: block; width: 100%; height: auto !important; }
   .fiche table.table-fiche-title .col-picto { display: none; }
-  .fiche table.table-fiche-title .col-title, .fiche table.table-fiche-title .col-right { display: block; width: auto; }
+  .fiche table.table-fiche-title .col-title { display: block; width: auto; }
+  .fiche table.table-fiche-title .col-right { display: flow-root; width: auto; }
   .fiche table.table-fiche-title .col-right { padding-top: 14px; }
   .table-fiche-title .pagination, .table-fiche-title .paginationafterarrows {
     display: flex;
@@ -720,6 +789,22 @@ body.bodylogin { background: var(--indy-nav); }
     overflow-x: auto;
   }
   div.tabBar { padding: 12px; }
+  /* Creation forms for invoices and orders still use a desktop two-column
+   * table on phones. Stack only these forms, preserving detail line tables. */
+  :is(form#formtocreate, form[name="crea_commande"]) .tabBar > table.border,
+  :is(form#formtocreate, form[name="crea_commande"]) .tabBar > table.border > tbody { display: block; width: 100%; }
+  :is(form#formtocreate, form[name="crea_commande"]) .tabBar > table.border > tbody > tr { display: flex; flex-wrap: wrap; height: auto !important; }
+  :is(form#formtocreate, form[name="crea_commande"]) .tabBar > table.border > tbody > tr > td {
+    display: block; flex: 1 1 100%; box-sizing: border-box;
+    width: 100% !important; min-width: 0 !important; max-width: 100% !important;
+    height: auto !important; padding: 7px 0; white-space: normal;
+  }
+  :is(form#formtocreate, form[name="crea_commande"]) .tabBar .select2-container {
+    min-width: 0 !important; max-width: calc(100% - 54px) !important;
+  }
+  :is(form#formtocreate, form[name="crea_commande"]) .tabBar textarea { width: 100%; }
+  #id-right .box_titre > th { padding-right: 48px; }
+  #id-right .box_titre > th > .tdoverflowmax400 { max-width: 100% !important; }
   div.tabs a.tab { padding: 9px 12px; }
   .butAction, a.butAction, .butActionDelete, a.butActionDelete { padding: 11px 16px; margin: 5px 3px; }
   .login_table { box-sizing: border-box; width: calc(100vw - 28px); max-width: 410px; padding: 16px 8px; }

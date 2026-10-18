@@ -9,6 +9,31 @@ password = os.environ['DOLIBARR_TEST_PASSWORD']
 artifacts = Path(os.environ.get('INDY_ARTIFACTS', 'artifacts'))
 artifacts.mkdir(parents=True, exist_ok=True)
 
+card_frames = ('#id-right .box.divboxtable:has(> table.boxtable), '
+               '#id-right :is(.div-table-responsive,.div-table-responsive-no-min)'
+               ':has(> table:is(.liste,.noborder):not(.nobordernopadding,.paymenttable,.margintable,.tableforcontact,.cal_month))')
+
+
+def check_card_frames(page, name):
+    for frame in page.locator(card_frames).all():
+        if frame.is_visible():
+            assert frame.evaluate('''e => {
+                const s = getComputedStyle(e), r = e.getBoundingClientRect();
+                return ['Top','Right','Bottom','Left'].every(side => s['border'+side+'Width'] === '1px'
+                    && s['border'+side+'Style'] === 'solid' && s['border'+side+'Color'] !== s.backgroundColor)
+                    && r.right <= innerWidth + 1 && r.left >= -1;
+            }'''), (name, 'Card outline is open or outside the viewport')
+    # A wrapped, floated list toolbar must reserve its height before the
+    # separate filter panel starts (especially on narrow touch screens).
+    assert page.evaluate('''() => {
+        const panel = document.querySelector('#id-right div.liste_titre_bydiv');
+        if (!panel || !panel.getBoundingClientRect().height) return true;
+        const top = panel.getBoundingClientRect().top;
+        return [...document.querySelectorAll('.table-fiche-title .col-right .pagination')]
+            .every(e => !e.getBoundingClientRect().height || e.getBoundingClientRect().bottom <= top + 1);
+    }'''), (name, 'List actions overlap the filter panel')
+
+
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path=os.environ.get('PLAYWRIGHT_CHROMIUM_EXECUTABLE'))
     context = browser.new_context(viewport={'width': 1440, 'height': 1000}, locale='fr-FR')
@@ -47,6 +72,9 @@ with sync_playwright() as p:
 
     routes = {
         'dashboard': '/',
+        'thirdparty-space': '/societe/index.php?mainmenu=companies',
+        'commerce-space': '/comm/index.php?mainmenu=commercial',
+        'billing-space': '/compta/index.php?mainmenu=billing',
         'clients': '/societe/list.php?mainmenu=companies',
         'invoices': '/compta/facture/list.php?mainmenu=billing',
         'invoice-card': '/compta/facture/card.php?facid=1',
@@ -125,6 +153,9 @@ with sync_playwright() as p:
         for placeholder in page.locator('.select2-selection__rendered .placeholder').all():
             if placeholder.is_visible():
                 assert placeholder.evaluate('e => getComputedStyle(e).opacity') == '1', (name, 'Placeholder is faded twice')
+        check_card_frames(page, name)
+        if name in ('dashboard', 'thirdparty-space', 'clients', 'invoices'):
+            assert page.locator(card_frames).count() > 0, (name, 'Expected enclosed cards')
         page.screenshot(path=str(artifacts / f'{name}-desktop.png'), full_page=name != 'modules')
         assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth'), f'{name}: desktop overflow'
         print(f'PASS page: {name}', flush=True)
@@ -150,6 +181,14 @@ with sync_playwright() as p:
     page.locator('button[name="button_removefilter_x"]').click()
     page.wait_for_load_state('networkidle')
     assert 'Studio Horizon' in page.locator('table.liste').inner_text(), 'Filter reset failed'
+    page.locator('input[name="search_nom"]').fill('NO-MATCH-INDY-REGRESSION')
+    page.locator('button[name="button_search_x"]').click()
+    page.wait_for_load_state('networkidle')
+    assert page.locator('table.liste tr.oddeven').count() == 0, 'Expected an empty filtered list'
+    check_card_frames(page, 'empty-clients')
+    page.screenshot(path=str(artifacts / 'clients-empty-desktop.png'), full_page=True)
+    page.locator('button[name="button_removefilter_x"]').click()
+    page.wait_for_load_state('networkidle')
 
     # Exercise real primary menu links and a short window, where the rail scrolls.
     page.locator('#id-top a[href*="mainmenu=companies"]').first.click()
@@ -175,6 +214,7 @@ with sync_playwright() as p:
         page.goto(base + routes[name], wait_until='networkidle')
         assert page.locator('#id-right').is_visible(), name
         assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth'), f'{name}: mobile overflow'
+        check_card_frames(page, name)
         if name in ('new-product', 'new-client'):
             assert page.locator('.tabBar').evaluate('''e => [...e.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]),textarea,.select2-selection')].every(x => {
                 const r = x.getBoundingClientRect(), row = x.closest('tr');
@@ -192,6 +232,50 @@ with sync_playwright() as p:
     assert page.locator('.side-nav').is_visible(), 'Native mobile drawer did not open'
     page.screenshot(path=str(artifacts / 'navigation-mobile.png'), full_page=True)
     toggle.click()
+
+    # Real touch contexts and mobile user agents also exercise Dolibarr's
+    # server-side mobile markup, beyond resizing a desktop browser window.
+    touch_routes = ('dashboard', 'thirdparty-space', 'product-space', 'clients', 'invoices',
+                    'new-client', 'new-product', 'products', 'product-card', 'product-stock',
+                    'new-order', 'new-invoice', 'new-contact', 'new-bank', 'stock-movements',
+                    'warehouses', 'configuration')
+    profiles = [('iphone-small', 'iPhone 13', 320, 740), ('android', 'Pixel 7', 360, 800),
+                ('iphone', 'iPhone 13', 390, 844), ('landscape', 'iPhone 13', 844, 390)]
+    for profile, device, width, height in profiles:
+        options = {**p.devices[device], 'viewport': {'width': width, 'height': height},
+                   'device_scale_factor': 1, 'locale': 'fr-FR', 'storage_state': context.storage_state()}
+        touch_context = browser.new_context(**options)
+        touch_page = touch_context.new_page()
+        touch_page.on('response', lambda response: failures.append(f'{response.status} {response.url}')
+                      if response.status >= 400 and '/theme/indy/' in response.url else None)
+        for name in touch_routes:
+            response = touch_page.goto(base + routes[name], wait_until='networkidle')
+            assert response.status == 200 and touch_page.locator('#id-right').is_visible(), (profile, name)
+            assert touch_page.evaluate('() => document.documentElement.scrollWidth <= innerWidth'), (profile, name, 'Touch viewport overflow')
+            check_card_frames(touch_page, (profile, name))
+            if width <= 600 and name in ('new-order', 'new-invoice'):
+                row = touch_page.locator('.tabBar > table.border > tbody > tr').first
+                cells = row.locator(':scope > td')
+                label, value = cells.nth(0).bounding_box(), cells.nth(1).bounding_box()
+                assert value['y'] >= label['y'] + label['height'] - 1, (profile, name, 'Form fields are not stacked')
+                assert cells.nth(1).bounding_box()['width'] > width * .7, (profile, name, 'Field column is cramped')
+            if name == 'clients':
+                scroller = touch_page.locator('.div-table-responsive:has(> table.liste)').first
+                assert scroller.evaluate('e => e.scrollWidth > e.clientWidth'), (profile, 'Expected horizontal table scrolling')
+                scroller.evaluate('e => e.scrollLeft = e.scrollWidth')
+                assert scroller.evaluate('e => e.scrollLeft > 0'), (profile, 'Cannot scroll to the final list columns')
+                check_card_frames(touch_page, (profile, 'scrolled-list'))
+                scroller.evaluate('e => e.scrollLeft = 0')
+            if name in ('thirdparty-space', 'clients', 'new-invoice', 'new-order'):
+                touch_page.screenshot(path=str(artifacts / f'{name}-{profile}.png'), full_page=True)
+            print(f'PASS touch: {profile} {name}', flush=True)
+        touch_page.goto(base + routes['configuration'], wait_until='networkidle')
+        drawer_toggle = touch_page.locator('#mainmenutd_menu a').first
+        if drawer_toggle.is_visible():
+            drawer_toggle.tap()
+            assert touch_page.locator('.side-nav').is_visible(), (profile, 'Touch drawer did not open')
+            drawer_toggle.tap()
+        touch_context.close()
     page.emulate_media(reduced_motion='reduce')
     assert page.locator('body').evaluate('e => getComputedStyle(e).transitionDuration') in ('1e-05s', '0.00001s')
     page.emulate_media(media='print')
@@ -206,4 +290,4 @@ with sync_playwright() as p:
     page.screenshot(path=str(artifacts / 'login-mobile.png'), full_page=True)
     assert not failures, json.dumps(failures)
     browser.close()
-print(f'PASS: {len(routes)} desktop routes, 12 tablet checks, 13 mobile routes, visible filters, single-layer tabs, contextual menu, dropdowns, native links, print and theme assets.')
+print(f'PASS: {len(routes)} desktop routes, 12 tablet checks, 13 resized mobile routes, {len(profiles) * len(touch_routes)} touch checks, closed card outlines, empty lists, horizontal scrolling, stacked forms, filters, tabs, navigation, print and theme assets.')
