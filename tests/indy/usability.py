@@ -106,8 +106,12 @@ with sync_playwright() as p:
   section.innerHTML='<input type="text" readonly value="Lecture seule"><input type="text" value="Modifiable"><input type="submit" class="button" disabled value="Indisponible">';
   document.querySelector('#id-right').prepend(section);
  }''')
- assert page.locator('#indy-field-state-audit input[readonly]').evaluate("e=>e.readOnly&&getComputedStyle(e).backgroundColor==='rgb(245, 247, 248)'")
- assert page.locator('#indy-field-state-audit input[type=text]:not([readonly])').evaluate("e=>!e.readOnly&&getComputedStyle(e).backgroundColor==='rgb(255, 255, 255)'")
+ readonly=page.locator('#indy-field-state-audit input[readonly]')
+ assert not readonly.is_editable() and readonly.evaluate(contrast)['ratio']>=4.5
+ readonly.focus();page.keyboard.type('Modification impossible');assert readonly.input_value()=='Lecture seule'
+ editable=page.locator('#indy-field-state-audit input[type=text]:not([readonly])')
+ assert editable.is_editable() and editable.evaluate(contrast)['ratio']>=4.5
+ editable.fill('Modification possible');assert editable.input_value()=='Modification possible'
  disabled=page.locator('#indy-field-state-audit input:disabled')
  assert disabled.is_disabled() and disabled.evaluate(contrast)['ratio']>=3
  page.locator('#indy-field-state-audit').evaluate('e=>e.remove()')
