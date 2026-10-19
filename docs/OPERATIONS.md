@@ -94,7 +94,7 @@ Le workflow **Check upstream versions** s’exécute chaque jour à **05:17 UTC*
 
 - **Dolibarr** : compare la version du Dockerfile aux tags numériques stables publiés dans l’image officielle. Les tags `develop`, RC et variantes PHP sont ignorés. Les versions sont comparées numériquement et l’image doit exister pour Linux amd64.
 - **MariaDB** : consulte l’API de la Fondation MariaDB, sélectionne la branche LTS stable maintenue la plus récente et vérifie son image Docker. Une nouvelle branche ouvre une demande d’examen, même si `11.4` reste maintenue ; cela ne prouve pas qu’une migration est nécessaire ou compatible. Une fin de support est signalée dans l’issue.
-- Le tag MariaDB `11.4` est flottant : il reçoit les correctifs de sa branche au prochain pull. Le moniteur ne connaît pas le patch exécuté par une instance Railway et ne détecte pas les seuls changements de digest d’un tag inchangé. Un tag de patch précis est comparé au patch disponible.
+- Le tag MariaDB `12.3.3` est fixé à un patch précis : les correctifs suivants nécessitent une PR et une validation explicites. Le moniteur compare ce patch au patch LTS disponible ; il ne connaît pas la version réellement exécutée par une instance Railway et ne détecte pas les seuls changements de digest d’un tag inchangé.
 
 Une issue créée par `github-actions[bot]` est maintenue par composant. Une nouvelle version actualise son titre et son corps, sans commentaire quotidien ni nouvelle issue tant qu’elle reste ouverte. Les échanges doivent rester dans les commentaires. Une issue fermée comme **not planned** ignore cette version précise. Une version ultérieure peut déclencher une nouvelle issue. Lorsque le dépôt est à jour, l’issue ouverte est fermée automatiquement au prochain contrôle.
 
@@ -113,7 +113,7 @@ GitHub peut retarder une tâche planifiée et désactive les workflows planifié
 
 ## Mise à jour de Dolibarr
 
-Les deux occurrences `24.0.2` du Dockerfile sont liées : la source de l’image et la variable `DOLI_VERSION` doivent correspondre. Ce choix évite qu’un redémarrage récupère silencieusement une nouvelle version majeure. Le tag MariaDB `11.4` accepte des correctifs de cette branche ; pour une reproductibilité stricte, choisir un patch précis ou un digest après validation.
+Les deux occurrences `24.0.2` du Dockerfile sont liées : la source de l’image et la variable `DOLI_VERSION` doivent correspondre. Ce choix évite qu’un redémarrage récupère silencieusement une nouvelle version majeure. MariaDB est fixé à `12.3.3` ; ses correctifs suivants passent également par une PR. Une mise à jour du dépôt ne migre pas les instances ni le template publié. Voir la [migration MariaDB](MARIADB-UPGRADE.md) avant toute modification de base existante.
 
 1. Lire les notes de version Dolibarr et vérifier les modules externes ; faire les sauts de versions selon la procédure officielle.
 2. Faire une sauvegarde cohérente et externe des données, des fichiers et de la clé ; tester sa restauration.
