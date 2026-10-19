@@ -168,8 +168,15 @@ echo json_encode($files, JSON_THROW_ON_ERROR);'''))
             print('PASS: ' + json.dumps(summary), flush=True)
         finally:
             # No dumps, credentials, keys or documents are uploaded as artifacts.
-            compose(restored, 'logs', '--tail=100')
-            compose(restored, 'down', '--volumes', '--remove-orphans')
+            try:
+                compose(restored, 'logs', '--tail=100')
+            finally:
+                try:
+                    compose(restored, 'down', '--volumes', '--remove-orphans')
+                finally:
+                    # Compose down removes only mounts used by that override.
+                    # Also remove the original, now-detached 11.4 fixture volumes.
+                    compose(baseline, 'down', '--volumes', '--remove-orphans')
 
 
 if __name__ == '__main__':
