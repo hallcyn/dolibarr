@@ -4,6 +4,8 @@ Ce guide permet d’enregistrer un véritable template **Dolibarr + MariaDB**, p
 
 **Le template Hallcyn est déjà créé : [Déployer Dolibarr](https://railway.com/deploy/YXlVeG).** Pour l’utiliser, commencer à la section 5. Les sections 1 à 4 expliquent comment le reproduire ou le maintenir. Son [éditeur](https://railway.com/workspace/templates/1933a7e2-1c1e-4664-9dd3-92dc696d7645) est accessible aux membres autorisés du workspace. Le lien de partage fonctionne ; le référencement au marketplace attend la validation d’une instance réelle.
 
+**Instances existantes en 11.4 :** consulter le [guide de migration MariaDB](MARIADB-UPGRADE.md) avant tout changement. La spécification ci-dessous vise les nouvelles installations ; le template publié peut encore présenter l’ancienne image tant que sa fiche n’a pas été actualisée explicitement.
+
 ## 1. Ouvrir l’éditeur de template
 
 1. Se connecter à [Railway](https://railway.com).
@@ -20,7 +22,7 @@ Cliquer **Add New → Docker Image**.
 | Champ | Valeur |
 | --- | --- |
 | Nom du service | `MariaDB` |
-| Image | `mariadb:11.4` |
+| Image | `mariadb:12.3.3` |
 | Volume | `/var/lib/mysql` |
 | Domaine HTTP | Aucun |
 | TCP Proxy public | Désactivé |
@@ -33,10 +35,12 @@ Pour attacher le volume : clic droit sur le service → **Attach Volume**, puis 
 Dans **Settings → Start Command**, copier :
 
 ```text
-docker-entrypoint.sh mariadbd --bind-address=0.0.0.0,:: --innodb-buffer-pool-size=128M --max-connections=30 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+docker-entrypoint.sh mariadbd --bind-address=0.0.0.0,:: --innodb-buffer-pool-size=128M --max-connections=30 --innodb-snapshot-isolation=OFF --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 ```
 
 Cliquer **Save** après la saisie. Les réglages du service doivent ensuite être enregistrés avec **Apply** dans la barre des changements du template.
+
+`--innodb-snapshot-isolation=OFF` conserve le comportement de concurrence de 11.4 malgré le nouveau défaut de 12.3 ; voir le guide de migration.
 
 L’image conserve son entrypoint officiel. La commande explicite reste compatible avec Railway et active l’écoute sur IPv6 pour son réseau privé. Les 128 Mo sont la taille du cache InnoDB, pas une limite totale de mémoire.
 
