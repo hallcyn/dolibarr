@@ -37,6 +37,8 @@ with sync_playwright() as p:
     assert page.locator('[role=alert]').count()==1,'Incomplete address must not download'
     page.goto(base+'/indylabels/index.php',wait_until='networkidle')
     assert page.locator('#padding').input_value()=='10'
+    assert page.locator('#group_status').input_value()=='open'
+    assert page.locator('#thirdparties option[value=\"'+str(data['closed'])+'\"]').count()==0
     page.locator('#group_year').fill('2025')
     page.locator('button[value=replace_group]').click();page.wait_for_load_state('networkidle')
     assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))==800
@@ -50,6 +52,22 @@ with sync_playwright() as p:
     page.locator('#category').select_option(str(data['category']))
     page.locator('button[value=replace_group]').click();page.wait_for_load_state('networkidle')
     assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))==2
+    page.locator('#group_status').select_option('closed')
+    page.locator('button[value=replace_group]').click();page.wait_for_load_state('networkidle')
+    assert page.locator('#group_status').input_value()=='closed'
+    assert page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions).map(o=>Number(o.value))')==[data['closed']]
+    with page.expect_download() as download:page.get_by_role('button',name='Télécharger le PDF',exact=True).click()
+    download.value.save_as(out/'closed-exception.pdf')
+    assert 'CI clos historique' in fitz.open(out/'closed-exception.pdf')[0].get_text()
+    page.locator('#group_status').select_option('open')
+    page.locator('button[value=add_group]').click();page.wait_for_load_state('networkidle')
+    assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))==3,'Closed exception lost when adding open group'
+    page.locator('#group_status').select_option('all')
+    page.locator('button[value=replace_group]').click();page.wait_for_load_state('networkidle')
+    assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))==3
+    page.locator('#group_status').select_option('open')
+    page.locator('button[value=replace_group]').click();page.wait_for_load_state('networkidle')
+    assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))==2,'Replace must remove closed exception'
     page.locator('#padding').fill('14')
     with page.expect_download() as download:page.get_by_role('button',name='Télécharger le PDF',exact=True).click()
     download.value.save_as(out/'download-padding.pdf')

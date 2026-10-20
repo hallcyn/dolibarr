@@ -15,14 +15,16 @@ $padding = GETPOSTISSET('padding') ? str_replace(',', '.', GETPOST('padding', 'a
 $year = GETPOSTISSET('group_year') ? GETPOSTINT('group_year') : (int) dol_print_date(dol_now(), '%Y') - 1;
 $groupMode = GETPOST('group_mode', 'aZ09') ?: 'last_order_year';
 $category = GETPOSTINT('category');
+$partyState = GETPOSTISSET('group_status') ? GETPOST('group_status', 'aZ09') : 'open';
 $skipIncomplete = GETPOSTINT('skip_incomplete');
 $recipients = array(); $ids = array(); $error = ''; $notice = ''; $pdf = null; $excluded = 0;
 try {
+    if (!in_array($partyState, array('open','closed','all'), true)) throw new InvalidArgumentException($langs->trans('IndyLabelsErrorState'));
     $ids = indyLabelsParseSelection(GETPOST('selection_ids', 'alphanohtml'), GETPOST('thirdparties', 'array:int'));
     // Legacy/no-JS form submissions must never silently turn a large selection into a partial export.
     if (!GETPOST('selection_ids', 'alphanohtml') && count($ids) >= max(1, (int) ini_get('max_input_vars') - 20)) throw new InvalidArgumentException($langs->trans('IndyLabelsEnableJS'));
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($action, array('replace_group','add_group'), true)) {
-        $group = indyLabelsGroup($db, $user, $groupMode, $year, $category);
+        $group = indyLabelsGroup($db, $user, $groupMode, $year, $category, $partyState);
         $ids = $action === 'replace_group' ? $group : indyLabelsParseSelection('', array_merge($ids, $group));
         $notice = $langs->trans('IndyLabelsGroupResult', count($group), count($ids));
     }
@@ -47,7 +49,7 @@ try {
     $categories = indyLabelsCategories($db);
 } catch (Throwable $e) { $error = $e->getMessage(); $categories = array(); }
 llxHeader('', $langs->trans('IndyLabelsTitle'), '', '', 0, 0,
-    array('/indylabels/js/labels.js?v=1.1.0'), array('/indylabels/css/labels.css?v=1.1.0'));
+    array('/indylabels/js/labels.js?v=1.1.2'), array('/indylabels/css/labels.css?v=1.1.2'));
 print load_fiche_titre($langs->trans('IndyLabelsTitle'), '', 'barcode');
 print '<main class="indy-labels"><p>'.$langs->trans('IndyLabelsIntro').'</p>';
 print '<div class="info">'.$langs->trans('IndyLabelsPrintHelp').'</div>';
@@ -60,6 +62,9 @@ print '<section class="indy-labels-panel"><h2>'.$langs->trans('IndyLabelsGroups'
 print '<div><label for="group_mode">'.$langs->trans('IndyLabelsGroupMode').'</label><select id="group_mode" name="group_mode">';
 foreach (array('last_order_year'=>'IndyLabelsLastOrderYear','orders_in_year'=>'IndyLabelsOrdersInYear','all'=>'IndyLabelsAny') as $value=>$label) print '<option value="'.$value.'"'.($groupMode === $value ? ' selected' : '').'>'.$langs->trans($label).'</option>';
 print '</select></div><div><label for="group_year">'.$langs->trans('IndyLabelsYear').'</label><input type="number" id="group_year" name="group_year" min="1900" max="2100" value="'.((int) $year).'"></div>';
+print '<div><label for="group_status">'.$langs->trans('IndyLabelsState').'</label><select id="group_status" name="group_status">';
+foreach (array('open'=>'IndyLabelsOpen','closed'=>'IndyLabelsClosed','all'=>'IndyLabelsAllStates') as $value=>$label) print '<option value="'.$value.'"'.($partyState === $value ? ' selected' : '').'>'.$langs->trans($label).'</option>';
+print '</select></div>';
 if ($categories) {
     print '<div><label for="category">'.$langs->trans('IndyLabelsCategory').'</label><select id="category" name="category"><option value="0">'.$langs->trans('IndyLabelsAllCategories').'</option>';
     foreach ($categories as $id=>$label) print '<option value="'.$id.'"'.($category === $id ? ' selected' : '').'>'.dol_escape_htmltag($label).'</option>';
@@ -71,7 +76,17 @@ print '<button class="button" type="submit" name="action" value="add_group">'.$l
 print '<section class="indy-labels-panel"><h2>'.$langs->trans('IndyLabelsChoose').'</h2><label for="thirdparties">'.$langs->trans('IndyLabelsThirdparties').'</label>';
 $form = new Form($db);
 // Direct native list supports multiselect even when single-company AJAX search is enabled.
-print $form->select_thirdparty_list($ids, 'thirdparties', '', '', 0, 0, array(), '', 0, 0, 'widthcentpercent', '', true);
+// Keep explicitly selected exceptions visible when adding groups with another state.
+$listFilter = $partyState === 'all' ? '' : '(s.status:=:'.($partyState === 'closed' ? '0' : '1').')';
+if ($listFilter && $ids) $listFilter = '('.$listFilter.' OR (s.rowid:IN:'.implode(',', $ids).'))';
+$hideInactive = $conf->global->COMPANY_HIDE_INACTIVE_IN_COMBOBOX ?? null;
+$conf->global->COMPANY_HIDE_INACTIVE_IN_COMBOBOX = 0;
+try { print $form->select_thirdparty_list($ids, 'thirdparties', $listFilter, '', 0, 0, array(), '', 0, 0, 'widthcentpercent', '', true); }
+finally {
+    if ($hideInactive === null) unset($conf->global->COMPANY_HIDE_INACTIVE_IN_COMBOBOX);
+    else $conf->global->COMPANY_HIDE_INACTIVE_IN_COMBOBOX = $hideInactive;
+}
+print '<p class="opacitymedium">'.$langs->trans('IndyLabelsStateHelp').'</p>';
 print '<div class="indy-labels-actions"><button type="button" id="indy-labels-all" class="button">'.$langs->trans('IndyLabelsAll').'</button>';
 print '<button type="button" id="indy-labels-clear" class="button">'.$langs->trans('IndyLabelsClear').'</button></div>';
 print '<p class="opacitymedium">'.$langs->trans('IndyLabelsLimit').'</p>';

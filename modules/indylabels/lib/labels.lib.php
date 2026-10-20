@@ -88,10 +88,12 @@ function indyLabelsManualYear($value, $type)
 }
 
 /** Year filters use validated/in-progress/closed orders, excluding drafts and cancellations. */
-function indyLabelsGroup($db, $user, $mode, $year, $category = 0)
+function indyLabelsGroup($db, $user, $mode, $year, $category = 0, $state = 'open')
 {
     $scope = indyLabelsScope($user);
     if (!in_array($mode, array('last_order_year','orders_in_year','all'), true) || ($mode !== 'all' && ($year < 1900 || $year > 2100))) throw new InvalidArgumentException(indyLabelsError('IndyLabelsErrorYear'));
+    if (!in_array($state, array('open','closed','all'), true)) throw new InvalidArgumentException(indyLabelsError('IndyLabelsErrorState'));
+    if ($state !== 'all') $scope .= ' AND s.status='.($state === 'open' ? '1' : '0');
     $category = (int) $category;
     if ($category < 0 || ($category > 0 && !isset(indyLabelsCategories($db)[$category]))) throw new InvalidArgumentException(indyLabelsError('IndyLabelsErrorCategory'));
     if ($category > 0) $scope .= ' AND EXISTS (SELECT 1 FROM '.MAIN_DB_PREFIX.'categorie_societe cs WHERE cs.fk_soc=s.rowid AND cs.fk_categorie='.$category.')';

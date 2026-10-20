@@ -122,7 +122,25 @@ if (count($categoryGroup)!==2) throw new RuntimeException('Category/year interse
 $oldEntity=$conf->entity; $conf->entity=9876;
 if (indyLabelsGroup($db,$user,'orders_in_year',2025)!==array()) throw new RuntimeException('Group entity boundary failed');
 $conf->entity=$oldEntity;
+// Closed customers are excluded by default but remain available for explicit exceptions.
+$party=new Societe($db); $party->name='CI clos historique'; $party->client=1; $party->code_client='auto';
+$party->address='7 rue des Exceptions'; $party->zip='25330'; $party->town='Amancey'; $party->country_id=1;
+if ($party->create($user)<=0) throw new RuntimeException($party->error);
+$closedId=$party->id;
+$party->array_options['options_date_derniere_commande_manuelle']=2025;
+if ($party->insertExtraFields()<0) throw new RuntimeException($party->error);
+if (!$db->query('UPDATE '.MAIN_DB_PREFIX.'societe SET status=0 WHERE rowid='.((int)$closedId))) throw new RuntimeException($db->lasterror());
+if (!$db->query('INSERT INTO '.MAIN_DB_PREFIX.'categorie_societe (fk_categorie,fk_soc) VALUES ('.((int)$categoryId).','.((int)$closedId).')')) throw new RuntimeException($db->lasterror());
+if (count(indyLabelsGroup($db,$user,'last_order_year',2025))!==800) throw new RuntimeException('Closed tier included by default');
+if (indyLabelsGroup($db,$user,'last_order_year',2025,0,'closed')!==array($closedId)) throw new RuntimeException('Closed filter failed');
+if (count(indyLabelsGroup($db,$user,'last_order_year',2025,0,'all'))!==801) throw new RuntimeException('All states failed');
+if (count(indyLabelsGroup($db,$user,'last_order_year',2025,$categoryId,'all'))!==3) throw new RuntimeException('State/category/year intersection failed');
+if (indyLabelsGroup($db,$user,'all',2025,0,'closed')!==array($closedId)) throw new RuntimeException('All-year closed filter failed');
+try { indyLabelsGroup($db,$user,'all',2025,0,'invalid'); throw new LogicException('Invalid status accepted'); } catch (InvalidArgumentException $expected) {}
+// Ensure native global hide-inactive preference does not prevent explicitly selecting a closed tier.
+dolibarr_set_const($db,'COMPANY_HIDE_INACTIVE_IN_COMBOBOX',1,'chaine',0,'', $conf->entity);
+echo "PASS: open default, closed/all exceptions, year/category/status intersection and invalid-state rejection.\n";
 echo "PASS: 800 imported historical customers, 50 PDF pages, real-order priority, any-order year, category intersection, batch lookup, compact selection and configurable left padding.\n";
 file_put_contents($out.'/manifest.json', json_encode($manifest, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));
-file_put_contents($out.'/ui.json', json_encode(array('ids'=>$ids,'incomplete'=>$incompleteId,'bulk'=>$group,'category'=>$categoryId)));
+file_put_contents($out.'/ui.json', json_encode(array('ids'=>$ids,'incomplete'=>$incompleteId,'bulk'=>$group,'category'=>$categoryId,'closed'=>$closedId)));
 echo "PASS: native module, 1/16/17/33 labels, used-sheet offset, fallback, accents, duplicate IDs, entity/salesperson/external restrictions and invalid input rejection.\n";
