@@ -9,8 +9,13 @@ with sync_playwright() as p:
     page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
     page.goto(base+'/');page.locator('#username').fill('admin');page.locator('#password').fill(os.environ['DOLIBARR_TEST_PASSWORD']);page.locator('input[type=submit]').first.click();page.wait_for_load_state('networkidle')
     page.goto(base+'/societe/index.php?mainmenu=companies',wait_until='networkidle')
-    assert page.locator('a[href*="/indylabels/index.php"]').count()>0,'Labels menu missing from third parties'
-    response=page.goto(base+'/indylabels/index.php',wait_until='networkidle');assert response.status==200
+    menu_found=page.locator('a[href*="/indylabels/index.php"]').count()>0
+    (out/'thirdparties-menu.html').write_text(page.content())
+    page.screenshot(path=str(out/'thirdparties-menu.png'),full_page=False)
+    response=page.goto(base+'/indylabels/index.php',wait_until='networkidle')
+    (out/'labels-page.html').write_text(page.content())
+    page.screenshot(path=str(out/'labels-initial.png'),full_page=False)
+    assert response.status==200,(response.status,page.locator('body').inner_text()[:300])
     page.locator('#thirdparties').select_option([str(x) for x in data['ids'][:17]])
     # Select2 listens to change through jQuery.
     page.locator('#thirdparties').evaluate("e=>window.jQuery(e).trigger('change')")
@@ -31,6 +36,7 @@ with sync_playwright() as p:
     page.get_by_role('button',name='Télécharger le PDF',exact=True).click();page.wait_for_load_state('networkidle')
     assert page.locator('[role=alert]').count()==1,'Incomplete address must not download'
     assert not errors,errors
+    assert menu_found,'Labels menu missing from third parties'
     # A download POST without a valid CSRF token must be blocked by native Dolibarr.
     response=context.request.post(base+'/indylabels/index.php',form={'action':'download','thirdparties[]':str(data['ids'][0]),'start':'1','token':'invalid'})
     assert 'application/pdf' not in response.headers.get('content-type',''),'Invalid CSRF accepted'

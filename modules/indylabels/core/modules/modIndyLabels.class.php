@@ -17,7 +17,7 @@ class modIndyLabels extends DolibarrModules
             'titre' => 'IndyLabelsTitle', 'mainmenu' => 'companies', 'leftmenu' => 'indylabels',
             'url' => '/indylabels/index.php', 'langs' => 'indylabels@indylabels', 'position' => 110,
             'enabled' => 'isModEnabled("indylabels")',
-            'perms' => '$user->hasRight("indylabels", "read") && $user->hasRight("societe", "lire") && empty($user->socid)', 'user' => 2));
+            'perms' => '$user->hasRight("indylabels", "read") && $user->hasRight("societe", "lire") && !$user->isExternalUser()', 'user' => 0));
     }
     public function init($options = '')
     {

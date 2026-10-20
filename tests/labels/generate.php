@@ -12,6 +12,12 @@ foreach (array('modIndyInvoice','modIndyLabels') as $module) {
 }
 $conf->setValues($db); $user->loadRights('', 1);
 $langs->setDefaultLang('fr_FR'); $langs->loadLangs(array('main', 'companies', 'indylabels@indylabels'));
+$menuCheck = $db->query("SELECT fk_menu,fk_mainmenu,fk_leftmenu,mainmenu,leftmenu,url,enabled,perms FROM ".MAIN_DB_PREFIX."menu WHERE module='indylabels'");
+$menuRow = $menuCheck ? $db->fetch_object($menuCheck) : null;
+echo 'MENU CHECK '.json_encode(array('enabled'=>isModEnabled('indylabels'),'read'=>$user->hasRight('indylabels','read'),
+    'societe_read'=>$user->hasRight('societe','lire'),'row'=>$menuRow,
+    'evaluated'=>$menuRow ? dol_eval($menuRow->perms,1,0,'1') : null),JSON_UNESCAPED_UNICODE)."\n";
+if (!$menuRow || !verifCond($menuRow->perms) || !verifCond($menuRow->enabled)) throw new RuntimeException('Native secure menu evaluation failed');
 $out = '/tmp/indy-label-fixtures'; dol_mkdir($out); $ids = array();
 for ($i = 1; $i <= 33; $i++) {
     $party = new Societe($db); $party->name = sprintf('CI étiquette %02d', $i);

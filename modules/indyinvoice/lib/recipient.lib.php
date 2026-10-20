@@ -43,7 +43,7 @@ class IndyRecipientCanvas
     public function __call($method, $args)
     {
         // Sponge and Eratosthene both draw this 2mm name cell before the address.
-        // Limit the replacement to one cell per header, retaining native wrapping.
+        // Replace each name cell once per header, retaining native wrapping.
         if (!$this->used && strtolower($method) === 'multicell'
             && abs((float) $args[0] - $this->width) < 0.01 && (float) $args[1] === 2.0
             && abs($this->pdf->GetX() - $this->x) < 0.01) {
