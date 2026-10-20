@@ -28,6 +28,10 @@ if (getDolGlobalString('INDY_UI_ASSET_VERSION') !== $version) {
     $db->commit();
 }
 if (isModEnabled('indyinvoice')) {
+    require_once DOL_DOCUMENT_ROOT.'/indyinvoice/lib/recipient.lib.php';
+    if (indyEnsureBillingRecipientField($db) <= 0) {
+        fwrite(STDERR, 'Unable to provision Indy billing recipient field.'.PHP_EOL); exit(1);
+    }
     $entity = (int)$conf->entity;
     $sql = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom,type,entity) SELECT 'indyorder','order',".$entity.
         " WHERE NOT EXISTS (SELECT 1 FROM ".MAIN_DB_PREFIX."document_model WHERE nom='indyorder' AND type='order' AND entity=".$entity.")";

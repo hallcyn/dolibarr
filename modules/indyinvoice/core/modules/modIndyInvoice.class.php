@@ -34,6 +34,11 @@ class modIndyInvoice extends DolibarrModules
     public function init($options = '')
     {
         global $conf;
+        require_once __DIR__.'/../../lib/recipient.lib.php';
+        if (indyEnsureBillingRecipientField($this->db) <= 0) {
+            $this->error = 'Unable to create the billing recipient field';
+            return -1;
+        }
         $entity = (int) $conf->entity;
         return $this->_init(array(
             "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom,type,entity) SELECT 'indy','invoice',".$entity.

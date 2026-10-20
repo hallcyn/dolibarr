@@ -122,3 +122,7 @@ Code sous **GPL v3 ou ultérieure** ; polices sous SIL OFL. Le numéro technique
 ## Colonnes calculées sur les lignes de facture
 
 Indy conserve les attributs supplémentaires imprimables des lignes de Sponge. Pour afficher la contenance d’une bouteille ou les litres vendus (`volume × quantité`), suivre le [guide de configuration des champs calculés](docs/champs-calcules-litres.md). Choisir l’affichage PDF `1` pour obtenir une colonne, puis régénérer la facture avec le modèle `indy`. Les montants et la TVA restent inchangés.
+
+## Destinataire de facturation
+
+Sur la fiche du tiers, **Destinataire de facturation** (champ natif facultatif, code `destinataire_facturation`) permet par exemple de conserver `ALBER Frédéric et Isabelle` pour le tri et d'afficher `Mme Isabelle ALBER et M. Frédéric ALBER` dans le bloc destinataire des factures, avoirs et commandes Indy. Vide ou composé d'espaces : affichage natif. Les coordonnées, contacts et blocs livraison restent natifs. Enregistrer le tiers puis régénérer le PDF ; aucun document existant n'est réécrit automatiquement. Le champ est créé à l'activation du module, et au démarrage pour les mises à jour du template Railway. Les données existantes sont conservées.

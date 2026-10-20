@@ -92,3 +92,34 @@ jobs:
       - name: Stop disposable services
         if: always()
         run: docker compose down --volumes
+
+  billing-recipient:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test billing recipients on native invoice, credit-note and order PDFs
+        run: |
+          python3 scripts/setup-local.py
+          docker compose build --pull
+          docker compose up -d --wait --wait-timeout 300
+          docker compose cp tests/indy/seed.php dolibarr:/tmp/indy-seed.php
+          docker compose exec --user www-data -T dolibarr php /tmp/indy-seed.php
+          docker compose cp tests/invoices/recipient.php dolibarr:/tmp/indy-recipient.php
+          docker compose exec --user www-data -T dolibarr php /tmp/indy-recipient.php
+          mkdir -p artifacts/recipients
+          docker compose cp dolibarr:/tmp/indy-recipient-fixtures/. artifacts/recipients/
+          python3 -m pip install PyMuPDF==1.26.6
+          python3 tests/invoices/recipient.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: indy-billing-recipients
+          path: artifacts/recipients/
+          if-no-files-found: ignore
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --tail=100
+      - name: Stop disposable services
+        if: always()
+        run: docker compose down --volumes

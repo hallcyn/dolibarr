@@ -1,0 +1,42 @@
+<?php
+/* Hallcyn. SPDX-License-Identifier: GPL-3.0-or-later */
+/** Provision a native optional third-party field without altering existing values. */
+function indyEnsureBillingRecipientField($db)
+{
+    global $conf;
+    require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+    $fields = new ExtraFields($db);
+    if ($fields->fetch_name_optionals_label('societe', true) < 0) return -1;
+    if (isset($fields->attributes['societe']['type']['destinataire_facturation'])) return 1;
+    return $fields->addExtraField('destinataire_facturation', 'IndyBillingRecipient', 'varchar', 100,
+        '255', 'societe', 0, 0, '', '', 0, '', '1', 'IndyBillingRecipientHelp', '',
+        (string) $conf->entity, 'indyinvoice@indyinvoice', '1', 0, 0);
+}
+
+/** Only the native recipient-name cell is replaced; address/contact/shipping stay native. */
+class IndyRecipientCanvas
+{
+    private $pdf;
+    private $name;
+    private $x;
+    private $width;
+    private $used = false;
+
+    public function __construct($pdf, $name, $x, $width)
+    { $this->pdf = $pdf; $this->name = $name; $this->x = $x; $this->width = $width; }
+    public function __get($name) { return $this->pdf->$name; }
+    public function __set($name, $value) { $this->pdf->$name = $value; }
+    public function nativePdf() { return method_exists($this->pdf, 'nativePdf') ? $this->pdf->nativePdf() : $this->pdf; }
+    public function __call($method, $args)
+    {
+        // Sponge and Eratosthene both draw this 2mm name cell before the address.
+        // Limit the replacement to one cell per header, retaining native wrapping.
+        if (!$this->used && strtolower($method) === 'multicell'
+            && abs((float) $args[0] - $this->width) < 0.01 && (float) $args[1] === 2.0
+            && abs($this->pdf->GetX() - $this->x) < 0.01) {
+            $args[2] = $this->name;
+            $this->used = true;
+        }
+        return $this->pdf->$method(...$args);
+    }
+}

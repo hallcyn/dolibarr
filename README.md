@@ -108,3 +108,5 @@ Le [workflow réussi](https://github.com/hallcyn/dolibarr/actions/runs/390633822
 - [Variables Railway](https://docs.railway.com/variables/reference), [réseau privé](https://docs.railway.com/networking/private-networking).
 
 Sauf mention contraire, les scripts et documents du template sont sous licence MIT, voir [LICENSE](LICENSE). Les fichiers du thème Indy et ses tests importés dans `tests/indy/` sont sous GPL v3 ou ultérieure, voir [theme/LICENSE](theme/LICENSE). Le module `modules/indyinvoice/` est aussi sous GPL v3 ou ultérieure ; les polices Inter conservent leur licence SIL OFL. Dolibarr est un logiciel distinct sous GPL v3 ou ultérieure ; MariaDB et les composants de l’image conservent leurs licences. Ce template communautaire n’est pas une publication officielle de Dolibarr ou de Railway.
+
+- [Destinataire de facturation personnalisé dans les PDF Indy](docs/BILLING-RECIPIENT.md)
