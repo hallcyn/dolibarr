@@ -67,6 +67,8 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
 $fields = new ExtraFields($db);
 if ($fields->addExtraField('date_derniere_commande_manuelle','Année historique','int',100,'4','societe',0,0,'','',0,'','1') <= 0) throw new RuntimeException($fields->error);
+// Native metadata is cached per request; refresh after adding the fixture-only year field.
+$extrafields = new ExtraFields($db); $extrafields->fetch_name_optionals_label('societe', true);
 $bulk = array();
 for ($i=1; $i<=801; $i++) {
     $party = new Societe($db); $party->name = sprintf('CI groupe %04d',$i); $party->client=1; $party->code_client='auto';
@@ -83,7 +85,7 @@ foreach (array(array(0,2025,1),array(0,2026,1),array(1,2025,1),array(2,2026,0),a
     if (!$db->query('UPDATE '.MAIN_DB_PREFIX.'commande SET fk_statut='.((int)$fixture[2]).' WHERE rowid='.((int)$order->id))) throw new RuntimeException($db->lasterror());
 }
 $group=indyLabelsGroup($db,$user,'last_order_year',2025);
-if (count($group)!==800 || in_array($bulk[0],$group) || !in_array($bulk[800],$group) || !in_array($bulk[2],$group)) throw new RuntimeException('Historical/real priority or draft/cancel filtering failed');
+if (count($group)!==800 || in_array($bulk[0],$group) || !in_array($bulk[800],$group) || !in_array($bulk[2],$group)) throw new RuntimeException('Historical/real priority or draft/cancel filtering failed: '.json_encode(array('count'=>count($group),'newer'=>in_array($bulk[0],$group),'boost'=>in_array($bulk[800],$group),'draft'=>in_array($bulk[2],$group))));
 $actual=indyLabelsGroup($db,$user,'orders_in_year',2025);
 if (count($actual)!==3 || !in_array($bulk[0],$actual)) throw new RuntimeException('Any order in year must include later customers');
 $compact=implode(',',$group);
