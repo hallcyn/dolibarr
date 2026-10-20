@@ -65,8 +65,8 @@ try {
         'dolibarr_main_prod' => '1',
         'dolibarr_main_instance_unique_id' => $instanceId,
         'dolibarr_main_force_https' => ($parts['scheme'] === 'https' ? '1' : '0'),
-        // Keep Dolibarr 24's restricted evaluator; add only our read-only helper.
-        'dolibarr_main_restrict_eval_methods' => 'getDolGlobalString, getDolGlobalInt, getDolCurrency, getDolEntity, getDolDBType, fetchNoCompute, hasRight, isAdmin, isExternalUser, isModEnabled, isStringVarMatching, abs, min, max, round, dol_now, preg_match, indyLastOrderDate',
+        // Keep Dolibarr 24's restricted evaluator; add the read-only helper and PHP date formatting.
+        'dolibarr_main_restrict_eval_methods' => 'getDolGlobalString, getDolGlobalInt, getDolCurrency, getDolEntity, getDolDBType, fetchNoCompute, hasRight, isAdmin, isExternalUser, isModEnabled, isStringVarMatching, abs, min, max, round, dol_now, preg_match, indyLastOrderDate, date',
     ];
     $php = "<?php\n// Generated at startup from Railway variables.\n";
     foreach ($config as $key => $value) {

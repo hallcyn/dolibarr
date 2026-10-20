@@ -16,10 +16,12 @@ $user->loadRights('', 1);
 $manualCode = 'date_derniere_commande_manuelle';
 $computedCode = 'indy_test_last_order';
 $formula = 'indyLastOrderDate($objectoffield->id)';
+$yearFormula = "(\$varDate = indyLastOrderDate(\$objectoffield->id)) ? (int) date('Y', \$varDate) : null";
 $fields = new ExtraFields($db);
 foreach (array($manualCode => '', $computedCode => $formula) as $code => $calculation) {
     checkComputedDate($fields->addExtraField($code, $code, 'date', 999, '', 'societe', 0, 0, '', '', 0, '', '1', '', $calculation, (string) $conf->entity) > 0, 'Cannot create date extrafield: '.$fields->error);
 }
+checkComputedDate($fields->addExtraField('indy_test_order_year', 'Order year', 'int', 1000, '4', 'societe', 0, 0, '', '', 0, '', '1', '', $yearFormula, (string) $conf->entity) > 0, 'Cannot create calculated year');
 // Reload cached metadata so Societe::fetch evaluates the actual persisted formula.
 unset($extrafields);
 $extrafields = new ExtraFields($db);
@@ -32,6 +34,8 @@ $customer->code_client = 'auto';
 $customer->array_options['options_'.$manualCode] = $manualDate;
 checkComputedDate($customer->create($user) > 0, 'Cannot create third party: '.$customer->error);
 $objectoffield = $customer;
+checkComputedDate(dol_eval($yearFormula, 1, 0, '2') === 2020, 'Exact year formula must return the historical year as an integer');
+checkComputedDate(dol_eval("(int) date('Y', 1792274400)", 1, 0, '2') === 2026, 'User timestamp must produce year 2026');
 checkComputedDate(dol_eval($formula, 1, 0, '2') === $manualDate, 'The real evaluator must accept the helper and return the historical date');
 $loaded = new Societe($db);
 checkComputedDate($loaded->fetch($customer->id) > 0, 'Cannot fetch calculated third party');
@@ -71,6 +75,8 @@ $customer2->client = 1;
 $customer2->code_client = 'auto';
 checkComputedDate($customer2->create($user) > 0, 'Cannot create second third party');
 checkComputedDate(indyLastOrderDate($customer2->id) === null, 'Another customer or empty history leaked into this result');
+$objectoffield = $customer2;
+checkComputedDate(dol_eval($yearFormula, 1, 0, '2') === null, 'No date must produce a blank year, never 1970');
 $externalSocid = $user->socid;
 $user->socid = $customer2->id;
 checkComputedDate(indyLastOrderDate($customer->id) === null, 'External user must not read another third party');
@@ -82,8 +88,11 @@ $loaded = new Societe($db);
 checkComputedDate($loaded->fetch($customer->id) > 0, 'Cannot refetch updated date');
 checkComputedDate((int) $loaded->array_options['options_'.$computedCode] === $updated, 'Native calculated date was not refreshed');
 checkComputedDate((int) $loaded->array_options['options_'.$manualCode] === $manualDate, 'Historical date was overwritten');
+checkComputedDate((int) $loaded->array_options['options_indy_test_order_year'] === 2026, 'Native integer year extrafield must show the real order year');
 global $dolibarr_main_restrict_eval_methods;
 checkComputedDate(!in_array('query', array_map('trim', explode(',', $dolibarr_main_restrict_eval_methods))), 'Generic SQL must remain disallowed');
 checkComputedDate(strpos((string) dol_eval('1 ?? 2', 1, 0, '2'), 'Bad string syntax') === 0, 'The evaluator protections must remain enabled');
 checkComputedDate(strpos((string) dol_eval('file_get_contents("/etc/passwd")', 1, 0, '2'), 'Bad string syntax') === 0, 'File-reading methods must remain disallowed');
 echo "PASS: real dol_eval and native third-party date extrafield, historical/empty fallback, order statuses, date sorting, entity/external isolation, dynamic refresh and unchanged evaluator protections.\n";
+
+echo "PASS: exact guarded integer-year formula, historical year 2020, order year 2026, timestamp 1792274400 and blank date without a false 1970.\n";
