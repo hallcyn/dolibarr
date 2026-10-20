@@ -13,7 +13,17 @@ function indyEnsureBillingRecipientField($db)
         (string) $conf->entity, 'indyinvoice@indyinvoice', '1', 0, 0);
 }
 
-/** Only the native recipient-name cell is replaced; address/contact/shipping stay native. */
+/** Shared recipient wording for PDFs and envelope labels, without modifying the third party. */
+function indyBillingRecipient($party)
+{
+    if (!array_key_exists('options_destinataire_facturation', $party->array_options ?? array())) {
+        $party = clone $party;
+        $party->fetch_optionals();
+    }
+    return trim((string) ($party->array_options['options_destinataire_facturation'] ?? ''));
+}
+
+/** Native billing and shipping name cells; contact names and addresses remain native. */
 class IndyRecipientCanvas
 {
     private $pdf;
@@ -21,9 +31,12 @@ class IndyRecipientCanvas
     private $x;
     private $width;
     private $used = false;
+    private $shipping;
+    private $shippingWidth;
+    private $shippingUsed = false;
 
-    public function __construct($pdf, $name, $x, $width)
-    { $this->pdf = $pdf; $this->name = $name; $this->x = $x; $this->width = $width; }
+    public function __construct($pdf, $name, $x, $width, $shipping = null, $shippingWidth = null)
+    { $this->pdf = $pdf; $this->name = $name; $this->x = $x; $this->width = $width; $this->shipping = $shipping; $this->shippingWidth = $shippingWidth; }
     public function __get($name) { return $this->pdf->$name; }
     public function __set($name, $value) { $this->pdf->$name = $value; }
     public function nativePdf() { return method_exists($this->pdf, 'nativePdf') ? $this->pdf->nativePdf() : $this->pdf; }
@@ -34,8 +47,13 @@ class IndyRecipientCanvas
         if (!$this->used && strtolower($method) === 'multicell'
             && abs((float) $args[0] - $this->width) < 0.01 && (float) $args[1] === 2.0
             && abs($this->pdf->GetX() - $this->x) < 0.01) {
-            $args[2] = $this->name;
+            if ($this->name !== null) $args[2] = $this->name;
             $this->used = true;
+        } elseif ($this->used && !$this->shippingUsed && strtolower($method) === 'multicell'
+            && abs((float) $args[0] - $this->shippingWidth) < 0.01 && (float) $args[1] === 2.0
+            && abs($this->pdf->GetX() - $this->x) < 0.01) {
+            if ($this->shipping !== null) $args[2] = $this->shipping;
+            $this->shippingUsed = true;
         }
         return $this->pdf->$method(...$args);
     }

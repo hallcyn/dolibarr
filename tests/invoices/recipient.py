@@ -10,12 +10,15 @@ for name, expected in json.loads((root / 'manifest.json').read_text()).items():
     normalized = ' '.join(text.split())
     assert expected['recipient'] in normalized, (name, 'Wrong recipient name', normalized)
     if expected['custom']:
-        expected_shipping = 1 if name.startswith('order-') else 0
-        assert normalized.count('ALBER Frédéric et Isabelle') == expected_shipping, (name, 'Billing replacement or native shipping changed', normalized)
+        assert normalized.count('ALBER Frédéric et Isabelle') == 0, (name, 'Billing replacement or native shipping changed', normalized)
+    if 'shipping' in expected:
+        assert expected['shipping'] in normalized, (name, 'Missing shipping override', normalized)
+        if expected['shipping'] == expected['recipient']:
+            assert normalized.count(expected['recipient']) == 2, (name, 'Billing/shipping did not both use Indy')
     assert 'Camille' in text and 'Contact distinct' in text, (name, 'Native contact lost')
     assert 'Maison émettrice' in text, (name, 'Sender replaced')
     assert '17 rue des Vignes' in text and 'Lyon' in text, (name, 'Address lost')
     for page in document:
         for word in page.get_text('words'):
             assert word[0] >= -1 and word[1] >= -1 and word[2] <= page.rect.width + 1 and word[3] <= page.rect.height + 1, (name, 'Text outside page')
-print('PASS: 18 PDFs, custom/default/blank/whitespace/long names, accents, ISO/inverted layout, contacts and addresses.')
+print('PASS: 24 PDFs, custom/default/blank/whitespace/long names, accents, ISO/inverted layout, contacts and addresses.')

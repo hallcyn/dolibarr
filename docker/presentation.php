@@ -37,4 +37,12 @@ if (isModEnabled('indyinvoice')) {
         " WHERE NOT EXISTS (SELECT 1 FROM ".MAIN_DB_PREFIX."document_model WHERE nom='indyorder' AND type='order' AND entity=".$entity.")";
     if (!$db->query($sql)) exit(1);
 }
+// Install once for existing Indy installations; a deliberate later disable is respected.
+if (isModEnabled('indyinvoice') && !getDolGlobalInt('INDYLABELS_PROVISIONED')) {
+    if (!isModEnabled('indylabels')) {
+        $result = activateModule('modIndyLabels');
+        if (!empty($result['errors'])) { fwrite(STDERR, 'Unable to enable Indy Labels.'.PHP_EOL); exit(1); }
+    }
+    if (dolibarr_set_const($db, 'INDYLABELS_PROVISIONED', '1', 'chaine', 0, '', $conf->entity) <= 0) exit(1);
+}
 echo '[railway] Presentation assets and document models ready.'.PHP_EOL;

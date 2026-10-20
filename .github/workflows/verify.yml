@@ -25,7 +25,7 @@ jobs:
         run: docker compose build --pull
       - name: PHP and Apache syntax
         run: |
-          docker compose run --rm --no-deps --entrypoint bash dolibarr -c 'find /opt/railway /var/www/html/indyinvoice /var/www/html/theme/indy /var/www/html/indyui -name "*.php" -print0 | xargs -0 -n1 php -l; apache2ctl configtest'
+          docker compose run --rm --no-deps --entrypoint bash dolibarr -c 'find /opt/railway /var/www/html/indyinvoice /var/www/html/indylabels /var/www/html/theme/indy /var/www/html/indyui -name "*.php" -print0 | xargs -0 -n1 php -l; apache2ctl configtest'
       - name: Start services
         run: docker compose up -d
       - name: Check installation and durable state
@@ -116,6 +116,44 @@ jobs:
         with:
           name: indy-billing-recipients
           path: artifacts/recipients/
+          if-no-files-found: ignore
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --tail=100
+      - name: Stop disposable services
+        if: always()
+        run: docker compose down --volumes
+
+  envelope-labels:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate native envelope labels in disposable Dolibarr
+        run: |
+          python3 scripts/setup-local.py
+          docker compose build --pull
+          docker compose up -d --wait --wait-timeout 300
+          docker compose cp tests/indy/seed.php dolibarr:/tmp/indy-seed.php
+          docker compose exec --user www-data -T dolibarr php /tmp/indy-seed.php
+          docker compose cp tests/labels/generate.php dolibarr:/tmp/indy-labels.php
+          docker compose exec --user www-data -T dolibarr php /tmp/indy-labels.php
+          mkdir -p artifacts/labels
+          docker compose cp dolibarr:/tmp/indy-label-fixtures/. artifacts/labels/
+          python3 -m pip install PyMuPDF==1.26.6 playwright==1.58.0
+          python3 tests/labels/verify.py
+          python3 -m playwright install --with-deps chromium
+          python3 - <<'PYTEST'
+          import os, subprocess
+          from pathlib import Path
+          settings = dict(line.split('=', 1) for line in Path('.env').read_text().splitlines() if line and not line.startswith('#'))
+          subprocess.run(['python3', 'tests/labels/browser.py'], check=True, env={**os.environ, 'DOLIBARR_TEST_PASSWORD': settings['DOLI_ADMIN_PASSWORD']})
+          PYTEST
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: indy-envelope-labels
+          path: artifacts/labels/
           if-no-files-found: ignore
       - name: Logs on failure
         if: failure()

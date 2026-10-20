@@ -124,20 +124,25 @@ trait IndyDocumentStyle
                 'width' => $this->page_largeur,
             ));
             if ($showaddress && is_object($object->thirdparty)) {
-                // fetch_thirdparty normally loads optionals; load them explicitly
-                // when a caller supplied a third party without its extra fields.
-                $party = $object->thirdparty;
-                if (!array_key_exists('options_destinataire_facturation', $party->array_options ?? array())) {
-                    $party = clone $party;
-                    $party->fetch_optionals();
+                $recipient = indyBillingRecipient($object->thirdparty);
+                $shipping = $recipient;
+                $shippingIds = $object->getIdContact('external', 'SHIPPING');
+                if ($shippingIds) {
+                    require_once DOL_DOCUMENT_ROOT.'/contact/class/contact.class.php';
+                    $shippingContact = new Contact($this->db);
+                    $shipping = '';
+                    if ($shippingContact->fetch($shippingIds[0]) > 0 && $shippingContact->socid > 0) {
+                        $shippingParty = new Societe($this->db);
+                        if ($shippingParty->fetch($shippingContact->socid) > 0) $shipping = indyBillingRecipient($shippingParty);
+                    }
                 }
-                $recipient = trim((string) ($party->array_options['options_destinataire_facturation'] ?? ''));
-                if ($recipient !== '') {
+                if ($recipient !== '' || $shipping !== '') {
                     $width = getDolGlobalInt('MAIN_PDF_USE_ISO_LOCATION') ? 92 : 100;
                     if ($this->page_largeur < 210) $width = 84;
                     $x = getDolGlobalInt('MAIN_INVERT_SENDER_RECIPIENT') ? $this->marge_gauche : $this->page_largeur - $this->marge_droite - $width;
-                    $canvas = new IndyRecipientCanvas($canvas, $outputlangs->convToOutputCharset($recipient), $x + 2,
-                        $this->name === 'indyorder' ? $width : $width - 2);
+                    $canvas = new IndyRecipientCanvas($canvas, $recipient !== '' ? $outputlangs->convToOutputCharset($recipient) : null, $x + 2,
+                        $this->name === 'indyorder' ? $width : $width - 2,
+                        $shipping !== '' ? $outputlangs->convToOutputCharset($shipping) : null, $width - 2);
                 }
             }
             $result = $native($canvas, $object, $showaddress, $outputlangs, $outputlangsbis);

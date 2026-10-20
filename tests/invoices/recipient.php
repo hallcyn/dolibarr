@@ -57,5 +57,35 @@ foreach (array('invoice', 'order', 'credit') as $kind) {
         $manifest[$name] = array('recipient' => trim((string) $value) !== '' ? trim($value) : $before, 'custom' => trim((string) $value) !== '');
     }
 }
+// Explicit shipping contacts: same tier, another tier, and an empty billing override.
+$shippingParty = new Societe($db); $shippingParty->name = 'CI livraison distincte'; $shippingParty->client = 1;
+$shippingParty->code_client = 'auto'; $shippingParty->address = '88 rue du Destinataire'; $shippingParty->zip = '75001'; $shippingParty->town = 'Paris'; $shippingParty->country_id = 1;
+if ($shippingParty->create($user) <= 0) throw new RuntimeException($shippingParty->error);
+$shippingParty->array_options['options_destinataire_facturation'] = 'Mme Élodie LIVRAISON';
+if ($shippingParty->insertExtraFields() < 0) throw new RuntimeException($shippingParty->error);
+$shippingContact = new Contact($db); $shippingContact->socid = $shippingParty->id; $shippingContact->lastname = 'Contact livraison';
+if ($shippingContact->create($user) <= 0) throw new RuntimeException($shippingContact->error);
+foreach (array('invoice', 'order') as $kind) {
+    foreach (array('shipping-same', 'shipping-other', 'shipping-other-no-billing') as $case) {
+        $custom = $case !== 'shipping-other-no-billing';
+        $billingName = 'Mme Isabelle ALBER et M. Frédéric ALBER';
+        $party->array_options['options_destinataire_facturation'] = $custom ? $billingName : '';
+        if ($party->insertExtraFields() < 0) throw new RuntimeException($party->error);
+        $document = $kind === 'order' ? new Commande($db) : new Facture($db);
+        $document->socid = $party->id; $document->date = dol_now(); $document->cond_reglement_id = 1; $document->mode_reglement_id = 2;
+        if ($document->create($user) <= 0 || $document->addline('Bouteilles de démonstration', 25, 12, 20) <= 0) throw new RuntimeException($document->error);
+        if ($document->add_contact($contact->id, $kind === 'order' ? 'CUSTOMER' : 'BILLING', 'external') <= 0
+            || $document->add_contact($case === 'shipping-same' ? $contact->id : $shippingContact->id, 'SHIPPING', 'external') <= 0) throw new RuntimeException($document->error);
+        $document->fetch($document->id); $document->fetch_thirdparty(); $document->fetch_lines(); $document->specimen = 1;
+        $conf->global->MAIN_PDF_USE_ISO_LOCATION = 0; $conf->global->MAIN_INVERT_SENDER_RECIPIENT = 0;
+        $model = $kind === 'order' ? new pdf_indyorder($db) : new pdf_indy($db);
+        if ($model->write_file($document, $langs) <= 0) throw new RuntimeException($model->error);
+        $dir = $kind === 'order' ? $conf->commande->multidir_output[$conf->entity] : $conf->facture->multidir_output[$conf->entity];
+        $name = $kind.'-'.$case;
+        if (!copy($dir.'/SPECIMEN.pdf', $out.'/'.$name.'.pdf')) throw new RuntimeException('Shipping PDF missing');
+        $manifest[$name] = array('recipient' => $custom ? $billingName : $party->name, 'custom' => $custom,
+            'shipping' => $case === 'shipping-same' ? $billingName : 'Mme Élodie LIVRAISON');
+    }
+}
 file_put_contents($out.'/manifest.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-echo "PASS: field provisioning and 18 native invoice/order/credit-note PDFs; third-party values unchanged.\n";
+echo "PASS: field provisioning and 24 native invoice/order/credit-note PDFs; third-party values unchanged.\n";
