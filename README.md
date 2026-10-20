@@ -8,6 +8,8 @@ Déployez **Dolibarr ERP & CRM** avec une base **MariaDB privée**, une installa
 
 **Commencer : [Déployer le template](https://railway.com/deploy/YXlVeG) · [Guide complet](docs/RAILWAY.md).**
 
+Pour un champ calculé de tiers indiquant sa dernière commande, avec une date historique manuelle en secours, voir [la formule et sa configuration](docs/COMPUTED-FIELDS.md).
+
 > Statut : template créé dans le workspace Hallcyn, partageable par lien et prêt à déployer. Les tests Docker ont réussi ; aucune instance Railway n’a encore été lancée. Le template n’est pas encore référencé dans le marketplace. Voir [VALIDATION.md](VALIDATION.md).
 
 ## Ce qui est inclus
