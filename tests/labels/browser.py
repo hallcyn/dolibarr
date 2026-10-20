@@ -35,10 +35,33 @@ with sync_playwright() as p:
     page.locator('#thirdparties').select_option(str(data['incomplete']))
     page.get_by_role('button',name='Télécharger le PDF',exact=True).click();page.wait_for_load_state('networkidle')
     assert page.locator('[role=alert]').count()==1,'Incomplete address must not download'
+    page.goto(base+'/indylabels/index.php',wait_until='networkidle')
+    assert page.locator('#padding').input_value()=='10'
+    page.locator('#group_year').fill('2025')
+    page.locator('button[value=replace_group]').click();page.wait_for_load_state('networkidle')
+    assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))==800
+    assert '800 tiers' in page.locator('#indy-labels-count').inner_text()
+    # This POST has one compact ID field, not 800+ PHP form variables.
+    with page.expect_download() as download:page.get_by_role('button',name='Télécharger le PDF',exact=True).click()
+    file=out/'download-800.pdf';download.value.save_as(file)
+    assert len(fitz.open(file))==50
+    page.locator('button[value=add_group]').click();page.wait_for_load_state('networkidle')
+    assert '800 tiers' in page.locator('#indy-labels-count').inner_text(),'Adding the same group created duplicates'
+    page.locator('#category').select_option(str(data['category']))
+    page.locator('button[value=replace_group]').click();page.wait_for_load_state('networkidle')
+    assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))==2
+    page.locator('#padding').fill('14')
+    with page.expect_download() as download:page.get_by_role('button',name='Télécharger le PDF',exact=True).click()
+    download.value.save_as(out/'download-padding.pdf')
+    page.set_viewport_size({'width':390,'height':844})
+    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),'Group form mobile overflow'
+    page.screenshot(path=str(out/'groups-mobile.png'),full_page=True)
+    page.set_viewport_size({'width':1440,'height':1000})
+    page.screenshot(path=str(out/'groups-desktop.png'),full_page=False)
     assert not errors,errors
     assert menu_found,'Labels menu missing from third parties'
     # A download POST without a valid CSRF token must be blocked by native Dolibarr.
     response=context.request.post(base+'/indylabels/index.php',form={'action':'download','thirdparties[]':str(data['ids'][0]),'start':'1','token':'invalid'})
     assert 'application/pdf' not in response.headers.get('content-type',''),'Invalid CSRF accepted'
     browser.close()
-print('PASS: desktop/mobile, native multiselect, preview, 17-label PDF download, select/clear, incomplete address and CSRF protection.')
+print('PASS: desktop/mobile, native multiselect, preview, 17/800-label PDF downloads, year/category group selection and union, padding, select/clear, incomplete address and CSRF protection.')

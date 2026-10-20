@@ -29,7 +29,7 @@ for case,data in json.loads((root/'manifest.json').read_text()).items():
             assert line in text,(case,pos,line,text)
         assert len(lines)==3,(case,pos,'Not three lines',lines)
         for line in lines:
-            assert line['bbox'][0]>=area.x0+4*mm and line['bbox'][2]<=area.x1-4*mm,(case,pos,'Horizontal overflow')
+            assert line['bbox'][0]>=area.x0+(data.get('padding',10)-0.1)*mm and line['bbox'][2]<=area.x1-4*mm,(case,pos,'Horizontal overflow')
             assert line['bbox'][1]>area.y0 and line['bbox'][3]<area.y1,(case,pos,'Vertical overflow')
     if data['start']>1:
         page=doc[0]

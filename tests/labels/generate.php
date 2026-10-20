@@ -61,6 +61,53 @@ try { indyLabelsPdf($tooLong); throw new LogicException('Overflowing name accept
 // Give the UI a populated form and also an incomplete-address fixture to test rejection.
 $party = new Societe($db); $party->name = 'CI adresse incomplète'; $party->client=1; $party->code_client='auto';
 if ($party->create($user) <= 0) throw new RuntimeException($party->error);
+$incompleteId=$party->id;
+// 800 historical customers selected in one action, with actual orders taking priority.
+require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
+$fields = new ExtraFields($db);
+if ($fields->addExtraField('date_derniere_commande_manuelle','Année historique','int',100,'4','societe',0,0,'','',0,'','1') <= 0) throw new RuntimeException($fields->error);
+$bulk = array();
+for ($i=1; $i<=801; $i++) {
+    $party = new Societe($db); $party->name = sprintf('CI groupe %04d',$i); $party->client=1; $party->code_client='auto';
+    $party->address='10 rue des Étiquettes'; $party->zip='01000'; $party->town='Bourg-en-Bresse'; $party->country_id=1;
+    if ($party->create($user) <= 0) throw new RuntimeException($party->error);
+    $party->array_options['options_destinataire_facturation']='Mme Élodie GROUPE'.sprintf('%04d',$i);
+    $party->array_options['options_date_derniere_commande_manuelle']=$i===801 ? 2024 : 2025;
+    if ($party->insertExtraFields() < 0) throw new RuntimeException($party->error);
+    $bulk[]=$party->id;
+}
+foreach (array(array(0,2025,1),array(0,2026,1),array(1,2025,1),array(2,2026,0),array(2,2026,-1),array(800,2025,1)) as $fixture) {
+    $order=new Commande($db); $order->socid=$bulk[$fixture[0]]; $order->date=dol_mktime(12,0,0,6,15,$fixture[1]);
+    if ($order->create($user)<=0) throw new RuntimeException($order->error);
+    if (!$db->query('UPDATE '.MAIN_DB_PREFIX.'commande SET fk_statut='.((int)$fixture[2]).' WHERE rowid='.((int)$order->id))) throw new RuntimeException($db->lasterror());
+}
+$group=indyLabelsGroup($db,$user,'last_order_year',2025);
+if (count($group)!==800 || in_array($bulk[0],$group) || !in_array($bulk[800],$group) || !in_array($bulk[2],$group)) throw new RuntimeException('Historical/real priority or draft/cancel filtering failed');
+$actual=indyLabelsGroup($db,$user,'orders_in_year',2025);
+if (count($actual)!==3 || !in_array($bulk[0],$actual)) throw new RuntimeException('Any order in year must include later customers');
+$compact=implode(',',$group);
+if (indyLabelsParseSelection($compact)!==$group || count(indyLabelsParseSelection('',array_merge($group,$group)))!==800) throw new RuntimeException('Large selection or union deduplication failed');
+$recipients=indyLabelsRecipients($db,$user,$group);
+if (count($recipients)!==800) throw new RuntimeException('Bulk address lookup truncated');
+$pdf=indyLabelsPdf($recipients); $pdf->Output($out.'/eight-hundred.pdf','F');
+$manifest['eight-hundred']=array('start'=>1,'padding'=>10,'recipients'=>$recipients);
+$pdf=indyLabelsPdf(array_slice($recipients,0,1),1,14); $pdf->Output($out.'/padding-14.pdf','F');
+$manifest['padding-14']=array('start'=>1,'padding'=>14,'recipients'=>array_slice($recipients,0,1));
+if (indyLabelsManualYear('2025-07-10','date')!==2025 || indyLabelsManualYear('', 'int')!==null) throw new RuntimeException('Manual date/year conversion failed');
+$restricted->socid=0;
+if (indyLabelsGroup($db,$restricted,'last_order_year',2025)!==array()) throw new RuntimeException('Group leaked unassigned third parties');
+$res=activateModule('modCategorie'); if (!empty($res['errors'])) throw new RuntimeException(json_encode($res['errors']));
+$conf->setValues($db); $user->loadRights('',1);
+if (!$db->query("INSERT INTO ".MAIN_DB_PREFIX."categorie (label,type,entity) VALUES ('CI groupe courrier',2,".((int)$conf->entity).")")) throw new RuntimeException($db->lasterror());
+$categoryId=$db->last_insert_id(MAIN_DB_PREFIX.'categorie');
+foreach (array($bulk[1],$bulk[2]) as $id) if (!$db->query('INSERT INTO '.MAIN_DB_PREFIX.'categorie_societe (fk_categorie,fk_soc) VALUES ('.((int)$categoryId).','.$id.')')) throw new RuntimeException($db->lasterror());
+$categoryGroup=indyLabelsGroup($db,$user,'last_order_year',2025,$categoryId);
+if (count($categoryGroup)!==2) throw new RuntimeException('Category/year intersection failed');
+$oldEntity=$conf->entity; $conf->entity=9876;
+if (indyLabelsGroup($db,$user,'orders_in_year',2025)!==array()) throw new RuntimeException('Group entity boundary failed');
+$conf->entity=$oldEntity;
+echo "PASS: 800 imported historical customers, 50 PDF pages, real-order priority, any-order year, category intersection, batch lookup, compact selection and configurable left padding.\n";
 file_put_contents($out.'/manifest.json', json_encode($manifest, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));
-file_put_contents($out.'/ui.json', json_encode(array('ids'=>$ids,'incomplete'=>$party->id)));
+file_put_contents($out.'/ui.json', json_encode(array('ids'=>$ids,'incomplete'=>$incompleteId,'bulk'=>$group,'category'=>$categoryId)));
 echo "PASS: native module, 1/16/17/33 labels, used-sheet offset, fallback, accents, duplicate IDs, entity/salesperson/external restrictions and invalid input rejection.\n";
