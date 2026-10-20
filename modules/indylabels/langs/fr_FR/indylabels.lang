@@ -45,3 +45,4 @@ IndyLabelsSkipIncomplete=Exclure les tiers dont l’adresse est incomplète
 IndyLabelsExcluded=%s adresse(s) incomplète(s) exclue(s) du PDF à ta demande.
 IndyLabelsIncompleteCount=%s adresse(s) incomplète(s). Corrige les fiches indiquées ci-dessous, retire ces tiers ou coche l’exclusion des adresses incomplètes.
 IndyLabelsCorrectAddress=Corriger la fiche tiers
+IndyLabelsErrorLines=Trop de lignes pour %s : limite de six lignes par étiquette (nom, adresse et code postal/ville).

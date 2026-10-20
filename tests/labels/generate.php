@@ -34,6 +34,19 @@ foreach (array('one'=>array(1,1), 'full'=>array(16,1), 'seventeen'=>array(17,1),
     $pdf = indyLabelsPdf($recipients, $config[1]); $pdf->Output($out.'/'.$case.'.pdf', 'F');
     $manifest[$case] = array('start'=>$config[1], 'recipients'=>$recipients);
 }
+// Imported HTML breaks and native textarea newlines must produce separate printed lines.
+foreach (array('html-break'=>'Maison médicale <br>13 Grande Rue', 'html-slash'=>'Maison médicale<BR />13 Grande Rue', 'plain-newline'=>"Maison médicale\r\n13 Grande Rue", 'escaped-break'=>'Maison médicale &lt;br&gt;13 Grande Rue', 'six-lines'=>"Bâtiment A<br>Maison médicale<br>Étage 2<br>13 Grande Rue") as $case=>$address) {
+    if (!$db->query("UPDATE ".MAIN_DB_PREFIX."societe SET address='".$db->escape($address)."',zip='25330',town='Amancey' WHERE rowid=".((int)$ids[0]))) throw new RuntimeException($db->lasterror());
+    $multiline=indyLabelsRecipients($db,$user,array($ids[0]));
+    if (count($multiline[0]['lines'])!==($case==='six-lines' ? 6 : 4) || in_array($address,$multiline[0]['lines'],true)) throw new RuntimeException('Address breaks not normalized');
+    $pdf=indyLabelsPdf($multiline,16); $pdf->Output($out.'/'.$case.'.pdf','F');
+    $manifest[$case]=array('start'=>16,'recipients'=>$multiline);
+}
+if (indyLabelsAddressLines('<br> <br/>')!==array()) throw new RuntimeException('Empty markup accepted');
+$excess=$multiline; $excess[0]['lines'][]='Excess line';
+try { indyLabelsPdf($excess); throw new LogicException('Overfull label accepted'); } catch (RuntimeException $expected) {}
+if (!$db->query("UPDATE ".MAIN_DB_PREFIX."societe SET address='1 rue de l’Été',zip='69003',town='Lyon' WHERE rowid=".((int)$ids[0]))) throw new RuntimeException($db->lasterror());
+echo "PASS: HTML br/BR/br-slash, escaped breaks, CRLF, four/six printed lines, blank markup and overfull-label rejection.\n";
 $recipients = indyLabelsRecipients($db, $user, array($ids[0],$ids[0]));
 if (count($recipients) !== 1) throw new RuntimeException('Duplicate ID produced duplicate labels');
 foreach (array(array(), array(0), array(2147483647), array($ids[0],2147483647)) as $invalid) {

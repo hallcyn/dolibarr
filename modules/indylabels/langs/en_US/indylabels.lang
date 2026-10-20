@@ -45,3 +45,4 @@ IndyLabelsSkipIncomplete=Exclude recipients with incomplete addresses
 IndyLabelsExcluded=%s incomplete addresses excluded at your request.
 IndyLabelsIncompleteCount=%s incomplete addresses. Correct the marked cards, remove these recipients or select the exclusion option.
 IndyLabelsCorrectAddress=Correct third-party address
+IndyLabelsErrorLines=Too many lines for %s: each label supports six lines including name, address and postal code/city.

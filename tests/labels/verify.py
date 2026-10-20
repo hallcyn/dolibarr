@@ -27,7 +27,7 @@ for case,data in json.loads((root/'manifest.json').read_text()).items():
         text=' '.join(' '.join(span['text'] for line in lines for span in line['spans']).split())
         for line in recipient['lines']:
             assert line in text,(case,pos,line,text)
-        assert len(lines)==3,(case,pos,'Not three lines',lines)
+        assert len(lines)==len(recipient['lines']),(case,pos,'Wrong line count',lines)
         for line in lines:
             assert line['bbox'][0]>=area.x0+(data.get('padding',10)-0.1)*mm and line['bbox'][2]<=area.x1-4*mm,(case,pos,'Horizontal overflow')
             assert line['bbox'][1]>area.y0 and line['bbox'][3]<area.y1,(case,pos,'Vertical overflow')
@@ -36,4 +36,4 @@ for case,data in json.loads((root/'manifest.json').read_text()).items():
         for pos in range(data['start']-1):
             x=(pos%2)*105;y=0.5+(pos//2)*37
             assert not visible_lines(page,fitz.Rect(x*mm,y*mm,(x+105)*mm,(y+37)*mm)),(case,'Used label overwritten')
-print('PASS: exact A4, 105 × 37 mm cells, 2 × 8 layout, 3 lines, custom/fallback names, empty start slots, pagination and no clipping.')
+print('PASS: exact A4, 105 × 37 mm cells, 2 × 8 layout, single/multiline addresses, custom/fallback names, empty start slots, pagination and no clipping.')

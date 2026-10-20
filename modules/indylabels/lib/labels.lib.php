@@ -14,6 +14,15 @@ function indyLabelsNormalize($value)
     return trim(preg_replace('/\s+/u', ' ', (string) $value));
 }
 
+/** Preserve address lines from both plain text and imported HTML breaks. */
+function indyLabelsAddressLines($value)
+{
+    $text = html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $text = preg_replace('/<br\s*\/?\s*>/i', "\n", $text);
+    $text = strip_tags($text);
+    return array_values(array_filter(array_map('indyLabelsNormalize', preg_split('/\r\n|\r|\n/', $text)), static function ($line) { return $line !== ''; }));
+}
+
 /** Native entity and salesperson restrictions, shared by manual and group selection. */
 function indyLabelsScope($user)
 {
@@ -52,9 +61,10 @@ function indyLabelsRecipients($db, $user, $ids)
     $result = array();
     while ($row = $db->fetch_object($res)) {
         $name = trim((string) $row->recipient);
+        $addressLines = indyLabelsAddressLines($row->address);
         $result[] = array('id'=>(int) $row->rowid, 'name'=>$row->nom,
-            'lines'=>array(indyLabelsNormalize($name !== '' ? $name : $row->nom), indyLabelsNormalize($row->address), indyLabelsNormalize($row->zip.' '.$row->town)),
-            'complete'=>trim((string) $row->address) !== '' && trim((string) $row->zip) !== '' && trim((string) $row->town) !== '');
+            'lines'=>array_merge(array(indyLabelsNormalize($name !== '' ? $name : $row->nom)), $addressLines, array(indyLabelsNormalize($row->zip.' '.$row->town))),
+            'complete'=>count($addressLines) > 0 && trim((string) $row->zip) !== '' && trim((string) $row->town) !== '');
     }
     if (count($result) !== count($ids)) throw new RuntimeException(indyLabelsError('IndyLabelsErrorUnavailable'));
     return $result;
@@ -133,11 +143,13 @@ function indyLabelsPdf($recipients, $start = 1, $padding = 10)
     $slot = $start - 1;
     foreach ($recipients as $i => $recipient) {
         if (empty($recipient['complete'])) throw new RuntimeException(indyLabelsError('IndyLabelsErrorAddress', $recipient['name']));
+        $lineCount = count($recipient['lines']);
+        if ($lineCount > 6) throw new RuntimeException(indyLabelsError('IndyLabelsErrorLines', $recipient['name']));
         if ($i === 0 || $slot % 16 === 0) $pdf->AddPage('P', array(210, 297));
         $position = $slot % 16;
         $x = ($position % 2) * 105 + $padding;
         $width = 105 - $padding - 5;
-        $y = 0.5 + intdiv($position, 2) * 37 + 11.5;
+        $y = 0.5 + intdiv($position, 2) * 37 + 11.5 - max(0, $lineCount - 3) * 2.3;
         foreach ($recipient['lines'] as $line => $text) {
             $size = $line === 0 ? 10.5 : 10;
             $style = $line === 0 ? 'B' : '';
