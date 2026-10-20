@@ -8,6 +8,8 @@ with sync_playwright() as p:
     context=browser.new_context(viewport={'width':1440,'height':1000},locale='fr-FR',accept_downloads=True)
     page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
     page.goto(base+'/');page.locator('#username').fill('admin');page.locator('#password').fill(os.environ['DOLIBARR_TEST_PASSWORD']);page.locator('input[type=submit]').first.click();page.wait_for_load_state('networkidle')
+    page.goto(base+'/societe/index.php?mainmenu=companies',wait_until='networkidle')
+    assert page.locator('a[href*="/indylabels/index.php"]').count()>0,'Labels menu missing from third parties'
     response=page.goto(base+'/indylabels/index.php',wait_until='networkidle');assert response.status==200
     page.locator('#thirdparties').select_option([str(x) for x in data['ids'][:17]])
     # Select2 listens to change through jQuery.

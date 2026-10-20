@@ -4,6 +4,16 @@ from pathlib import Path
 import fitz
 root=Path('artifacts/labels')
 mm=72/25.4
+
+def visible_lines(page, area):
+    # TCPDF includes an invisible (alpha=0) attribution at the bottom of the PDF.
+    # Check printed label content, preserving this native library metadata.
+    result=[]
+    for block in page.get_text('dict',clip=area)['blocks']:
+        for line in block.get('lines',[]):
+            spans=[span for span in line['spans'] if span.get('alpha',255)>0]
+            if spans:result.append({**line,'spans':spans})
+    return result
 for case,data in json.loads((root/'manifest.json').read_text()).items():
     doc=fitz.open(root/(case+'.pdf'))
     assert len(doc)==math.ceil((len(data['recipients'])+data['start']-1)/16),case
@@ -13,10 +23,10 @@ for case,data in json.loads((root/'manifest.json').read_text()).items():
         slot=i+data['start']-1; page=doc[slot//16]; pos=slot%16
         x=(pos%2)*105; y=0.5+(pos//2)*37
         area=fitz.Rect(x*mm,y*mm,(x+105)*mm,(y+37)*mm)
-        text=' '.join(page.get_text(clip=area).split())
+        lines=visible_lines(page,area)
+        text=' '.join(' '.join(span['text'] for line in lines for span in line['spans']).split())
         for line in recipient['lines']:
             assert line in text,(case,pos,line,text)
-        lines=[l for b in page.get_text('dict',clip=area)['blocks'] if 'lines' in b for l in b['lines']]
         assert len(lines)==3,(case,pos,'Not three lines',lines)
         for line in lines:
             assert line['bbox'][0]>=area.x0+4*mm and line['bbox'][2]<=area.x1-4*mm,(case,pos,'Horizontal overflow')
@@ -25,5 +35,5 @@ for case,data in json.loads((root/'manifest.json').read_text()).items():
         page=doc[0]
         for pos in range(data['start']-1):
             x=(pos%2)*105;y=0.5+(pos//2)*37
-            assert not page.get_text(clip=fitz.Rect(x*mm,y*mm,(x+105)*mm,(y+37)*mm)).strip(),(case,'Used label overwritten')
+            assert not visible_lines(page,fitz.Rect(x*mm,y*mm,(x+105)*mm,(y+37)*mm)),(case,'Used label overwritten')
 print('PASS: exact A4, 105 × 37 mm cells, 2 × 8 layout, 3 lines, custom/fallback names, empty start slots, pagination and no clipping.')
