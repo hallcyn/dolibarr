@@ -23,6 +23,11 @@ jobs:
           docker compose config --quiet
       - name: Build the image
         run: docker compose build --pull
+      - name: Record patched PHP runtime
+        run: |
+          mkdir -p artifacts/runtime
+          docker compose run --rm --no-deps --entrypoint php dolibarr /opt/railway/check-php-security.php | tee artifacts/runtime/php-version.txt
+          docker buildx imagetools inspect dolibarr/dolibarr:24.0.2 > artifacts/runtime/upstream-manifest.txt
       - name: PHP and Apache syntax
         run: |
           docker compose run --rm --no-deps --entrypoint bash dolibarr -c 'find /opt/railway /var/www/html/indyinvoice /var/www/html/indylabels /var/www/html/theme/indy /var/www/html/indyui -name "*.php" -print0 | xargs -0 -n1 php -l; apache2ctl configtest'
