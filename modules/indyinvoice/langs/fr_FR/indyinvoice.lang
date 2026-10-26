@@ -48,3 +48,6 @@ IndyNativeBankHelp=Renseignez le titulaire, l’IBAN et le BIC dans le compte ba
 INDYINVOICE_SHOW_BANK_DETAILS=Afficher aussi le RIB si un autre mode de règlement est renseigné (hors avoirs)
 INDYINVOICE_USE_INVOICE_TEXT_FOR_ORDERS=Utiliser la mention des factures pour les commandes sans mention propre
 IndyNativeMentionsHelp=La « Mention complémentaire sur les factures » et le filigrane brouillon se règlent dans Factures et avoirs. Les commandes utilisent leurs propres réglages. Enregistrez avec Modifier dans Dolibarr, puis régénérez le PDF avec le modèle indy (facture) ou indyorder (commande). Le texte long est automatiquement réparti sur plusieurs lignes. Les paramètres de validation, de téléchargement et de notification restent gérés par Dolibarr.
+
+IndyBillingRecipient=Destinataire de facturation
+IndyBillingRecipientHelp=Remplace le nom du tiers dans le bloc destinataire des PDF Indy (factures et commandes). Vide : nom habituel du tiers. Les contacts et adresses restent inchangés.

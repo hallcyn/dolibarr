@@ -9,10 +9,14 @@ LABEL org.opencontainers.image.title="Dolibarr on Railway" \
       org.opencontainers.image.description="Dolibarr with persistent files, private MariaDB, health checks and optional cron" \
       org.opencontainers.image.source="https://github.com/hallcyn/dolibarr"
 
+COPY docker/check-php-security.php /opt/railway/check-php-security.php
+RUN php /opt/railway/check-php-security.php
+
 COPY theme/ /opt/indy-theme/
 RUN bash /opt/indy-theme/install.sh /var/www/html
 
 COPY modules/indyinvoice/ /var/www/html/indyinvoice/
+COPY modules/indylabels/ /var/www/html/indylabels/
 RUN cp /var/www/html/indyinvoice/fonts/indyinter* /var/www/html/includes/tecnickcom/tcpdf/fonts/
 
 COPY docker/ /opt/railway/

@@ -8,6 +8,8 @@ Déployez **Dolibarr ERP & CRM** avec une base **MariaDB privée**, une installa
 
 **Commencer : [Déployer le template](https://railway.com/deploy/YXlVeG) · [Guide complet](docs/RAILWAY.md).**
 
+Pour un champ calculé de tiers indiquant sa dernière commande, avec une date historique manuelle en secours, voir [la formule et sa configuration](docs/COMPUTED-FIELDS.md).
+
 > Statut : template créé dans le workspace Hallcyn, partageable par lien et prêt à déployer. Les tests Docker ont réussi ; aucune instance Railway n’a encore été lancée. Le template n’est pas encore référencé dans le marketplace. Voir [VALIDATION.md](VALIDATION.md).
 
 ## Ce qui est inclus
@@ -106,3 +108,7 @@ Le [workflow réussi](https://github.com/hallcyn/dolibarr/actions/runs/390633822
 - [Variables Railway](https://docs.railway.com/variables/reference), [réseau privé](https://docs.railway.com/networking/private-networking).
 
 Sauf mention contraire, les scripts et documents du template sont sous licence MIT, voir [LICENSE](LICENSE). Les fichiers du thème Indy et ses tests importés dans `tests/indy/` sont sous GPL v3 ou ultérieure, voir [theme/LICENSE](theme/LICENSE). Le module `modules/indyinvoice/` est aussi sous GPL v3 ou ultérieure ; les polices Inter conservent leur licence SIL OFL. Dolibarr est un logiciel distinct sous GPL v3 ou ultérieure ; MariaDB et les composants de l’image conservent leurs licences. Ce template communautaire n’est pas une publication officielle de Dolibarr ou de Railway.
+
+- [Destinataire de facturation personnalisé dans les PDF Indy](docs/BILLING-RECIPIENT.md)
+
+- [Étiquettes enveloppes Indy : A4, 2 × 8 étiquettes de 105 × 37 mm](docs/ENVELOPE-LABELS.md)

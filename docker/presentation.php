@@ -28,9 +28,21 @@ if (getDolGlobalString('INDY_UI_ASSET_VERSION') !== $version) {
     $db->commit();
 }
 if (isModEnabled('indyinvoice')) {
+    require_once DOL_DOCUMENT_ROOT.'/indyinvoice/lib/recipient.lib.php';
+    if (indyEnsureBillingRecipientField($db) <= 0) {
+        fwrite(STDERR, 'Unable to provision Indy billing recipient field.'.PHP_EOL); exit(1);
+    }
     $entity = (int)$conf->entity;
     $sql = "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom,type,entity) SELECT 'indyorder','order',".$entity.
         " WHERE NOT EXISTS (SELECT 1 FROM ".MAIN_DB_PREFIX."document_model WHERE nom='indyorder' AND type='order' AND entity=".$entity.")";
     if (!$db->query($sql)) exit(1);
+}
+// Install once for existing Indy installations; a deliberate later disable is respected.
+if (isModEnabled('indyinvoice') && !getDolGlobalInt('INDYLABELS_PROVISIONED')) {
+    if (!isModEnabled('indylabels')) {
+        $result = activateModule('modIndyLabels');
+        if (!empty($result['errors'])) { fwrite(STDERR, 'Unable to enable Indy Labels.'.PHP_EOL); exit(1); }
+    }
+    if (dolibarr_set_const($db, 'INDYLABELS_PROVISIONED', '1', 'chaine', 0, '', $conf->entity) <= 0) exit(1);
 }
 echo '[railway] Presentation assets and document models ready.'.PHP_EOL;

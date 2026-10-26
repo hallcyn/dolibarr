@@ -48,3 +48,6 @@ IndyNativeBankHelp=Enter the account holder, IBAN and BIC in the native Dolibarr
 INDYINVOICE_SHOW_BANK_DETAILS=Also print bank details when another payment method is selected (except credit notes)
 INDYINVOICE_USE_INVOICE_TEXT_FOR_ORDERS=Use invoice free text for orders without their own free text
 IndyNativeMentionsHelp=Configure invoice free text and draft watermark in the native invoice settings. Orders have separate settings. Save with Modify in Dolibarr, then regenerate the PDF using indy (invoice) or indyorder (order). Long text wraps automatically. Validation, document sharing and notification settings remain managed by Dolibarr.
+
+IndyBillingRecipient=Billing recipient
+IndyBillingRecipientHelp=Replaces the third-party name in the recipient block of Indy invoice and order PDFs. Leave blank to use the usual name. Contacts and addresses are unchanged.

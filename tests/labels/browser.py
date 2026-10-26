@@ -1,0 +1,85 @@
+"""Real selection, preview, download and mobile layout on disposable localhost."""
+import os,json,fitz
+from pathlib import Path
+from playwright.sync_api import sync_playwright
+base='http://127.0.0.1:8080';out=Path('artifacts/labels');data=json.loads((out/'ui.json').read_text())
+with sync_playwright() as p:
+    browser=p.chromium.launch()
+    context=browser.new_context(viewport={'width':1440,'height':1000},locale='fr-FR',accept_downloads=True)
+    page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+    page.goto(base+'/');page.locator('#username').fill('admin');page.locator('#password').fill(os.environ['DOLIBARR_TEST_PASSWORD']);page.locator('input[type=submit]').first.click();page.wait_for_load_state('networkidle')
+    page.goto(base+'/societe/index.php?mainmenu=companies',wait_until='networkidle')
+    menu_found=page.locator('a[href*="/indylabels/index.php"]').count()>0
+    (out/'thirdparties-menu.html').write_text(page.content())
+    page.screenshot(path=str(out/'thirdparties-menu.png'),full_page=False)
+    response=page.goto(base+'/indylabels/index.php',wait_until='networkidle')
+    (out/'labels-page.html').write_text(page.content())
+    page.screenshot(path=str(out/'labels-initial.png'),full_page=False)
+    assert response.status==200,(response.status,page.locator('body').inner_text()[:300])
+    page.locator('#thirdparties').select_option([str(x) for x in data['ids'][:17]])
+    # Select2 listens to change through jQuery.
+    page.locator('#thirdparties').evaluate("e=>window.jQuery(e).trigger('change')")
+    assert '17 tiers' in page.locator('#indy-labels-count').inner_text()
+    page.get_by_role('button',name='Vérifier les adresses',exact=True).click();page.wait_for_load_state('networkidle')
+    assert page.locator('.indy-envelope-label').count()==17
+    assert 'Mme Zoé' in page.locator('.indy-envelope-label').first.inner_text()
+    page.screenshot(path=str(out/'desktop.png'),full_page=True)
+    with page.expect_download() as download:page.get_by_role('button',name='Télécharger le PDF',exact=True).click()
+    file=out/'download.pdf';download.value.save_as(file)
+    assert len(fitz.open(file))==2
+    page.set_viewport_size({'width':390,'height':844})
+    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),'Mobile overflow'
+    page.screenshot(path=str(out/'mobile.png'),full_page=True)
+    page.locator('#indy-labels-clear').click();assert '0 tiers' in page.locator('#indy-labels-count').inner_text()
+    page.locator('#indy-labels-all').click();assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))>=33
+    page.locator('#thirdparties').select_option(str(data['incomplete']))
+    page.get_by_role('button',name='Télécharger le PDF',exact=True).click();page.wait_for_load_state('networkidle')
+    assert page.locator('[role=alert]').count()==1,'Incomplete address must not download'
+    page.goto(base+'/indylabels/index.php',wait_until='networkidle')
+    assert page.locator('#padding').input_value()=='10'
+    assert page.locator('#group_status').input_value()=='open'
+    assert page.locator('#thirdparties option[value=\"'+str(data['closed'])+'\"]').count()==0
+    page.locator('#group_year').fill('2025')
+    page.locator('button[value=replace_group]').click();page.wait_for_load_state('networkidle')
+    assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))==800
+    assert '800 tiers' in page.locator('#indy-labels-count').inner_text()
+    # This POST has one compact ID field, not 800+ PHP form variables.
+    with page.expect_download() as download:page.get_by_role('button',name='Télécharger le PDF',exact=True).click()
+    file=out/'download-800.pdf';download.value.save_as(file)
+    assert len(fitz.open(file))==50
+    page.locator('button[value=add_group]').click();page.wait_for_load_state('networkidle')
+    assert '800 tiers' in page.locator('#indy-labels-count').inner_text(),'Adding the same group created duplicates'
+    page.locator('#category').select_option(str(data['category']))
+    page.locator('button[value=replace_group]').click();page.wait_for_load_state('networkidle')
+    assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))==2
+    page.locator('#group_status').select_option('closed')
+    page.locator('button[value=replace_group]').click();page.wait_for_load_state('networkidle')
+    assert page.locator('#group_status').input_value()=='closed'
+    assert page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions).map(o=>Number(o.value))')==[data['closed']]
+    with page.expect_download() as download:page.get_by_role('button',name='Télécharger le PDF',exact=True).click()
+    download.value.save_as(out/'closed-exception.pdf')
+    assert 'CI clos historique' in fitz.open(out/'closed-exception.pdf')[0].get_text()
+    page.locator('#group_status').select_option('open')
+    page.locator('button[value=add_group]').click();page.wait_for_load_state('networkidle')
+    assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))==3,'Closed exception lost when adding open group'
+    page.locator('#group_status').select_option('all')
+    page.locator('button[value=replace_group]').click();page.wait_for_load_state('networkidle')
+    assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))==3
+    page.locator('#group_status').select_option('open')
+    page.locator('button[value=replace_group]').click();page.wait_for_load_state('networkidle')
+    assert len(page.locator('#thirdparties').evaluate('e=>Array.from(e.selectedOptions)'))==2,'Replace must remove closed exception'
+    page.locator('#padding').fill('14')
+    with page.expect_download() as download:page.get_by_role('button',name='Télécharger le PDF',exact=True).click()
+    download.value.save_as(out/'download-padding.pdf')
+    page.set_viewport_size({'width':390,'height':844})
+    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),'Group form mobile overflow'
+    page.screenshot(path=str(out/'groups-mobile.png'),full_page=True)
+    page.set_viewport_size({'width':1440,'height':1000})
+    page.screenshot(path=str(out/'groups-desktop.png'),full_page=False)
+    assert not errors,errors
+    assert menu_found,'Labels menu missing from third parties'
+    # A download POST without a valid CSRF token must be blocked by native Dolibarr.
+    response=context.request.post(base+'/indylabels/index.php',form={'action':'download','thirdparties[]':str(data['ids'][0]),'start':'1','token':'invalid'})
+    assert 'application/pdf' not in response.headers.get('content-type',''),'Invalid CSRF accepted'
+    browser.close()
+print('PASS: desktop/mobile, native multiselect, preview, 17/800-label PDF downloads, year/category group selection and union, padding, select/clear, incomplete address and CSRF protection.')
