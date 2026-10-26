@@ -15,7 +15,7 @@ Pour un champ calculé de tiers indiquant sa dernière commande, avec une date h
 ## Ce qui est inclus
 
 - Image officielle `dolibarr/dolibarr:24.0.2`, adaptée sans recopier le code de Dolibarr.
-- MariaDB `11.4` LTS, utilisateur applicatif dédié, réseau privé et réglages sobres.
+- MariaDB `12.3.3` LTS, patch fixé, utilisateur applicatif dédié, réseau privé et réglages sobres. Pour une instance existante en 11.4, suivre le [guide de migration](docs/MARIADB-UPGRADE.md) avant tout changement d’image.
 - [Thème Indy](theme/README.md) embarqué : menu crème, espace blanc et boutons roses, cartes et formulaires modernisés, activation dans les réglages d’affichage.
 - [Documents Indy](modules/indyinvoice/README.md) : modèles PDF de factures et commandes avec palettes, bannière image, logo Dolibarr, polices, couleurs de texte et tableau configurables ; RIB et mentions issus des réglages natifs, sans conversion ODT.
 - Secrets différents générés pour chaque déploiement du template ; aucun mot de passe universel.
@@ -33,7 +33,7 @@ Le logiciel conserve ses fonctionnalités natives : tiers, devis, factures, comm
 | Service | Source | Volume | Accès |
 | --- | --- | --- | --- |
 | **Dolibarr** | Dockerfile de ce dépôt | `/data` | HTTPS public, cible interne **80** |
-| **MariaDB** | Image officielle `mariadb:11.4` | `/var/lib/mysql` | Réseau privé uniquement, **3306** |
+| **MariaDB** | Image officielle `mariadb:12.3.3` | `/var/lib/mysql` | Réseau privé uniquement, **3306** |
 
 Railway permet un seul volume par service. Le démarrage relie `/var/www/documents` à `/data/documents` et `/var/www/html/custom` à `/data/custom`. Les sessions sont dans `/data/sessions`, la clé dans `/data/secrets`. Le code de l’application reste dans l’image pour permettre les mises à jour. Ne monter aucun volume sur `/var/www/html` ou `/var/www`.
 

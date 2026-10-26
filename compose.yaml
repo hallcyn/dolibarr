@@ -1,8 +1,8 @@
 services:
   mariadb:
-    image: mariadb:11.4
+    image: mariadb:12.3.3
     restart: unless-stopped
-    command: ["--bind-address=0.0.0.0,::", "--innodb-buffer-pool-size=128M", "--max-connections=30", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    command: ["--bind-address=0.0.0.0,::", "--innodb-buffer-pool-size=128M", "--max-connections=30", "--innodb-snapshot-isolation=OFF", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     environment:
       MARIADB_DATABASE: dolibarr
       MARIADB_USER: dolibarr
