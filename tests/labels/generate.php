@@ -47,6 +47,46 @@ $excess=$multiline; $excess[0]['lines'][]='Excess line';
 try { indyLabelsPdf($excess); throw new LogicException('Overfull label accepted'); } catch (RuntimeException $expected) {}
 if (!$db->query("UPDATE ".MAIN_DB_PREFIX."societe SET address='1 rue de l’Été',zip='69003',town='Lyon' WHERE rowid=".((int)$ids[0]))) throw new RuntimeException($db->lasterror());
 echo "PASS: HTML br/BR/br-slash, escaped breaks, CRLF, four/six printed lines, blank markup and overfull-label rejection.\n";
+// Import is preview-only by default, skips duplicate/missing names, changes only the recipient.
+$input=array(
+    array('name'=>'CI étiquette 01','recipient'=>"Comité d'Entreprise"),
+    array('name'=>'CI ÉTIQUETTE 02','recipient'=>'et Karine GRANDIDIER'),
+    array('name'=>'CI étiquette 03','recipient'=>'First duplicate'),
+    array('name'=>'CI étiquette 03','recipient'=>'Second duplicate'),
+    array('name'=>'CI missing customer','recipient'=>'Never create a third party')
+);
+file_put_contents('/tmp/indy-import-input.json',json_encode($input));
+$runImport=static function($extra='') {
+    $command=escapeshellarg(PHP_BINARY).' /tmp/indy-import-recipients.php --input=/tmp/indy-import-input.json --entity=1 --backup-dir=/tmp '.$extra;
+    exec($command,$output,$code);
+    if ($code!==0) throw new RuntimeException('Import command failed');
+    return json_decode(implode("\n",$output),true,512,JSON_THROW_ON_ERROR);
+};
+$oldRecipient=$db->fetch_object($db->query('SELECT destinataire_facturation AS v FROM '.MAIN_DB_PREFIX.'societe_extrafields WHERE fk_object='.((int)$ids[0])))->v;
+$partyBefore=$db->fetch_object($db->query('SELECT nom,address,zip,town,status FROM '.MAIN_DB_PREFIX.'societe WHERE rowid='.((int)$ids[0])));
+$preview=$runImport();
+if ($preview['mode']!=='preview'||$preview['changes']!==2||count($preview['skipped'])!==3||$preview['updated']!==0) throw new RuntimeException('Preview or matching safeguards failed');
+if ($db->fetch_object($db->query('SELECT destinataire_facturation AS v FROM '.MAIN_DB_PREFIX.'societe_extrafields WHERE fk_object='.((int)$ids[0])))->v!==$oldRecipient) throw new RuntimeException('Preview changed production-like data');
+$applied=$runImport('--apply');
+if ($applied['updated']!==2||!is_file($applied['backup'])) throw new RuntimeException('Import backup or apply failed');
+$backup=json_decode(file_get_contents($applied['backup']),true);
+if ($backup['before'][0]['old_value']!==$oldRecipient) throw new RuntimeException('Backup lost prior value');
+$multi=indyLabelsRecipients($db,$user,array_slice($ids,0,2));
+if ($multi[0]['lines'][0]!=='CI étiquette 01'||$multi[0]['lines'][1]!=="Comité d'Entreprise"||count($multi[0]['lines'])!==4) throw new RuntimeException('Recipient newline flattened');
+$pdf=indyLabelsPdf($multi); $pdf->Output($out.'/multiline-recipient.pdf','F');
+$manifest['multiline-recipient']=array('start'=>1,'recipients'=>$multi);
+// Both HTML breaks and CRLF from textarea/import are supported in recipient names.
+foreach (array('recipient-html'=>"CI étiquette 01<BR />Comité d'Entreprise",'recipient-crlf'=>"CI étiquette 01\r\nComité d'Entreprise") as $case=>$value) {
+    $db->query("UPDATE ".MAIN_DB_PREFIX."societe_extrafields SET destinataire_facturation='".$db->escape($value)."' WHERE fk_object=".((int)$ids[0]));
+    $multi=indyLabelsRecipients($db,$user,array($ids[0]));
+    if (count($multi[0]['lines'])!==4) throw new RuntimeException('Imported recipient break unsupported');
+    $pdf=indyLabelsPdf($multi,16); $pdf->Output($out.'/'.$case.'.pdf','F');
+    $manifest[$case]=array('start'=>16,'recipients'=>$multi);
+}
+foreach ($backup['before'] as $before) $db->query("UPDATE ".MAIN_DB_PREFIX."societe_extrafields SET destinataire_facturation=".($before['old_value']===null ? 'NULL' : "'".$db->escape($before['old_value'])."'")." WHERE fk_object=".((int)$before['id']));
+$partyAfter=$db->fetch_object($db->query('SELECT nom,address,zip,town,status FROM '.MAIN_DB_PREFIX.'societe WHERE rowid='.((int)$ids[0])));
+if ($partyBefore!=$partyAfter) throw new RuntimeException('Import changed another third-party field');
+echo "PASS: recipient multiline/HTML/CRLF PDF, preview without writes, unique-name import, duplicate/missing exclusions, transaction backup and unrelated fields preserved.\n";
 $recipients = indyLabelsRecipients($db, $user, array($ids[0],$ids[0]));
 if (count($recipients) !== 1) throw new RuntimeException('Duplicate ID produced duplicate labels');
 foreach (array(array(), array(0), array(2147483647), array($ids[0],2147483647)) as $invalid) {

@@ -61,9 +61,11 @@ function indyLabelsRecipients($db, $user, $ids)
     $result = array();
     while ($row = $db->fetch_object($res)) {
         $name = trim((string) $row->recipient);
+        $nameLines = indyLabelsAddressLines($name);
+        if (!$nameLines) $nameLines = indyLabelsAddressLines($row->nom);
         $addressLines = indyLabelsAddressLines($row->address);
         $result[] = array('id'=>(int) $row->rowid, 'name'=>$row->nom,
-            'lines'=>array_merge(array(indyLabelsNormalize($name !== '' ? $name : $row->nom)), $addressLines, array(indyLabelsNormalize($row->zip.' '.$row->town))),
+            'lines'=>array_merge($nameLines, $addressLines, array(indyLabelsNormalize($row->zip.' '.$row->town))),
             'complete'=>count($addressLines) > 0 && trim((string) $row->zip) !== '' && trim((string) $row->town) !== '');
     }
     if (count($result) !== count($ids)) throw new RuntimeException(indyLabelsError('IndyLabelsErrorUnavailable'));

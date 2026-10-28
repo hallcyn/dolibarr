@@ -8,7 +8,7 @@ class modIndyLabels extends DolibarrModules
         $this->db = $db; $this->numero = 500988;
         $this->rights_class = 'indylabels'; $this->family = 'crm'; $this->module_position = '96';
         $this->name = 'IndyLabels'; $this->description = 'IndyLabelsDescription';
-        $this->version = '1.1.2'; $this->const_name = 'MAIN_MODULE_INDYLABELS'; $this->picto = 'barcode';
+        $this->version = '1.1.3'; $this->const_name = 'MAIN_MODULE_INDYLABELS'; $this->picto = 'barcode';
         $this->editor_name = 'Hallcyn'; $this->editor_url = 'https://github.com/hallcyn/dolibarr';
         $this->depends = array('modSociete'); $this->phpmin = array(8, 1); $this->need_dolibarr_version = array(24, 0);
         $this->langfiles = array('indylabels@indylabels'); $this->dirs = array(); $this->const = array();
