@@ -50,7 +50,7 @@ echo "PASS: HTML br/BR/br-slash, escaped breaks, CRLF, four/six printed lines, b
 // Import is preview-only by default, skips duplicate/missing names, changes only the recipient.
 $input=array(
     array('name'=>'CI étiquette 01','recipient'=>"Comité d'Entreprise"),
-    array('name'=>'CI ÉTIQUETTE 02','recipient'=>'et Karine GRANDIDIER'),
+    array('name'=>'CI ÉTIQUETTE 02','recipient'=>'et Camille TEST'),
     array('name'=>'CI étiquette 03','recipient'=>'First duplicate'),
     array('name'=>'CI étiquette 03','recipient'=>'Second duplicate'),
     array('name'=>'CI missing customer','recipient'=>'Never create a third party')
