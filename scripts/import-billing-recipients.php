@@ -31,6 +31,13 @@ try {
     $meta = $connection->query("SELECT CHARACTER_MAXIMUM_LENGTH FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='llx_societe_extrafields' AND COLUMN_NAME='destinataire_facturation'")->fetch_assoc();
     if (!$meta) throw new RuntimeException('Missing destinataire_facturation extrafield. No schema change performed.');
     $limit = (int)$meta['CHARACTER_MAXIMUM_LENGTH'];
+    $engines = $connection->query("SELECT TABLE_NAME,ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('llx_societe','llx_societe_extrafields')");
+    $engineCount = 0;
+    while ($table = $engines->fetch_assoc()) {
+        if (strtolower($table['ENGINE']) !== 'innodb') throw new RuntimeException('Transactional InnoDB tables required; no changes applied.');
+        $engineCount++;
+    }
+    if ($engineCount !== 2) throw new RuntimeException('Required application tables missing.');
     $connection->begin_transaction();
     $stmt = $connection->prepare('SELECT rowid,nom FROM llx_societe WHERE entity=? ORDER BY rowid'.($apply ? ' FOR UPDATE' : ''));
     $stmt->bind_param('i', $entity); $stmt->execute(); $rows = $stmt->get_result();

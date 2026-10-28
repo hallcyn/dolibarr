@@ -71,6 +71,8 @@ $applied=$runImport('--apply');
 if ($applied['updated']!==2||!is_file($applied['backup'])) throw new RuntimeException('Import backup or apply failed');
 $backup=json_decode(file_get_contents($applied['backup']),true);
 if ($backup['before'][0]['old_value']!==$oldRecipient) throw new RuntimeException('Backup lost prior value');
+$again=$runImport('--apply');
+if ($again['updated']!==0||$again['unchanged']!==2) throw new RuntimeException('Repeated import was not idempotent');
 $multi=indyLabelsRecipients($db,$user,array_slice($ids,0,2));
 if ($multi[0]['lines'][0]!=='CI étiquette 01'||$multi[0]['lines'][1]!=="Comité d'Entreprise"||count($multi[0]['lines'])!==4) throw new RuntimeException('Recipient newline flattened');
 $pdf=indyLabelsPdf($multi); $pdf->Output($out.'/multiline-recipient.pdf','F');
