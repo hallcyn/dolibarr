@@ -141,6 +141,7 @@ jobs:
           docker compose up -d --wait --wait-timeout 300
           docker compose cp tests/indy/seed.php dolibarr:/tmp/indy-seed.php
           docker compose exec --user www-data -T dolibarr php /tmp/indy-seed.php
+          docker compose cp scripts/import-billing-recipients.php dolibarr:/tmp/indy-import-recipients.php
           docker compose cp tests/labels/generate.php dolibarr:/tmp/indy-labels.php
           docker compose exec --user www-data -T dolibarr php /tmp/indy-labels.php
           mkdir -p artifacts/labels

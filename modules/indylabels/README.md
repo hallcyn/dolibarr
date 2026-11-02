@@ -43,3 +43,5 @@ Les groupes peuvent remplacer ou compléter la sélection ; les doublons sont su
 Pour déplacer davantage le texte vers la droite, augmenter **Marge intérieure gauche de chaque étiquette (mm)**. La géométrie de la planche ne change pas. Ce réglage vaut pour les deux colonnes et réduit la largeur de texte disponible. Toujours imprimer à 100 %.
 
 Le filtre **État du tiers** propose **Ouverts (en activité)** par défaut, **Clos (activité cessée)** et **Tous les états**. Il se combine avec l’année et la catégorie. La sélection individuelle suit ce filtre ; les exceptions déjà sélectionnées restent visibles et conservées lors de l’ajout d’un autre groupe. **Remplacer** reconstruit la sélection avec les filtres choisis. Aucun état de tiers n’est modifié.
+
+Le destinataire de facturation accepte lui aussi plusieurs lignes (retours natifs et `<br>`). La première ligne reste en gras ; les suivantes précèdent les lignes d’adresse. La limite de six lignes s’applique au bloc complet ; aucune ligne n’est tronquée silencieusement.
