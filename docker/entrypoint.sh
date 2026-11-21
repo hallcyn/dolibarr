@@ -37,6 +37,7 @@ chmod 700 /data/sessions
 
 php /opt/railway/configure.php
 php /opt/railway/check-database.php --wait
+bash /opt/railway/upgrade-24.0.3.sh
 
 echo "[railway] Starting the official Dolibarr installer and Apache."
 exec /usr/local/bin/docker-run.sh "$@"

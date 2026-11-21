@@ -1,4 +1,4 @@
-FROM dolibarr/dolibarr:24.0.2 AS upstream
+FROM dolibarr/dolibarr:24.0.3 AS upstream
 
 # Keep the official filesystem, but drop its two VOLUME declarations. Docker
 # otherwise creates anonymous mounts that cannot be replaced by our symlinks.
@@ -33,7 +33,7 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     PHP_INI_DIR=/usr/local/etc/php \
     APACHE_CONFDIR=/etc/apache2 \
     APACHE_ENVVARS=/etc/apache2/envvars \
-    DOLI_VERSION=24.0.2 \
+    DOLI_VERSION=24.0.3 \
     DOLI_VERSION_FOR_INIT_DEMO=24.0 \
     DOLI_DB_TYPE=mysqli \
     DOLI_DB_HOST_PORT=3306 \
