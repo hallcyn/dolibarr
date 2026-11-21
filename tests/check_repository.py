@@ -25,6 +25,9 @@ for path, checksum in theme['sha256'].items():
     assert hashlib.sha256((root / path).read_bytes()).hexdigest() == checksum, f'Theme snapshot changed: {path}'
 assert json.loads((root / 'theme/indy/version.json').read_text())['version'] == theme['version']
 assert spec['services']['MariaDB']['source']['image'] == compose['services']['mariadb']['image']
+assert '--innodb-snapshot-isolation=OFF' in compose['services']['mariadb']['command']
+assert '--innodb-snapshot-isolation=OFF' in spec['services']['MariaDB']['settings']['startCommand']
+
 assert spec['services']['Dolibarr']['volume']['mountPath'] == '/data'
 assert spec['services']['MariaDB']['volume']['mountPath'] == '/var/lib/mysql'
 assert spec['services']['Dolibarr']['settings']['healthcheckPath'] == '/railway-health.php'

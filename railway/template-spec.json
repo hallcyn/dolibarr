@@ -8,14 +8,14 @@
   "services": {
     "MariaDB": {
       "source": {
-        "image": "mariadb:11.4"
+        "image": "mariadb:12.3.3"
       },
       "volume": {
         "mountPath": "/var/lib/mysql"
       },
       "publicNetworking": false,
       "settings": {
-        "startCommand": "docker-entrypoint.sh mariadbd --bind-address=0.0.0.0,:: --innodb-buffer-pool-size=128M --max-connections=30 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci",
+        "startCommand": "docker-entrypoint.sh mariadbd --bind-address=0.0.0.0,:: --innodb-buffer-pool-size=128M --max-connections=30 --innodb-snapshot-isolation=OFF --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci",
         "restartPolicy": "ON_FAILURE",
         "restartMaxRetries": 10,
         "replicas": 1,

@@ -4,7 +4,7 @@ Dolibarr is an open-source ERP and CRM for small businesses, associations, and i
 
 ## About Hosting Dolibarr
 
-This community template deploys Dolibarr 24.0.2 with PHP and Apache, plus a private MariaDB 11.4 LTS database. It uses the official Dolibarr Docker filesystem with a small Railway-specific startup layer. Automatic setup initializes an empty database without demo data. Two volumes preserve the SQL database, documents, attachments, custom modules, sessions, and permanent instance key. Each deployment generates unique administrator and database secrets. A public HTTPS domain and database-aware deployment health check are configured automatically. The optional in-container scheduler needs no additional service. You remain responsible for backups, upgrades, email delivery, and application configuration.
+This community template deploys Dolibarr 24.0.2 with PHP and Apache, plus a private MariaDB 12.3.3 LTS database. It uses the official Dolibarr Docker filesystem with a small Railway-specific startup layer. Automatic setup initializes an empty database without demo data. Two volumes preserve the SQL database, documents, attachments, custom modules, sessions, and permanent instance key. Each deployment generates unique administrator and database secrets. A public HTTPS domain and database-aware deployment health check are configured automatically. The optional in-container scheduler needs no additional service. You remain responsible for backups, upgrades, email delivery, and application configuration.
 
 Docker build, automatic installation, backup contents, and persistence after container recreation have passed the repository CI. A live Railway deployment and independent restore still need validation; see [validation status](https://github.com/hallcyn/dolibarr/blob/main/VALIDATION.md).
 
@@ -76,3 +76,5 @@ Railway keeps the application, private database, HTTPS domain, deployment logs, 
 - [Official Dolibarr Docker image](https://github.com/Dolibarr/dolibarr-docker)
 
 Maintained independently by Hallcyn; this is not an official Railway or Dolibarr template.
+
+Existing MariaDB 11.4 deployments require a tested backup/restore into a fresh database before changing major versions. See the [MariaDB migration guide](https://github.com/hallcyn/dolibarr/blob/main/docs/MARIADB-UPGRADE.md). Updating this repository does not migrate existing projects or update the published template.

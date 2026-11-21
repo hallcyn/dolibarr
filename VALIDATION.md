@@ -1,6 +1,6 @@
 # Validation de la livraison
 
-État au 17 octobre 2026.
+État initial au 17 octobre 2026 ; préparation MariaDB actualisée le 19 octobre 2026.
 
 ## Vérifications réalisées
 
@@ -50,3 +50,9 @@ Il a vérifié :
 Le workflow GitHub Actions `Verify Dolibarr deployment` est lancé après les modifications de la branche principale. Son résultat est visible dans [l’onglet Actions](https://github.com/hallcyn/dolibarr/actions).
 
 Effectuer le déploiement de validation Railway avant de publier le template au catalogue.
+
+## Préparation de MariaDB 12.3.3 LTS
+
+La spécification du dépôt et Compose visent désormais `mariadb:12.3.3`. Le relevé du template publié ci-dessus reste historique : aucun service ni template Railway n’a été modifié par cette préparation. Dolibarr reste en 24.0.2.
+
+Le nouveau job `mariadb-migration` vérifie une sauvegarde 11.4.13 puis sa restauration SQL, fichiers et clé dans des volumes neufs en 12.3.3. Voir [le guide et les limites](docs/MARIADB-UPGRADE.md). La validation effective est celle des jobs exécutés sur le commit de la PR ; ne pas réutiliser le succès historique du 17 octobre comme preuve de compatibilité 12.3.
