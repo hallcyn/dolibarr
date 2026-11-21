@@ -36,10 +36,18 @@ fingerprint > "$RUNNER_TEMP/before.sha256"
 docker compose build --pull dolibarr
 docker compose up -d --no-deps --wait --wait-timeout 300 dolibarr
 test "$(docker compose ps -q mariadb)" = "$db_container"
+docker compose exec -T dolibarr sh -ec '
+    set -- /data/backups/upgrade-24.0.2-to-24.0.3.*.tar.gz
+    test "$#" = 1 && test -s "$1"
+    test "$(tar -xOzf "$1" dolibarr-version.txt)" = 24.0.2
+    test ! -e /data/backups/upgrade-24.0.2-to-24.0.3.in-progress
+'
 docker compose exec -T dolibarr php -r '
     define("NOLOGIN", 1); define("NOREQUIREMENU", 1); require "/var/www/html/main.inc.php";
-    if (DOL_VERSION !== getenv("DOLI_VERSION") || version_compare(DOL_VERSION, "24.0.3", "<")) exit(1);
-'
+    if (DOL_VERSION !== getenv("DOLI_VERSION") || getDolGlobalString("MAIN_VERSION_LAST_UPGRADE") !== DOL_VERSION) exit(1);
+    echo "patch-upgrade-verified";
+
+' | grep -qx patch-upgrade-verified
 fingerprint > "$RUNNER_TEMP/after.sha256"
 cmp "$RUNNER_TEMP/before.sha256" "$RUNNER_TEMP/after.sha256"
 echo 'PASS: existing customer, invoice, product, stock and payment records, documents, custom data, lock and instance key preserved.'

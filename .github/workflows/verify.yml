@@ -197,6 +197,11 @@ jobs:
           subprocess.run(['python3', 'tests/receipts/browser.py'], check=True,
                          env={**os.environ, 'DOLIBARR_TEST_PASSWORD': config['DOLI_ADMIN_PASSWORD']})
           PY
+      - name: Diagnose the synthetic patch upgrade
+        if: failure()
+        run: |
+          docker compose logs --tail=60 dolibarr
+          docker compose run --rm --no-deps --entrypoint sh dolibarr -c 'tail -c 12000 /data/backups/upgrade-24.0.2-to-24.0.3.log' || true
       - name: Stop disposable test services
         if: always()
         run: docker compose down --volumes
