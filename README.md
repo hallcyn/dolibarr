@@ -17,6 +17,7 @@ Pour un champ calculé de tiers indiquant sa dernière commande, avec une date h
 - Image officielle `dolibarr/dolibarr:24.0.2`, adaptée sans recopier le code de Dolibarr.
 - MariaDB `11.4` LTS, utilisateur applicatif dédié, réseau privé et réglages sobres.
 - [Thème Indy](theme/README.md) embarqué : menu crème, espace blanc et boutons roses, cartes et formulaires modernisés, activation dans les réglages d’affichage.
+- **Rapport des encaissements** dans **Facturation → Règlements** : période libre, détail par facture (tiers, produits, quantités, règlements et numéros de chèque), total encaissé et PDF. Le module **Encaissements Indy** s’active au redémarrage si la facturation client est active. Il peut aussi être activé dans **Accueil → Configuration → Modules/Applications**.
 - [Documents Indy](modules/indyinvoice/README.md) : modèles PDF de factures et commandes avec palettes, bannière image, logo Dolibarr, polices, couleurs de texte et tableau configurables ; RIB et mentions issus des réglages natifs, sans conversion ODT.
 - Secrets différents générés pour chaque déploiement du template ; aucun mot de passe universel.
 - Documents, PDF, pièces jointes, modules externes et sessions PHP persistants.
