@@ -45,4 +45,15 @@ if (isModEnabled('indyinvoice') && !getDolGlobalInt('INDYLABELS_PROVISIONED')) {
     }
     if (dolibarr_set_const($db, 'INDYLABELS_PROVISIONED', '1', 'chaine', 0, '', $conf->entity) <= 0) exit(1);
 }
+// Register the receipts menu once when customer invoicing is in use.
+if (isModEnabled('invoice') && !getDolGlobalInt('INDYRECEIPTS_PROVISIONED')) {
+    if (!isModEnabled('indyreceipts')) {
+        $result = activateModule('modIndyReceipts');
+        if (!empty($result['errors'])) {
+            fwrite(STDERR, 'Unable to enable Indy Receipts.'.PHP_EOL);
+            exit(1);
+        }
+    }
+    if (dolibarr_set_const($db, 'INDYRECEIPTS_PROVISIONED', '1', 'chaine', 0, '', $conf->entity) <= 0) exit(1);
+}
 echo '[railway] Presentation assets and document models ready.'.PHP_EOL;

@@ -17,6 +17,7 @@ RUN bash /opt/indy-theme/install.sh /var/www/html
 
 COPY modules/indyinvoice/ /var/www/html/indyinvoice/
 COPY modules/indylabels/ /var/www/html/indylabels/
+COPY modules/indyreceipts/ /var/www/html/indyreceipts/
 RUN cp /var/www/html/indyinvoice/fonts/indyinter* /var/www/html/includes/tecnickcom/tcpdf/fonts/
 
 COPY docker/ /opt/railway/
