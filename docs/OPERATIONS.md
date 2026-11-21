@@ -113,7 +113,17 @@ GitHub peut retarder une tâche planifiée et désactive les workflows planifié
 
 ## Mise à jour de Dolibarr
 
-Les deux occurrences `24.0.2` du Dockerfile sont liées : la source de l’image et la variable `DOLI_VERSION` doivent correspondre. Ce choix évite qu’un redémarrage récupère silencieusement une nouvelle version majeure. Le tag MariaDB `11.4` accepte des correctifs de cette branche ; pour une reproductibilité stricte, choisir un patch précis ou un digest après validation.
+Les deux occurrences `24.0.3` du Dockerfile sont liées : la source de l’image et la variable `DOLI_VERSION` doivent correspondre. Ce choix évite qu’un redémarrage récupère silencieusement une nouvelle version majeure. Le tag MariaDB `11.4` accepte des correctifs de cette branche ; pour une reproductibilité stricte, choisir un patch précis ou un digest après validation.
+
+### Correctif 24.0.2 → 24.0.3 sur Railway
+
+Avant la fusion sur la branche suivie, choisir un créneau calme et vérifier la disponibilité d’une sauvegarde récente et restaurable de la base, des documents, des modules et de la clé d’instance. Dans Railway, les instantanés de volume se gèrent par service, dans **Backups**. Pour une copie externe cohérente, suivre la procédure de sauvegarde ci-dessus en suspendant les écritures.
+
+Pour cette paire de versions, conserver `install.lock`, le service MariaDB et les montages existants. Déployer le nouveau commit sur le service Dolibarr. Si le déploiement automatique suit `main`, la fusion peut suffire. Une fois le service disponible, vérifier la version dans Dolibarr, une facture existante, une pièce jointe et le PDF du rapport des encaissements.
+
+Le job `patch-upgrade` répète ce chemin sur des volumes de test déjà peuplés en 24.0.2. Il compare les données métier et les fichiers avant et après le remplacement du conteneur applicatif. La procédure ci-dessous concerne les montées de version qui exigent une migration de base.
+
+### Montées de version avec migration de schéma
 
 1. Lire les notes de version Dolibarr et vérifier les modules externes ; faire les sauts de versions selon la procédure officielle.
 2. Faire une sauvegarde cohérente et externe des données, des fichiers et de la clé ; tester sa restauration.
